@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
 import 'auth_service.dart';
 import '../models/absensi_model.dart';
+import '../models/riwayat_absen_model.dart';
 
 class AbsensiService {
   final AuthService _authService = AuthService();
@@ -26,6 +27,35 @@ class AbsensiService {
     final json = jsonDecode(response.body);
     if (response.statusCode == 200 && json['success'] == true) {
       return AbsensiStatus.fromJson(json['data']);
+    }
+    return null;
+  }
+
+  Future<List<RiwayatAbsenItem>> getRiwayat({required int bulan, required int tahun}) async {
+    final headers = await _authHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/absensi/riwayat?bulan=$bulan&tahun=$tahun'),
+      headers: headers,
+    );
+
+    final json = jsonDecode(response.body);
+    if (response.statusCode == 200 && json['success'] == true) {
+      final records = json['data']['records'] as List;
+      return records.map((e) => RiwayatAbsenItem.fromJson(e)).toList();
+    }
+    return [];
+  }
+
+  Future<RekapAbsen?> getRekap({required int bulan, required int tahun}) async {
+    final headers = await _authHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/absensi/rekap?bulan=$bulan&tahun=$tahun'),
+      headers: headers,
+    );
+
+    final json = jsonDecode(response.body);
+    if (response.statusCode == 200 && json['success'] == true) {
+      return RekapAbsen.fromJson(json['data']);
     }
     return null;
   }

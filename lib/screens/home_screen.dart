@@ -5,6 +5,7 @@ import 'login_screen.dart';
 import 'absen/absen_flow_screen.dart';
 import '../services/absensi_service.dart';
 import 'absen/absen_pulang_flow_screen.dart';
+import 'riwayat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -118,6 +119,15 @@ class HomeScreen extends StatelessWidget {
                             const SnackBar(content: Text('Anda sudah absen masuk & pulang hari ini')),
                           );
                         }
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.calendar_today,
+                      label: 'Riwayat',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const RiwayatScreen()),
+                        );
                       },
                     ),
                   ],
