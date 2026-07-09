@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'absen/absen_flow_screen.dart';
+import '../services/absensi_service.dart';
+import 'absen/absen_pulang_flow_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -89,38 +91,34 @@ class HomeScreen extends StatelessWidget {
                   crossAxisSpacing: 16,
                   children: [
                     _MenuItem(
-                        icon: Icons.fingerprint,
-                        label: 'Absen',
-                        onTap: () {
+                      icon: Icons.fingerprint,
+                      label: 'Absen',
+                      onTap: () async {
+                        final status = await AbsensiService().getStatus();
+
+                        if (!context.mounted) return;
+
+                        if (status == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Gagal memuat status absen')),
+                          );
+                          return;
+                        }
+
+                        if (!status.sudahMasuk) {
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
                           );
-                        },
-                      ),
-                    _MenuItem(
-                      icon: Icons.calendar_today,
-                      label: 'Riwayat',
-                      onTap: () {},
-                    ),
-                    _MenuItem(
-                      icon: Icons.event_available,
-                      label: 'Booking',
-                      onTap: () {},
-                    ),
-                    _MenuItem(
-                      icon: Icons.medical_services,
-                      label: 'Konsultasi',
-                      onTap: () {},
-                    ),
-                    _MenuItem(
-                      icon: Icons.science,
-                      label: 'Hasil Lab',
-                      onTap: () {},
-                    ),
-                    _MenuItem(
-                      icon: Icons.notifications,
-                      label: 'Notifikasi',
-                      onTap: () {},
+                        } else if (!status.sudahPulang) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AbsenPulangFlowScreen()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Anda sudah absen masuk & pulang hari ini')),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

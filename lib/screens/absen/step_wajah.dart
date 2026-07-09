@@ -5,10 +5,19 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../services/absensi_service.dart';
 
+enum AbsenMode { masuk, pulang }
+
 class StepWajah extends StatefulWidget {
   final Position position;
-  final String kodeQr;
-  const StepWajah({super.key, required this.position, required this.kodeQr});
+  final String? kodeQr; // null kalau mode pulang
+  final AbsenMode mode;
+
+  const StepWajah({
+    super.key,
+    required this.position,
+    this.kodeQr,
+    required this.mode,
+  });
 
   @override
   State<StepWajah> createState() => _StepWajahState();
@@ -18,7 +27,7 @@ class _StepWajahState extends State<StepWajah> {
   CameraController? _cameraController;
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      enableClassification: true, // buat deteksi senyum & mata terbuka/tertutup
+      enableClassification: true,
       performanceMode: FaceDetectorMode.accurate,
     ),
   );
@@ -80,11 +89,9 @@ class _StepWajahState extends State<StepWajah> {
       }
 
       final face = faces.first;
-      // Liveness sederhana: cek probabilitas mata terbuka & senyum
       final leftEyeOpen = face.leftEyeOpenProbability ?? 1.0;
       final rightEyeOpen = face.rightEyeOpenProbability ?? 1.0;
 
-      // Pastikan mata terbuka (bukan foto orang merem/foto statis dari galeri)
       if (leftEyeOpen < 0.3 || rightEyeOpen < 0.3) {
         setState(() {
           _statusText = 'Mata terdeteksi tertutup. Buka mata dan coba lagi.';
@@ -106,27 +113,41 @@ class _StepWajahState extends State<StepWajah> {
   Future<void> _submitAbsen(File foto) async {
     setState(() => _statusText = 'Mengirim data absen...');
 
-    final result = await _absensiService.absenMasuk(
-      latitude: widget.position.latitude,
-      longitude: widget.position.longitude,
-      kodeQr: widget.kodeQr,
-      fotoMasuk: foto,
-    );
+    final Map<String, dynamic> result;
+
+    if (widget.mode == AbsenMode.masuk) {
+      result = await _absensiService.absenMasuk(
+        latitude: widget.position.latitude,
+        longitude: widget.position.longitude,
+        kodeQr: widget.kodeQr!,
+        fotoMasuk: foto,
+      );
+    } else {
+      result = await _absensiService.absenPulang(
+        latitude: widget.position.latitude,
+        longitude: widget.position.longitude,
+        fotoPulang: foto,
+      );
+    }
 
     if (!mounted) return;
 
     if (result['success'] == true) {
+      final judul = widget.mode == AbsenMode.masuk
+          ? 'Absen Masuk Berhasil'
+          : 'Absen Pulang Berhasil';
+
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (_) => AlertDialog(
-          title: const Text('Absen Berhasil'),
-          content: Text(result['message'] ?? 'Absen masuk tercatat.'),
+          title: Text(judul),
+          content: Text(result['message'] ?? 'Absen tercatat.'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // tutup dialog
-                Navigator.of(context).pop(); // kembali ke home
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
               child: const Text('OK'),
             ),
@@ -161,11 +182,13 @@ class _StepWajahState extends State<StepWajah> {
 
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16),
+        Padding(
+          padding: const EdgeInsets.all(16),
           child: Text(
-            'Verifikasi Wajah',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            widget.mode == AbsenMode.masuk
+                ? 'Verifikasi Wajah - Absen Masuk'
+                : 'Verifikasi Wajah - Absen Pulang',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         Expanded(

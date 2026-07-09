@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'step_lokasi.dart';
-import 'step_qr.dart';
 import 'step_wajah.dart';
 
-class AbsenFlowScreen extends StatefulWidget {
-  const AbsenFlowScreen({super.key});
+class AbsenPulangFlowScreen extends StatefulWidget {
+  const AbsenPulangFlowScreen({super.key});
 
   @override
-  State<AbsenFlowScreen> createState() => _AbsenFlowScreenState();
+  State<AbsenPulangFlowScreen> createState() => _AbsenPulangFlowScreenState();
 }
 
-class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
+class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
   int _currentStep = 0;
-
-  // Data yang dikumpulkan sepanjang flow
   Position? _position;
-  String? _kodeQr;
 
   void _onLokasiSukses(Position position) {
     setState(() {
@@ -25,17 +21,10 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
     });
   }
 
-  void _onQrSukses(String kodeQr) {
-    setState(() {
-      _kodeQr = kodeQr;
-      _currentStep = 2;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Absen')),
+      appBar: AppBar(title: const Text('Absen Pulang')),
       body: Column(
         children: [
           _StepIndicator(currentStep: _currentStep),
@@ -44,12 +33,10 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
               index: _currentStep,
               children: [
                 StepLokasi(onSukses: _onLokasiSukses),
-                StepQr(onSukses: _onQrSukses),
-                if (_position != null && _kodeQr != null)
+                if (_position != null)
                   StepWajah(
                     position: _position!,
-                    kodeQr: _kodeQr!,
-                    mode: AbsenMode.masuk,
+                    mode: AbsenMode.pulang,
                   )
                 else
                   const SizedBox(),
@@ -68,7 +55,7 @@ class _StepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labels = ['Lokasi', 'Scan QR', 'Wajah'];
+    final labels = ['Lokasi', 'Wajah'];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
