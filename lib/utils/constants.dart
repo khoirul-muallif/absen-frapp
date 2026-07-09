@@ -1,13 +1,13 @@
-class ApiConstants {
-  // Ganti sesuai URL Laravel kamu.
-  // Kalau testing dari HP fisik ke Laragon di PC yang sama,
-  // JANGAN pakai localhost/127.0.0.1 — pakai IP lokal PC kamu (misal 192.168.1.x)
-  static const String baseUrl = 'http://192.168.1.24:8001/api';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-  static const String login = '$baseUrl/auth/login';
-  static const String logout = '$baseUrl/auth/logout';
-  static const String me = '$baseUrl/auth/me';
-  static const String notifikasi = '$baseUrl/notifikasi';
-  static const String notifikasiJumlah = '$baseUrl/notifikasi/jumlah';
-  static const String notifikasiBacaSemua = '$baseUrl/notifikasi/baca-semua';
+class ApiConstants {
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000/api';
+
+  static String get login => '$baseUrl/auth/login';
+  static String get logout => '$baseUrl/auth/logout';
+  static String get me => '$baseUrl/auth/me';
+
+  static String get notifikasi => '$baseUrl/notifikasi';
+  static String get notifikasiJumlah => '$baseUrl/notifikasi/jumlah';
+  static String get notifikasiBacaSemua => '$baseUrl/notifikasi/baca-semua';
 }
