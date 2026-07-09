@@ -7,4 +7,7 @@ class ApiConstants {
   static const String login = '$baseUrl/auth/login';
   static const String logout = '$baseUrl/auth/logout';
   static const String me = '$baseUrl/auth/me';
+  static const String notifikasi = '$baseUrl/notifikasi';
+  static const String notifikasiJumlah = '$baseUrl/notifikasi/jumlah';
+  static const String notifikasiBacaSemua = '$baseUrl/notifikasi/baca-semua';
 }

@@ -6,6 +6,7 @@ import 'absen/absen_flow_screen.dart';
 import '../services/absensi_service.dart';
 import 'absen/absen_pulang_flow_screen.dart';
 import 'riwayat_screen.dart';
+import 'notifikasi_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -127,6 +128,15 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const RiwayatScreen()),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.notifications,
+                      label: 'Notifikasi',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
                         );
                       },
                     ),
