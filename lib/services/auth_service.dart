@@ -47,4 +47,34 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  Future<Map<String, dynamic>> getMe() async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'message': 'Tidak ada token tersimpan'};
+      }
+
+      final response = await http.get(
+        Uri.parse(ApiConstants.me),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final json = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && json['success'] == true) {
+        final user = UserModel.fromJson(json['data']);
+        return {'success': true, 'user': user};
+      } else {
+        // Token invalid/expired, bersihkan token lokal
+        await logout();
+        return {'success': false, 'message': 'Sesi berakhir, silakan login ulang'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak bisa terhubung ke server'};
+    }
+  }
 }

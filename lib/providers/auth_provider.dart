@@ -39,4 +39,19 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     notifyListeners();
   }
+
+  Future<bool> tryAutoLogin() async {
+    final token = await _authService.getToken();
+    if (token == null) return false;
+
+    final result = await _authService.getMe();
+
+    if (result['success'] == true) {
+      _user = result['user'];
+      notifyListeners();
+      return true;
+    }
+
+    return false;
+  }
 }
