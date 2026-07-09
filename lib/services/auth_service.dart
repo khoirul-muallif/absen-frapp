@@ -39,6 +39,21 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    try {
+      final token = await getToken();
+      if (token != null) {
+        await http.post(
+          Uri.parse(ApiConstants.logout),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+        );
+      }
+    } catch (e) {
+      // Kalau gagal hubungi server (offline dll), tetap lanjut hapus token lokal
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
   }
