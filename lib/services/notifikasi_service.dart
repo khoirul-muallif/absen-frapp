@@ -26,7 +26,7 @@ class NotifikasiService {
     if (response.statusCode == 200 && json['success'] == true) {
       final data = json['data'];
       // Karena Laravel pakai paginate(), array asli ada di data.notifikasi.data
-      final List items = data['notifikasi']['data'] ?? [];
+      final List items = data['records'] ?? [];
 
       return {
         'success': true,
