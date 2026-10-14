@@ -37,8 +37,18 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   }
 
   Future<void> _hapus(NotifikasiItem item) async {
-    await _service.hapus(item.id);
-    _loadData();
+    final removedIndex = _items.indexWhere((e) => e.id == item.id);
+    if (removedIndex == -1) return;
+
+    setState(() {
+      _items.removeAt(removedIndex);
+    });
+
+    final success = await _service.hapus(item.id);
+    if (!success) {
+      // gagal di server, muat ulang biar item balik lagi
+      _loadData();
+    }
   }
 
   IconData _iconForTipe(String tipe) {

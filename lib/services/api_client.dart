@@ -1,7 +1,7 @@
 // lib/services/api_client.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'auth_service.dart';
+import 'token_storage.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -11,12 +11,12 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
-  final AuthService _authService = AuthService();
+  final TokenStorage _tokenStorage = TokenStorage();
 
   Future<Map<String, String>> _headers({bool withAuth = true}) async {
     final headers = {'Accept': 'application/json'};
     if (withAuth) {
-      final token = await _authService.getToken();
+      final token = await _tokenStorage.getToken();
       if (token != null) headers['Authorization'] = 'Bearer $token';
     }
     return headers;
@@ -45,7 +45,10 @@ class ApiClient {
     final json = jsonDecode(res.body) as Map<String, dynamic>;
 
     if (res.statusCode == 401) {
-      _authService.logout(); // bersihkan token lokal, biar splash/guard arahkan ke login
+      // Cuma bersihkan token lokal (bukan AuthService.logout() penuh —
+      // itu juga manggil endpoint logout ke server pakai token yang
+      // sudah invalid, percuma). Splash/guard yang arahkan ke login.
+      _tokenStorage.clearToken();
       throw ApiException(json['message'] ?? 'Sesi berakhir, silakan login ulang', 401);
     }
 

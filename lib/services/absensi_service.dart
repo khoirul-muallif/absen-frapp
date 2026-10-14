@@ -1,77 +1,72 @@
-import 'dart:convert';
+// lib/services/absensi_service.dart
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
 import 'auth_service.dart';
+import 'dart:convert';
+import 'api_client.dart';
 import '../models/absensi_model.dart';
 import '../models/riwayat_absen_model.dart';
 
 class AbsensiService {
-  final AuthService _authService = AuthService();
+  final ApiClient _apiClient = ApiClient();
+  final AuthService _authService = AuthService(); // dipakai khusus utk header multipart di bawah
+
+  Future<AbsensiStatus?> getStatus() async {
+    try {
+      final json = await _apiClient.get('${ApiConstants.baseUrl}/absensi/status');
+      return AbsensiStatus.fromJson(json['data']);
+    } on ApiException {
+      return null;
+    }
+  }
+
+  Future<List<RiwayatAbsenItem>> getRiwayat({required int bulan, required int tahun}) async {
+    try {
+      final json = await _apiClient.get(
+        '${ApiConstants.baseUrl}/absensi/riwayat?bulan=$bulan&tahun=$tahun',
+      );
+      final records = json['data']['records'] as List;
+      return records.map((e) => RiwayatAbsenItem.fromJson(e)).toList();
+    } on ApiException {
+      return [];
+    }
+  }
+
+  Future<RekapAbsen?> getRekap({required int bulan, required int tahun}) async {
+    try {
+      final json = await _apiClient.get(
+        '${ApiConstants.baseUrl}/absensi/rekap?bulan=$bulan&tahun=$tahun',
+      );
+      return RekapAbsen.fromJson(json['data']);
+    } on ApiException {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> validasiQr(String kode) async {
+    try {
+      final json = await _apiClient.get('${ApiConstants.baseUrl}/instansi/qr/$kode');
+      return {
+        'success': true,
+        'message': json['message'] ?? '',
+        'data': json['data'],
+      };
+    } on ApiException catch (e) {
+      return {'success': false, 'message': e.message, 'data': null};
+    }
+  }
+
+  // --- Di bawah ini TIDAK dimigrasi ke ApiClient ---
+  // ApiClient.post() cuma support JSON body; endpoint masuk/pulang butuh
+  // multipart/form-data (file foto), jadi tetap pakai http.MultipartRequest
+  // manual seperti sebelumnya.
 
   Future<Map<String, String>> _authHeaders() async {
     final token = await _authService.getToken();
     return {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
-    };
-  }
-
-  Future<AbsensiStatus?> getStatus() async {
-    final headers = await _authHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/absensi/status'),
-      headers: headers,
-    );
-
-    final json = jsonDecode(response.body);
-    if (response.statusCode == 200 && json['success'] == true) {
-      return AbsensiStatus.fromJson(json['data']);
-    }
-    return null;
-  }
-
-  Future<List<RiwayatAbsenItem>> getRiwayat({required int bulan, required int tahun}) async {
-    final headers = await _authHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/absensi/riwayat?bulan=$bulan&tahun=$tahun'),
-      headers: headers,
-    );
-
-    final json = jsonDecode(response.body);
-    if (response.statusCode == 200 && json['success'] == true) {
-      final records = json['data']['records'] as List;
-      return records.map((e) => RiwayatAbsenItem.fromJson(e)).toList();
-    }
-    return [];
-  }
-
-  Future<RekapAbsen?> getRekap({required int bulan, required int tahun}) async {
-    final headers = await _authHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/absensi/rekap?bulan=$bulan&tahun=$tahun'),
-      headers: headers,
-    );
-
-    final json = jsonDecode(response.body);
-    if (response.statusCode == 200 && json['success'] == true) {
-      return RekapAbsen.fromJson(json['data']);
-    }
-    return null;
-  }
-
-  Future<Map<String, dynamic>> validasiQr(String kode) async {
-    final headers = await _authHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/instansi/qr/$kode'),
-      headers: headers,
-    );
-
-    final json = jsonDecode(response.body);
-    return {
-      'success': json['success'] ?? false,
-      'message': json['message'] ?? '',
-      'data': json['data'],
     };
   }
 
