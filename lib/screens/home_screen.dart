@@ -7,6 +7,7 @@ import '../services/absensi_service.dart';
 import 'absen/absen_pulang_flow_screen.dart';
 import 'riwayat_screen.dart';
 import 'notifikasi_screen.dart';
+import 'izin_screen.dart'; // tambahkan di bagian import
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -137,6 +138,16 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
+                        );
+                      },  
+                    ),
+                    // tambahkan di dalam children GridView.count, setelah _MenuItem 'Notifikasi'
+                    _MenuItem(
+                      icon: Icons.event_busy,
+                      label: 'Izin',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const IzinScreen()),
                         );
                       },
                     ),

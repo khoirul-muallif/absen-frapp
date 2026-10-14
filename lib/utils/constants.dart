@@ -19,4 +19,7 @@ class ApiConstants {
   static String get notifikasi => '$baseUrl/notifikasi';
   static String get notifikasiJumlah => '$baseUrl/notifikasi/jumlah';
   static String get notifikasiBacaSemua => '$baseUrl/notifikasi/baca-semua';
+
+  static String get izin => '$baseUrl/izin';
+  static String izinJamKembali(String id) => '$baseUrl/izin/$id/jam-kembali';
 }

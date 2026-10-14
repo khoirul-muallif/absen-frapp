@@ -1,3 +1,28 @@
+## fase 10: modul Izin (frontend) — ajukan, isi jam kembali, batalkan
+
+Commit: <isi hash setelah commit> (14 Okt 2026)
+
+Modul pertama dari Cuti/Izin/Lembur/Dinas/TukarJadwal di frontend,
+dipilih sebagai percontohan pola (auto-approved, tanpa kuota — paling
+sederhana) sebelum direplikasi ke modul lain. Urutan yang disepakati:
+Izin -> Lembur -> Dinas -> Cuti -> TukarJadwal.
+
+Baru: izin_model.dart, izin_service.dart (ApiClient), izin_form_screen.dart
+(ajukan — sengaja tanpa field jam_kembali, diisi belakangan setelah
+karyawan balik), izin_screen.dart (list riwayat, swipe-delete cuma aktif
+kalau jam_kembali masih null sesuai guard backend, tap untuk isi jam
+kembali), card "Izin" baru di home_screen.dart.
+
+ApiClient ditambah method patch() untuk PATCH /api/izin/{id}/jam-kembali.
+
+CATATAN: field jam Izin dari backend dikirim mentah "08:00:00" (beda
+dari field jam lain yang H:i) — ditangani lewat substring di screen,
+bukan direformat di model (lihat todo.md backend soal ketidakseragaman
+ini).
+
+Diuji end-to-end (karyawan Rina Wulandari): ajukan -> approved otomatis,
+approved_by NULL -> isi jam kembali via tap -> terverifikasi benar di DB.
+
 ## fase 9: migrasi AuthService/AbsensiService/NotifikasiService ke ApiClient + fix terkait
 
 Commit: 5f1fb58 (14 Okt 2026)

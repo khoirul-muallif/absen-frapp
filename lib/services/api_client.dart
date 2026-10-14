@@ -41,6 +41,16 @@ class ApiClient {
     return _handle(res);
   }
 
+  // lib/services/api_client.dart — tambahkan method ini
+  Future<Map<String, dynamic>> patch(String url, {Map<String, dynamic>? body}) async {
+    final res = await http.patch(
+      Uri.parse(url),
+      headers: {...await _headers(), 'Content-Type': 'application/json'},
+      body: body != null ? jsonEncode(body) : null,
+    );
+    return _handle(res);
+  }
+
   Map<String, dynamic> _handle(http.Response res) {
     final json = jsonDecode(res.body) as Map<String, dynamic>;
 
