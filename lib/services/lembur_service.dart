@@ -17,7 +17,7 @@ class LemburService {
         'tanggal': tanggal,
         'jam_mulai': jamMulai,
         'jam_selesai': jamSelesai,
-        if (alasan != null && alasan.isNotEmpty) 'alasan': alasan,
+        'alasan': alasan,
       });
       return {'success': true, 'message': json['message'] ?? ''};
     } on ApiException catch (e) {

@@ -61,22 +61,22 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
       return;
     }
 
-    // Lembur lintas tengah malam diperbolehkan (jam_selesai < jam_mulai =
-    // lanjut ke hari berikutnya). Yang ditolak cuma durasi nol.
-    if (_jamMulai!.hour == _jamSelesai!.hour && _jamMulai!.minute == _jamSelesai!.minute) {
+    // lembur_form_screen.dart — ganti pengecekan durasi nol jadi ini
+    if (!(_jamSelesai!.hour > _jamMulai!.hour ||
+        (_jamSelesai!.hour == _jamMulai!.hour && _jamSelesai!.minute > _jamMulai!.minute))) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jam mulai dan selesai tidak boleh sama')),
+        const SnackBar(content: Text('Jam selesai harus setelah jam mulai (belum bisa lintas tengah malam)')),
       );
       return;
     }
 
     setState(() => _submitting = true);
 
-    final result = await _lemburService.ajukan(
+     final result = await _lemburService.ajukan(
       tanggal: _formatTanggal(_tanggal),
       jamMulai: _formatJam(_jamMulai!),
       jamSelesai: _formatJam(_jamSelesai!),
-      alasan: _alasanController.text.trim().isEmpty ? null : _alasanController.text.trim(),
+      alasan: _alasanController.text.trim(),
     );
 
     if (!mounted) return;
@@ -128,9 +128,11 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
                 controller: _alasanController,
                 maxLines: 3,
                 decoration: const InputDecoration(
-                  labelText: 'Alasan (opsional)',
+                  labelText: 'Alasan',
                   border: OutlineInputBorder(),
                 ),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
               ),
               const SizedBox(height: 24),
               SizedBox(

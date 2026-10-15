@@ -1,3 +1,24 @@
+## fase 13: fix bug Lembur -- alasan wajib & larangan lintas tengah malam
+
+Commit: a1132e6 (15 Okt 2026)
+
+Audit LemburController.php asli (dikirim user) menemukan 2 ketidaksesuaian
+dengan FE Lembur fase 11:
+
+1. alasan required di backend (`'alasan' => 'required|...'`) tapi FE
+   bikin opsional -- submit tanpa alasan selalu gagal 422. Fix: alasan
+   jadi non-nullable di model/form/service, form wajib divalidasi.
+2. jam_selesai divalidasi 'after:jam_mulai' oleh backend -- menolak
+   lembur lintas tengah malam. Ini kontradiksi sama keputusan arsitektur
+   lama (Lembur seharusnya bisa span midnight, cuma durasi nol yang
+   ditolak -- lihat decisions-and-principles). BELUM diselesaikan mana
+   yang benar; diputuskan ditunda, investigasi backend menyusul. Untuk
+   sekarang FE ikut validasi backend yang berlaku: tolak submit kalau
+   jam_selesai <= jam_mulai.
+
+Masih BELUM ditest end-to-end (sama seperti fase 11/12 -- belum ada akses
+device Android).
+
 ## fase 12: modul Dinas (frontend)
 
 Commit: babe387 (15 Okt 2026)

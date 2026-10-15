@@ -95,8 +95,7 @@ class _LemburScreenState extends State<LemburScreen> {
                         child: ListTile(
                           title: Text(item.tanggal),
                           subtitle: Text(
-                            '${_formatJam(item.jamMulai)} - ${_formatJam(item.jamSelesai)}'
-                            '${item.alasan != null ? '\n${item.alasan}' : ''}'
+                            '${_formatJam(item.jamMulai)} - ${_formatJam(item.jamSelesai)}\n${item.alasan}'
                             '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
