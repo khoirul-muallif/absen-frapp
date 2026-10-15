@@ -1,3 +1,26 @@
+fase 11: modul Lembur (frontend) + reorganisasi folder Izin
+
+Modul Lembur dibuat ngikutin pola modul Izin (fase 10): lembur_model.dart,
+lembur_service.dart (pakai ApiClient), lembur_form_screen.dart,
+lembur_screen.dart, card "Lembur" di home_screen.dart, ApiConstants.lembur
+di constants.dart.
+
+Beda dari Izin: jam_mulai & jam_selesai sama-sama diisi di form pengajuan
+(bukan diisi belakangan), alasan nullable, lintas tengah malam
+diperbolehkan sebagai satu record -- form cuma menolak durasi nol.
+Batalkan di-gate ke status == 'pending' (beda dari Izin yang di-gate ke
+jamKembali == null, karena Lembur gak punya pola isi-belakangan).
+
+Sekalian reorganisasi folder: izin_form_screen.dart & izin_screen.dart
+dipindah ke lib/screens/izin/, konsisten dengan lib/screens/lembur/ yang
+baru dibuat.
+
+BELUM DITEST end-to-end (gak ada akses device Android saat commit ini).
+Dua hal yang masih asumsi, perlu diverifikasi pas testing:
+- Format field diajukan_at di respons GET /api/lembur
+- Apakah Lembur auto-approved kayak Izin, atau pending menunggu admin
+  (menentukan kapan tombol batal muncul di UI)
+  
 ## fase 10: modul Izin (frontend) — ajukan, isi jam kembali, batalkan
 
 Commit: <isi hash setelah commit> (14 Okt 2026)

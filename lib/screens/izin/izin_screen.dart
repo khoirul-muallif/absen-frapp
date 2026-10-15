@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/izin_service.dart';
-import '../models/izin_model.dart';
+import '../../services/izin_service.dart';
+import '../../models/izin_model.dart';
 import 'izin_form_screen.dart';
 
 class IzinScreen extends StatefulWidget {

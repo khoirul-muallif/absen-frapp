@@ -1,25 +1,27 @@
+// lib/screens/lembur/lembur_form_screen.dart
 import 'package:flutter/material.dart';
-import '../services/izin_service.dart';
+import '../../services/lembur_service.dart';
 
-class IzinFormScreen extends StatefulWidget {
-  const IzinFormScreen({super.key});
+class LemburFormScreen extends StatefulWidget {
+  const LemburFormScreen({super.key});
 
   @override
-  State<IzinFormScreen> createState() => _IzinFormScreenState();
+  State<LemburFormScreen> createState() => _LemburFormScreenState();
 }
 
-class _IzinFormScreenState extends State<IzinFormScreen> {
+class _LemburFormScreenState extends State<LemburFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _izinService = IzinService();
-  final _keperluanController = TextEditingController();
+  final _lemburService = LemburService();
+  final _alasanController = TextEditingController();
 
   DateTime _tanggal = DateTime.now();
-  TimeOfDay? _jamKeluar;
+  TimeOfDay? _jamMulai;
+  TimeOfDay? _jamSelesai;
   bool _submitting = false;
 
   @override
   void dispose() {
-    _keperluanController.dispose();
+    _alasanController.dispose();
     super.dispose();
   }
 
@@ -39,26 +41,42 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     if (picked != null) setState(() => _tanggal = picked);
   }
 
-  Future<void> _pilihJamKeluar() async {
+  Future<void> _pilihJamMulai() async {
     final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    if (picked != null) setState(() => _jamKeluar = picked);
+    if (picked != null) setState(() => _jamMulai = picked);
+  }
+
+  Future<void> _pilihJamSelesai() async {
+    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (picked != null) setState(() => _jamSelesai = picked);
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_jamKeluar == null) {
+
+    if (_jamMulai == null || _jamSelesai == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih jam keluar dulu')),
+        const SnackBar(content: Text('Pilih jam mulai dan jam selesai dulu')),
+      );
+      return;
+    }
+
+    // Lembur lintas tengah malam diperbolehkan (jam_selesai < jam_mulai =
+    // lanjut ke hari berikutnya). Yang ditolak cuma durasi nol.
+    if (_jamMulai!.hour == _jamSelesai!.hour && _jamMulai!.minute == _jamSelesai!.minute) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Jam mulai dan selesai tidak boleh sama')),
       );
       return;
     }
 
     setState(() => _submitting = true);
 
-    final result = await _izinService.ajukan(
+    final result = await _lemburService.ajukan(
       tanggal: _formatTanggal(_tanggal),
-      jamKeluar: _formatJam(_jamKeluar!),
-      keperluan: _keperluanController.text.trim(),
+      jamMulai: _formatJam(_jamMulai!),
+      jamSelesai: _formatJam(_jamSelesai!),
+      alasan: _alasanController.text.trim().isEmpty ? null : _alasanController.text.trim(),
     );
 
     if (!mounted) return;
@@ -68,7 +86,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan izin')),
+        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan lembur')),
       );
     }
   }
@@ -76,7 +94,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajukan Izin')),
+      appBar: AppBar(title: const Text('Ajukan Lembur')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -93,21 +111,26 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Jam Keluar'),
-                subtitle: Text(_jamKeluar != null ? _formatJam(_jamKeluar!) : 'Belum dipilih'),
+                title: const Text('Jam Mulai'),
+                subtitle: Text(_jamMulai != null ? _formatJam(_jamMulai!) : 'Belum dipilih'),
                 trailing: const Icon(Icons.access_time),
-                onTap: _pilihJamKeluar,
+                onTap: _pilihJamMulai,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Jam Selesai'),
+                subtitle: Text(_jamSelesai != null ? _formatJam(_jamSelesai!) : 'Belum dipilih'),
+                trailing: const Icon(Icons.access_time),
+                onTap: _pilihJamSelesai,
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _keperluanController,
+                controller: _alasanController,
                 maxLines: 3,
                 decoration: const InputDecoration(
-                  labelText: 'Keperluan',
+                  labelText: 'Alasan (opsional)',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Keperluan wajib diisi' : null,
               ),
               const SizedBox(height: 24),
               SizedBox(
