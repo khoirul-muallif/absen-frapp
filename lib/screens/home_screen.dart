@@ -10,6 +10,7 @@ import 'notifikasi_screen.dart';
 import 'izin/izin_screen.dart'; 
 import 'lembur/lembur_screen.dart';
 import 'dinas/dinas_screen.dart';
+import 'cuti/cuti_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -167,6 +168,16 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const DinasScreen()),
+                        );
+                      },
+                    ),
+
+                    _MenuItem(
+                      icon: Icons.beach_access,
+                      label: 'Cuti',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CutiScreen()),
                         );
                       },
                     ),

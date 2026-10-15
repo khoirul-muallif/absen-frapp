@@ -26,4 +26,7 @@ class ApiConstants {
   static String get lembur => '$baseUrl/lembur';
 
   static String get dinas => '$baseUrl/dinas';
+
+  static String get cuti => '$baseUrl/cuti';
+  static String get cutiKuota => '$baseUrl/cuti/kuota';
 }

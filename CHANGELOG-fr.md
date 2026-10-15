@@ -1,3 +1,34 @@
+## fase 14: modul Cuti (frontend)
+
+Modul Cuti dibuat berdasarkan audit CutiController.php asli (dikirim user
+bareng Dinas & Lembur). Paling kompleks dari 4 modul pertama: perlu pilih
+jenis_cuti dari daftar aktif, tampilkan sisa kuota per jenis+semester,
+lampiran conditional wajib, semua validasi tanggal/semester/tahun-crossing
+ditangani di sisi server (FE cuma relay pesannya).
+
+Baru: cuti_kuota_model.dart, cuti_model.dart, cuti_service.dart,
+cuti_form_screen.dart, cuti_screen.dart, card "Cuti" di home_screen.dart,
+ApiConstants.cuti & cutiKuota.
+
+Desain: GET /api/cuti/kuota dipakai ganda sebagai sumber kuota DAN sumber
+daftar jenis cuti aktif (tidak ada endpoint list jenis_cuti terpisah) --
+dropdown form langsung diisi dari situ, termasuk flag perlu_lampiran per
+jenis untuk nentuin apakah field lampiran wajib ditampilkan.
+
+CutiService.ajukan() pakai multipart manual (http.MultipartRequest +
+TokenStorage) karena ApiClient belum support file upload -- sama kondisi
+dengan _absenMultipart di absensi_service.dart. BELUM dirapikan jadi satu
+helper bersama; dicatat sebagai technical debt kecil.
+
+Dependency baru: file_picker ditambahkan ke pubspec.yaml untuk lampiran
+cuti (pdf/jpg/jpeg/png).
+
+BELUM DITEST end-to-end -- sama seperti Lembur (fase 11) & Dinas (fase
+12), masih menunggu akses device Android. Modul ini sekaligus paling
+butuh test manual paling teliti karena ada 3 jalur validasi server yang
+belum pernah dicoba dari sisi FE: cek bentrok cuti/dinas approved, cek
+sisa kuota (termasuk pending lain), dan upload lampiran actual.
+
 ## fase 13: fix bug Lembur -- alasan wajib & larangan lintas tengah malam
 
 Commit: a1132e6 (15 Okt 2026)
