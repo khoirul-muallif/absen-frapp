@@ -29,4 +29,8 @@ class ApiConstants {
 
   static String get cuti => '$baseUrl/cuti';
   static String get cutiKuota => '$baseUrl/cuti/kuota';
+
+  static String get tukarJadwal => '$baseUrl/tukar-jadwal';
+  static String get tukarJadwalMenungguRespon => '$baseUrl/tukar-jadwal/menunggu-respon-saya';
+  static String tukarJadwalResponRekan(String id) => '$baseUrl/tukar-jadwal/$id/respon-rekan';
 }

@@ -11,6 +11,7 @@ import 'izin/izin_screen.dart';
 import 'lembur/lembur_screen.dart';
 import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
+import 'tukar_jadwal/tukar_jadwal_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -171,13 +172,21 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                     ),
-
                     _MenuItem(
                       icon: Icons.beach_access,
                       label: 'Cuti',
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const CutiScreen()),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.swap_horiz,
+                      label: 'Tukar Jadwal',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const TukarJadwalScreen()),
                         );
                       },
                     ),

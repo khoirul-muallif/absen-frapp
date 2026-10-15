@@ -1,3 +1,32 @@
+## fase 15: modul TukarJadwal (frontend) -- riwayat & respon rekan, form ajukan belum bisa dibuat
+
+Audit TukarJadwalController.php + model TukarJadwal.php asli (dikirim
+user): ajukan() terima jadwal_id (ID row Jadwal sendiri) & jadwal_tujuan_id
+(ID row Jadwal rekan, required kalau mode=tukar) -- bukan tanggal/shift
+langsung. 5 status: menunggu_rekan/menunggu_admin/ditolak_rekan/approved/
+rejected. respon-rekan payload {setuju: bool, catatan: string?}. batalkan()
+cuma oleh pengaju & status menunggu_rekan/menunggu_admin.
+
+Dibuat yang gak keblok: tukar_jadwal_model.dart, tukar_jadwal_service.dart,
+menunggu_respon_screen.dart (approve/reject), tukar_jadwal_screen.dart
+(riwayat + batal), card "Tukar Jadwal" di home_screen.dart.
+
+BLOCKER ditemukan: gak ada endpoint GET buat list Jadwal (sendiri atau
+rekan) sebagai sumber picker jadwal_id/jadwal_tujuan_id di form ajukan --
+dicek di routes/api.php backend, memang gak ada rute jadwal sama sekali.
+Diusulkan 2 endpoint baru ke backend (dicatat di todo.md backend, commit
+fc450ce): GET /api/jadwal/saya (gak ada keputusan bisnis) dan
+GET /api/jadwal/rekan?tanggal=... (BUTUH keputusan scope privasi -- unit
+kerja sama, instansi sama, atau gak dibatasi). TukarJadwalFormScreen
+BELUM dibuat, nunggu endpoint ini & keputusan scope-nya.
+
+Workaround dicatat: response riwayat() cuma kirim nama karyawan (bukan
+ID) di jadwal_asal/jadwal_tujuan -- deteksi "pengajuan saya sendiri" buat
+gating tombol Batalkan sementara cocokin nama ke AuthProvider.user.nama,
+rawan false-positive kalau ada nama sama persis.
+
+BELUM DITEST end-to-end, sama seperti Lembur/Dinas/Cuti.
+
 ## fase 14: modul Cuti (frontend)
 
 Modul Cuti dibuat berdasarkan audit CutiController.php asli (dikirim user
