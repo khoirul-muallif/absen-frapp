@@ -9,6 +9,7 @@ import 'riwayat_screen.dart';
 import 'notifikasi_screen.dart';
 import 'izin/izin_screen.dart'; 
 import 'lembur/lembur_screen.dart';
+import 'dinas/dinas_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -157,6 +158,15 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const LemburScreen()),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.work_outline,
+                      label: 'Dinas',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const DinasScreen()),
                         );
                       },
                     ),

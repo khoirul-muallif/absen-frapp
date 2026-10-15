@@ -24,4 +24,6 @@ class ApiConstants {
   static String izinJamKembali(String id) => '$baseUrl/izin/$id/jam-kembali';
     
   static String get lembur => '$baseUrl/lembur';
+
+  static String get dinas => '$baseUrl/dinas';
 }

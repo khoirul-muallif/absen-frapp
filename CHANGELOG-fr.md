@@ -1,4 +1,24 @@
-fase 11: modul Lembur (frontend) + reorganisasi folder Izin
+## fase 12: modul Dinas (frontend)
+
+Commit: babe387 (15 Okt 2026)
+
+Modul Dinas dibuat ngikutin pola Izin (fase 10) & Lembur (fase 11):
+dinas_model.dart, dinas_service.dart (pakai ApiClient), dinas_form_screen.dart,
+dinas_screen.dart, card "Dinas" di home_screen.dart, ApiConstants.dinas
+di constants.dart.
+
+Beda dari Lembur: form pakai rentang tanggal (tanggal_mulai +
+tanggal_selesai, showDateRangePicker) bukan satu tanggal + jam, dan field
+isiannya tujuan + keperluan tanpa jam sama sekali. Batal tetap di-gate ke
+status == 'pending'.
+
+BELUM DITEST end-to-end -- sama seperti fase 11, belum ada akses device
+Android. Asumsi field diajukan_at di respons GET /api/dinas juga belum
+diverifikasi ke DinasController.php backend.
+
+## fase 11: modul Lembur (frontend) + reorganisasi folder Izin
+
+Commit: f35355c (15 Okt 2026)
 
 Modul Lembur dibuat ngikutin pola modul Izin (fase 10): lembur_model.dart,
 lembur_service.dart (pakai ApiClient), lembur_form_screen.dart,
