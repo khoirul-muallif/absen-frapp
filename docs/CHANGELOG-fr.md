@@ -1,3 +1,28 @@
+## Hasil testing end-to-end Lembur/Dinas/Cuti/TukarJadwal (16 Okt 2026)
+
+Setelah fix build (compileSdk 36, file_picker 13.x -- commit c4b5630),
+testing manual di device fisik untuk 4 modul yang sebelumnya belum
+pernah dicoba:
+
+- **Lembur**: SEMUA LOLOS. Validasi alasan wajib & larangan lintas
+  tengah malam jalan sesuai harapan. Submit valid -> status `pending`
+  (bukan auto-approve kayak Izin -- ini jawab asumsi terbuka sejak fase
+  11). diajukan_at normal. Batal via swipe jalan.
+- **Dinas**: SEMUA LOLOS. Validasi lintas tahun, bentrok Cuti/Dinas
+  approved, riwayat & batal semua jalan sesuai harapan.
+- **Cuti**: 5/6 lolos. Upload lampiran multipart TERBUKTI JALAN (file
+  beneran nyampe & kesimpen di server) -- ini yang paling krusial karena
+  multipart manual di CutiService belum pernah dicoba sebelumnya. Cek
+  sisa kuota & pesan tolak jalan. 1 BUG ditemukan: dropdown jenis cuti
+  nampilin kedua semester sekaligus -- fix di fase 16.
+- **TukarJadwal**: test terbatas -- Riwayat & Menunggu Respon Saya gak
+  crash walau kosong, tapi responRekan/batalkan belum bisa ditest sama
+  sekali karena belum ada data TukarJadwal (belum ada form ajukan, belum
+  ada cara seed manual).
+
+Ditemukan juga 1 UX gap lintas-modul: swipe-to-delete gak ada hint
+visual di semua modul. Dicatat ke todo-fr.md, belum di-fix.
+
 ## fase 15: modul TukarJadwal (frontend) -- riwayat & respon rekan, form ajukan belum bisa dibuat
 
 Audit TukarJadwalController.php + model TukarJadwal.php asli (dikirim

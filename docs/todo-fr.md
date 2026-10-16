@@ -6,6 +6,14 @@
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
+- [ ] **Feedback error/sukses pakai SnackBar dirasa kurang user friendly**
+      — semua modul (Izin/Lembur/Dinas/Cuti/TukarJadwal) pakai
+      `ScaffoldMessenger.showSnackBar()` buat nampilin pesan sukses/gagal
+      dari server. Diusulkan ganti ke popup (AlertDialog) biar lebih
+      kelihatan. Perlu diputuskan: popup buat SEMUA pesan, atau cuma
+      error yang penting (SnackBar tetap dipakai buat konfirmasi ringan
+      kayak "berhasil dibatalkan")? Ditemukan saat testing 16 Okt 2026.
+
 - [ ] **Scope `GET /api/jadwal/rekan`** — blocker `TukarJadwalFormScreen`.
       Dibatasi unit_kerja sama, instansi sama, atau gak dibatasi? Endpoint
       ini (+ `GET /api/jadwal/saya`) juga belum ada di backend, sudah
@@ -20,11 +28,26 @@
 
 ## Belum dibuat
 
+- [ ] **Time picker masih ikut format AM/PM dari device, harusnya 24 jam
+      selalu** — `showTimePicker()` di `izin_form_screen.dart` (jam
+      keluar), `izin_screen.dart` (isi jam kembali), dan
+      `lembur_form_screen.dart` (jam mulai/selesai) belum dipaksa 24 jam,
+      jadi ikut locale device yang bisa AM/PM. Fix: bungkus pakai
+      `builder: (context, child) => MediaQuery(data:
+      MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+      child: child!)` di tiap pemanggilan `showTimePicker()`. Ditemukan
+      saat testing 16 Okt 2026.
+
 - [ ] **`TukarJadwalFormScreen`** (ajukan tukar/pindah baru) — blocked
       sampai keputusan scope `GET /api/jadwal/rekan` di atas
 - [ ] **Layar "Jadwal"** (kalender + detail jadwal per tanggal) — belum
       ada sama sekali di frontend, dan referensi UI nunjukkin ini jadi
       titik masuk buat form Tukar Jadwal juga (lihat catatan di atas)
+- [ ] **Swipe-to-delete gak ada hint visual di semua modul** — Izin/Lembur/
+      Dinas/Cuti/TukarJadwal semua pakai Dismissible buat batalkan, tapi
+      gak ada indikasi apapun ke user kalau item bisa di-swipe. Ditemukan
+      saat testing Lembur (16 Okt 2026). Perlu tambahan hint (ikon panah,
+      teks kecil "Geser untuk batalkan", atau ganti ke tombol eksplisit).
 
 ## Belum ditest end-to-end
 

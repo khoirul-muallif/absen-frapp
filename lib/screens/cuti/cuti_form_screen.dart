@@ -38,9 +38,18 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
 
   Future<void> _loadJenisCuti() async {
     final list = await _cutiService.kuota();
+
+    // Filter ke semester berjalan aja -- entri tanpa semester (periode
+    // tahunan) selalu ikut tampil.
+    final bulanSekarang = DateTime.now().month;
+    final semesterSekarang = bulanSekarang <= 6 ? 1 : 2;
+    final filtered = list
+        .where((j) => j.semester == null || j.semester == semesterSekarang)
+        .toList();
+
     if (!mounted) return;
     setState(() {
-      _jenisCutiList = list;
+      _jenisCutiList = filtered;
       _loadingJenis = false;
     });
   }
