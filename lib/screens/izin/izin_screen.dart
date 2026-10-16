@@ -68,8 +68,15 @@ class _IzinScreenState extends State<IzinScreen> {
   }
 
   Future<void> _isiJamKembali(IzinItem item) async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    if (picked == null) return;
+  final picked = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+      child: child!,
+    ),
+  );
+  if (picked == null) return;
 
     final jamKembali =
         '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';

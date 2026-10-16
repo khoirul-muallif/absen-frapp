@@ -42,15 +42,28 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
   }
 
   Future<void> _pilihJamMulai() async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
     if (picked != null) setState(() => _jamMulai = picked);
   }
 
   Future<void> _pilihJamSelesai() async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
     if (picked != null) setState(() => _jamSelesai = picked);
   }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 

@@ -40,7 +40,14 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   }
 
   Future<void> _pilihJamKeluar() async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
     if (picked != null) setState(() => _jamKeluar = picked);
   }
 
