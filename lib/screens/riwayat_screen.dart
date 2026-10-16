@@ -130,7 +130,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: _statusColor(item.status).withOpacity(0.15),
+                              backgroundColor: _statusColor(item.status).withValues(alpha: 0.15),
                               child: Icon(Icons.circle,
                                   size: 12, color: _statusColor(item.status)),
                             ),

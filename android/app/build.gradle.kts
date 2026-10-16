@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.absensi_frontapp"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

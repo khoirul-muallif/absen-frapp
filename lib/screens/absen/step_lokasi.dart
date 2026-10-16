@@ -40,7 +40,7 @@ class _StepLokasiState extends State<StepLokasi> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
       final cameraGranted = await PermissionHelper.requestCamera();
       if (!cameraGranted) {

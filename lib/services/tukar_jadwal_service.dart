@@ -42,8 +42,8 @@ class TukarJadwalService {
         'mode': mode,
         'jadwal_id': jadwalId,
         'alasan': alasan,
-        if (jadwalTujuanId != null) 'jadwal_tujuan_id': jadwalTujuanId,
-        if (tanggalBaru != null) 'tanggal_baru': tanggalBaru,
+        'jadwal_tujuan_id': ?jadwalTujuanId,
+        'tanggal_baru': ?tanggalBaru,
       });
       return {'success': true, 'message': json['message'] ?? ''};
     } on ApiException catch (e) {
@@ -57,7 +57,7 @@ class TukarJadwalService {
         ApiConstants.tukarJadwalResponRekan(id.toString()),
         body: {
           'setuju': setuju,
-          if (catatan != null) 'catatan': catatan,
+          'catatan': ?catatan,
         },
       );
       return {'success': true, 'message': json['message'] ?? ''};

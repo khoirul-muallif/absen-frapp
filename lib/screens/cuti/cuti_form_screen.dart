@@ -60,12 +60,12 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
   }
 
   Future<void> _pilihLampiran() async {
-    final result = await FilePicker.platform.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
-    if (result != null && result.files.single.path != null) {
-      setState(() => _lampiran = File(result.files.single.path!));
+    if (file != null && file.path != null) {
+      setState(() => _lampiran = File(file.path!));
     }
   }
 
@@ -126,7 +126,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
                 child: ListView(
                   children: [
                     DropdownButtonFormField<CutiKuotaItem>(
-                      value: _jenisTerpilih,
+                      initialValue: _jenisTerpilih,
                       decoration: const InputDecoration(
                         labelText: 'Jenis Cuti',
                         border: OutlineInputBorder(),
