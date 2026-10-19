@@ -1,28 +1,119 @@
+## style: tema teal/mint terpusat + StatusBadge di semua modul
+
+Commit: 654b73a (19 Okt 2026)
+
+Styling disamakan ke referensi UI (teal/mint, kartu rounded, badge status
+warna) yang dikirim 15 Okt 2026, dibuat terpusat biar gak duplikasi per
+screen: lib/theme/app_theme.dart (AppColors primary teal #1D9E75 disamakan
+Filament admin panel, buildAppTheme()), lib/widgets/status_badge.dart
+(statusDisplay() memetakan status mentah -> label Indonesia + warna,
+mencakup status approval pending/approved/rejected/menunggu_rekan/dst DAN
+status harian absensi tepat_waktu/terlambat/alpha/izin/sakit/cuti/dinas/
+libur dalam satu tempat, plus widget StatusBadge). main.dart pasang
+theme: buildAppTheme(). Semua `_statusColor()` lokal di 6 screen (Izin/
+Lembur/Dinas/Cuti/TukarJadwal/Riwayat) dihapus, diganti StatusBadge.
+Logic pembatalan (bisaDibatalkan) tidak disentuh, cuma tampilan.
+
+Dikonfirmasi visual: warna sudah berubah di app setelah build & install.
+
+## feat: lokalisasi date/time picker ke Bahasa Indonesia
+
+Commit: 0c290de (19 Okt 2026)
+
+Date picker, time picker, date range picker (semua widget Material
+bawaan) masih locale Inggris default. Fix: pubspec.yaml tambah
+flutter_localizations (sdk: flutter), bump intl 0.19.0 -> ^0.20.3 (dipaksa
+constraint flutter_localizations). main.dart: MaterialApp dikasih
+locale: Locale('id','ID'), supportedLocales (id_ID + en_US),
+localizationsDelegates (GlobalMaterialLocalizations/WidgetsLocalizations/
+CupertinoLocalizations). Efeknya global ke semua picker tanpa sentuh
+satu-satu. Dikonfirmasi: "Select date" -> "Pilih tanggal", nama
+hari/bulan & tombol Batal/OK semua Indonesia.
+
+## fix: paksa format 24 jam di semua TimePicker (Izin & Lembur)
+
+Commit: 1a06852 (16 Okt 2026)
+
+showTimePicker() di izin_form_screen.dart (jam keluar), izin_screen.dart
+(isi jam kembali), lembur_form_screen.dart (jam mulai & selesai) masih
+ikut format AM/PM locale device. Fix: tambah parameter builder yang
+override MediaQuery.alwaysUse24HourFormat jadi true di tiap pemanggilan.
+Ditemukan & dicatat di todo-fr.md saat testing 16 Okt 2026.
+
+## fase 16: fix Cuti filter dropdown semester + catat 2 temuan UX ke todo-fr
+
+Commit: 912e327 (16 Okt 2026)
+
+Bug ditemukan saat testing: dropdown jenis cuti di cuti_form_screen.dart
+nampilin SEMUA semester (1 dan 2) buat tiap jenis cuti semesteran,
+padahal cuma semester berjalan yang relevan. CutiController::kuota()
+backend memang sengaja balikin kedua semester -- perbaikannya di FE:
+_loadJenisCuti() sekarang filter ke semester berjalan (asumsi semester
+1=Jan-Jun, 2=Jul-Des, BELUM dikonfirmasi ke JenisCuti::semesterDari()
+backend, dicatat di todo-fr.md).
+
+Sekalian catat 2 temuan UX dari sesi testing yang sama ke todo-fr.md:
+SnackBar dirasa kurang user friendly (diusulkan ganti popup, belum
+diputuskan scope-nya), dan time picker belum 24 jam (di-fix di commit
+1a06852 di atas).
+
+## chore: upgrade Flutter 3.47.7, bump file_picker 13.x, fix compileSdk & deprecation warnings
+
+Commit: c4b5630 (16 Okt 2026)
+
+Dipicu build gagal saat flutter run pasca penambahan file_picker (modul
+Cuti, fase 14) -- file_picker:checkDebugAarMetadata minta compileSdk 36+.
+
+- android/app/build.gradle.kts: compileSdk = 36
+- flutter upgrade 3.44.5 -> 3.47.7 (dicoba duluan, ternyata gak cukup --
+  akar masalah beneran di versi file_picker)
+- file_picker 8.3.7 -> 13.1.0 (lompat 5 major version, federated plugin
+  rewrite)
+- cuti_form_screen.dart: API lama FilePicker.platform.pickFiles() (sudah
+  dihapus v12+) -> FilePicker.pickFile(), langsung balikin PlatformFile?
+
+Beres-beres deprecation ikutan dari upgrade Dart 3.13, tanpa ubah logic:
+analysis_options.yaml (exclude folder platform dari analyzer),
+riwayat_screen.dart (withOpacity -> withValues(alpha:)),
+tukar_jadwal_service.dart (null-aware map entry 'key': ?x),
+step_lokasi.dart (desiredAccuracy -> locationSettings).
+
+App berhasil di-build & install ke device fisik setelah ini -- jadi
+testing end-to-end 4 modul yang sempat ketunda bisa lanjut (lihat entry
+di bawah).
+
 ## Hasil testing end-to-end Lembur/Dinas/Cuti/TukarJadwal (16 Okt 2026)
 
-Setelah fix build (compileSdk 36, file_picker 13.x -- commit c4b5630),
-testing manual di device fisik untuk 4 modul yang sebelumnya belum
-pernah dicoba:
+Setelah fix build di atas, testing manual di device fisik untuk 4 modul
+yang sebelumnya belum pernah dicoba sama sekali:
 
-- **Lembur**: SEMUA LOLOS. Validasi alasan wajib & larangan lintas
-  tengah malam jalan sesuai harapan. Submit valid -> status `pending`
-  (bukan auto-approve kayak Izin -- ini jawab asumsi terbuka sejak fase
-  11). diajukan_at normal. Batal via swipe jalan.
+- **Lembur**: SEMUA LOLOS. Validasi alasan wajib & larangan lintas tengah
+  malam jalan sesuai harapan. Submit valid -> status `pending` (bukan
+  auto-approve kayak Izin -- jawab asumsi terbuka sejak fase 11).
+  diajukan_at normal. Batal via swipe jalan.
 - **Dinas**: SEMUA LOLOS. Validasi lintas tahun, bentrok Cuti/Dinas
-  approved, riwayat & batal semua jalan sesuai harapan.
+  approved, riwayat & batal semua sesuai harapan.
 - **Cuti**: 5/6 lolos. Upload lampiran multipart TERBUKTI JALAN (file
-  beneran nyampe & kesimpen di server) -- ini yang paling krusial karena
-  multipart manual di CutiService belum pernah dicoba sebelumnya. Cek
-  sisa kuota & pesan tolak jalan. 1 BUG ditemukan: dropdown jenis cuti
-  nampilin kedua semester sekaligus -- fix di fase 16.
+  beneran nyampe & kesimpen di server) -- paling krusial karena multipart
+  manual CutiService belum pernah dicoba. Cek sisa kuota & pesan tolak
+  jalan. 1 bug ditemukan (dropdown semester, fix di fase 16 di atas).
 - **TukarJadwal**: test terbatas -- Riwayat & Menunggu Respon Saya gak
   crash walau kosong, tapi responRekan/batalkan belum bisa ditest sama
-  sekali karena belum ada data TukarJadwal (belum ada form ajukan, belum
-  ada cara seed manual).
+  sekali karena belum ada data (belum ada form ajukan, belum ada cara
+  seed manual).
 
 Ditemukan juga 1 UX gap lintas-modul: swipe-to-delete gak ada hint
-visual di semua modul. Dicatat ke todo-fr.md, belum di-fix.
+visual di semua modul. Dicatat ke todo-fr.md.
 
+## docs: pindahkan dokumentasi ke folder docs/, tambah runbook & todo-fr
+
+Commit: 6c242f9 (15 Okt 2026)
+
+Reorganisasi dokumentasi, konsisten dengan struktur folder docs/ di repo
+backend: CHANGELOG-fr.md & status-14-10-26.md dipindah ke docs/,
+docs/runbook.md baru (command sering dipakai + kredensial akun test),
+docs/todo-fr.md baru (keputusan menggantung, modul belum ditest,
+technical debt, catatan konvensi FE).
 ## fase 15: modul TukarJadwal (frontend) -- riwayat & respon rekan, form ajukan belum bisa dibuat
 
 Audit TukarJadwalController.php + model TukarJadwal.php asli (dikirim

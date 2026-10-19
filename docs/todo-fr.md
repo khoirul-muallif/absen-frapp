@@ -13,11 +13,6 @@
       kelihatan. Perlu diputuskan: popup buat SEMUA pesan, atau cuma
       error yang penting (SnackBar tetap dipakai buat konfirmasi ringan
       kayak "berhasil dibatalkan")? Ditemukan saat testing 16 Okt 2026.
-
-- [ ] **Scope `GET /api/jadwal/rekan`** — blocker `TukarJadwalFormScreen`.
-      Dibatasi unit_kerja sama, instansi sama, atau gak dibatasi? Endpoint
-      ini (+ `GET /api/jadwal/saya`) juga belum ada di backend, sudah
-      dicatat di `todo.md` repo `absensi-app` (commit `fc450ce`).
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope
       masa depan, atau referensi dari app lain yang beda modul?
@@ -25,21 +20,18 @@
       dkk jadi 1 screen pakai tab, beda dari struktur sekarang (tiap modul
       screen terpisah, diakses dari grid home). Diikutin atau tetap kayak
       sekarang?
+- [ ] **Konfirmasi pembagian semester `JenisCuti::semesterDari()`** —
+      filter dropdown Cuti di `cuti_form_screen.dart` (fase 16, fix bug
+      dropdown nampilin 2 semester sekaligus) masih ASUMSI semester
+      1=Jan-Jun, 2=Jul-Des. Perlu dicek ke kode backend aslinya biar gak
+      meleset di bulan-bulan tertentu.
 
 ## Belum dibuat
 
-- [ ] **Time picker masih ikut format AM/PM dari device, harusnya 24 jam
-      selalu** — `showTimePicker()` di `izin_form_screen.dart` (jam
-      keluar), `izin_screen.dart` (isi jam kembali), dan
-      `lembur_form_screen.dart` (jam mulai/selesai) belum dipaksa 24 jam,
-      jadi ikut locale device yang bisa AM/PM. Fix: bungkus pakai
-      `builder: (context, child) => MediaQuery(data:
-      MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-      child: child!)` di tiap pemanggilan `showTimePicker()`. Ditemukan
-      saat testing 16 Okt 2026.
-
-- [ ] **`TukarJadwalFormScreen`** (ajukan tukar/pindah baru) — blocked
-      sampai keputusan scope `GET /api/jadwal/rekan` di atas
+- [ ] **`TukarJadwalFormScreen`** (ajukan tukar/pindah baru) — endpoint
+      sumbernya (`GET /api/jadwal/saya` & `/rekan`) sudah ada di
+      backend (CHANGELOG fase 58), scope `rekan` instansi+unit_kerja.
+      Belum dikerjakan di FE.
 - [ ] **Layar "Jadwal"** (kalender + detail jadwal per tanggal) — belum
       ada sama sekali di frontend, dan referensi UI nunjukkin ini jadi
       titik masuk buat form Tukar Jadwal juga (lihat catatan di atas)
@@ -48,17 +40,21 @@
       gak ada indikasi apapun ke user kalau item bisa di-swipe. Ditemukan
       saat testing Lembur (16 Okt 2026). Perlu tambahan hint (ikon panah,
       teks kecil "Geser untuk batalkan", atau ganti ke tombol eksplisit).
+- [ ] **Revert validasi client-side Lembur lintas tengah malam** —
+      `lembur_form_screen.dart` (fase 13, commit `a1132e6`) sengaja
+      menolak submit kalau `jam_selesai <= jam_mulai`, karena saat itu
+      backend juga salah menolak. Backend sudah diperbaiki (lihat
+      CHANGELOG backend fase 59) — FE sekarang jadi lebih ketat dari
+      yang seharusnya dan perlu di-revert supaya lembur lintas tengah
+      malam bisa diajukan dari app.
 
 ## Belum ditest end-to-end
 
-- [ ] **Lembur** (fase 11, fix fase 13) — termasuk verifikasi format
-      `diajukan_at` dan apakah auto-approved atau pending beneran
-- [ ] **Dinas** (fase 12)
-- [ ] **Cuti** (fase 14) — paling butuh perhatian: cek bentrok cuti/dinas,
-      cek sisa kuota (termasuk pending lain), upload lampiran beneran
-      nyampe ke server
-- [ ] **TukarJadwal** (fase 15, partial) — riwayat, menunggu-respon-saya,
-      respon rekan, batalkan
+- [ ] **TukarJadwal** (fase 15, partial) — Riwayat & Menunggu Respon Saya
+      sudah dicoba, gak crash walau kosong. `responRekan`/`batalkan`
+      BELUM bisa ditest karena belum ada data TukarJadwal sama sekali
+      (belum ada form ajukan, belum ada cara seed manual). Perlu seed
+      data dummy (Tinker/Postman) 2 karyawan buat lanjut test ini.
 
 ## Technical debt
 
@@ -67,19 +63,22 @@
       `cuti_service.dart` sama-sama nulis `http.MultipartRequest` manual
       sendiri-sendiri karena `ApiClient` belum support file upload. Belum
       dirapikan jadi 1 helper bersama.
-- [ ] **Styling masih default Material** di semua screen Izin/Lembur/
-      Dinas/Cuti/TukarJadwal — belum disamain ke tema referensi (teal/mint,
-      kartu rounded, outline badge status) yang dikirim 15 Okt 2026.
 
 ## Catatan konvensi FE (biar gak keulang)
 
 - Field jam dari backend untuk Izin (`jam_keluar`/`jam_kembali`) dan
   Lembur (`jam_mulai`/`jam_selesai`) dikirim RAW `"08:00:00"`, bukan
   `H:i`. Potong string, jangan coba parse sebagai Carbon/DateTime.
-- Lembur gak bisa lintas tengah malam di backend sekarang
-  (`after:jam_mulai`), padahal ada keputusan desain lama yang bilang
-  sebaliknya — FE ikut validasi backend yang berlaku, bug-nya dicatat di
-  `todo.md` backend (commit `f44d43a`).
+- Lembur SEKARANG bisa lintas tengah malam di backend (fix fase 59,
+  commit `5dbbaa3`/`27b56d0` repo `absensi-app`) — validasi lama
+  (`after:jam_mulai`) sudah diganti jadi cuma menolak durasi nol.
+  FE masih ikut validasi lama yang salah (lihat item "Revert validasi
+  client-side Lembur lintas tengah malam" di atas) — belum direvert.
 - Tanggal dari `DinasController`/`CutiController` dikirim format `'d M Y'`
   (mis. "15 Oct 2026"), bukan ISO — aman ditampilkan mentah tanpa parsing,
   tapi jangan dicoba di-parse jadi `DateTime`.
+- `lib/screens/<modul>/<file>.dart` (izin/, lembur/, dinas/, cuti/,
+  tukar_jadwal/) semuanya nested 1 level lebih dalam dari
+  `lib/screens/` — butuh `../../` buat reach `lib/widgets/`, `lib/theme/`,
+  `lib/services/`, dkk, BUKAN `../`. `home_screen.dart` beda, langsung
+  di `lib/screens/`, jadi tetap `../`.
