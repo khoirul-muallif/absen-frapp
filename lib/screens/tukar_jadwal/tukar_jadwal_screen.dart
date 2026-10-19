@@ -5,6 +5,8 @@ import '../../providers/auth_provider.dart';
 import '../../services/tukar_jadwal_service.dart';
 import '../../models/tukar_jadwal_model.dart';
 import 'menunggu_respon_screen.dart';
+import '../../widgets/status_badge.dart';
+
 
 class TukarJadwalScreen extends StatefulWidget {
   const TukarJadwalScreen({super.key});
@@ -34,19 +36,6 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
     });
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-      case 'ditolak_rekan':
-        return Colors.red;
-      case 'menunggu_rekan':
-        return Colors.orange;
-      default: // menunggu_admin
-        return Colors.grey;
-    }
-  }
 
   Future<void> _batalkan(TukarJadwalItem item) async {
     final removedIndex = _items.indexWhere((e) => e.id == item.id);
@@ -123,13 +112,7 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
                             '${item.catatanApproval != null ? '\nCatatan admin: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
-                          trailing: Text(
-                            item.status,
-                            style: TextStyle(
-                              color: _statusColor(item.status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          trailing: StatusBadge(status: item.status),
                         ),
                       );
 

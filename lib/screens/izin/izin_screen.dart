@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/izin_service.dart';
 import '../../models/izin_model.dart';
 import 'izin_form_screen.dart';
+import '../../widgets/status_badge.dart';
+
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -39,16 +41,6 @@ class _IzinScreenState extends State<IzinScreen> {
     return raw.length >= 5 ? raw.substring(0, 5) : raw;
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
 
   Future<void> _batalkan(IzinItem item) async {
     final removedIndex = _items.indexWhere((e) => e.id == item.id);
@@ -124,13 +116,7 @@ class _IzinScreenState extends State<IzinScreen> {
                             '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
-                          trailing: Text(
-                            item.status,
-                            style: TextStyle(
-                              color: _statusColor(item.status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          trailing: StatusBadge(status: item.status),
                           onTap: item.jamKembali == null
                               ? () => _isiJamKembali(item)
                               : null,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../services/lembur_service.dart';
 import '../../models/lembur_model.dart';
 import 'lembur_form_screen.dart';
+import '../../widgets/status_badge.dart';
+
 
 class LemburScreen extends StatefulWidget {
   const LemburScreen({super.key});
@@ -40,16 +42,6 @@ class _LemburScreenState extends State<LemburScreen> {
     return raw.length >= 5 ? raw.substring(0, 5) : raw;
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
 
   Future<void> _batalkan(LemburItem item) async {
     final removedIndex = _items.indexWhere((e) => e.id == item.id);
@@ -99,13 +91,7 @@ class _LemburScreenState extends State<LemburScreen> {
                             '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
-                          trailing: Text(
-                            item.status,
-                            style: TextStyle(
-                              color: _statusColor(item.status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          trailing: StatusBadge(status: item.status),
                         ),
                       );
 

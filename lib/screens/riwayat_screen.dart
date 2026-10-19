@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
+import '../widgets/status_badge.dart';
 
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
@@ -60,22 +61,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
     _loadData();
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'tepat_waktu':
-        return Colors.green;
-      case 'terlambat':
-        return Colors.orange;
-      case 'alpha':
-        return Colors.red;
-      case 'izin':
-      case 'sakit':
-      case 'cuti':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,13 +111,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       child: Center(child: Text('Belum ada data absensi bulan ini')),
                     )
                   else
-                    ..._riwayat.map((item) => Card(
+                    ..._riwayat.map((item) {
+                        final (_, warna) = statusDisplay(item.status);
+                        return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: _statusColor(item.status).withValues(alpha: 0.15),
-                              child: Icon(Icons.circle,
-                                  size: 12, color: _statusColor(item.status)),
+                              backgroundColor: warna.withValues(alpha: 0.15),
+                              child: Icon(Icons.circle, size: 12, color: warna),
                             ),
                             title: Text('${item.tanggal} • ${item.hari}'),
                             subtitle: Text(
@@ -140,16 +126,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                               '${item.terlambat != null ? '\nTerlambat ${item.terlambat}' : ''}',
                             ),
                             isThreeLine: item.terlambat != null,
-                            trailing: Text(
-                              item.status.replaceAll('_', ' '),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: _statusColor(item.status),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            trailing: StatusBadge(status: item.status),
                           ),
-                        )),
+                        );
+                      }),
                 ],
               ),
       ),

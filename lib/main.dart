@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,11 +32,8 @@ class MyApp extends StatelessWidget {
         ],
         title: 'Absensi App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: Colors.teal,
-          useMaterial3: true,
-        ),
-        home: const SplashScreen(),
+          theme: buildAppTheme(),  
+          home: const SplashScreen(),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/cuti_service.dart';
 import '../../models/cuti_model.dart';
 import 'cuti_form_screen.dart';
+import '../../widgets/status_badge.dart';
 
 class CutiScreen extends StatefulWidget {
   const CutiScreen({super.key});
@@ -32,16 +33,6 @@ class _CutiScreenState extends State<CutiScreen> {
     });
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
 
   Future<void> _batalkan(CutiItem item) async {
     final removedIndex = _items.indexWhere((e) => e.id == item.id);
@@ -91,13 +82,7 @@ class _CutiScreenState extends State<CutiScreen> {
                             '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
-                          trailing: Text(
-                            item.status,
-                            style: TextStyle(
-                              color: _statusColor(item.status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          trailing: StatusBadge(status: item.status),
                         ),
                       );
 

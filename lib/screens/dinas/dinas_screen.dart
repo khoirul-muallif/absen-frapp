@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/dinas_service.dart';
 import '../../models/dinas_model.dart';
 import 'dinas_form_screen.dart';
+import '../../widgets/status_badge.dart';
 
 class DinasScreen extends StatefulWidget {
   const DinasScreen({super.key});
@@ -32,16 +33,7 @@ class _DinasScreenState extends State<DinasScreen> {
     });
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
+
 
   Future<void> _batalkan(DinasItem item) async {
     final removedIndex = _items.indexWhere((e) => e.id == item.id);
@@ -91,13 +83,7 @@ class _DinasScreenState extends State<DinasScreen> {
                             '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
                           ),
                           isThreeLine: true,
-                          trailing: Text(
-                            item.status,
-                            style: TextStyle(
-                              color: _statusColor(item.status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          trailing: StatusBadge(status: item.status),
                         ),
                       );
 
