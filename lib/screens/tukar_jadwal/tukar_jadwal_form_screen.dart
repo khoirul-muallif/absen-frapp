@@ -32,11 +32,59 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   // Mode pindah
   DateTime _tanggalBaru = DateTime.now();
 
+  // Prefetch jadwal sendiri (30 hari lalu s/d 90 hari depan) -- dipakai
+  // selectableDayPredicate biar DatePicker bisa meng-abu-kan tanggal yang
+  // gak relevan, bukan tampil polos semua bisa dipilih.
+  Map<String, JadwalItem> _jadwalSayaByTanggal = {};
+  bool _loadingPrefetch = true;
+
+  static const _bulanIndex = {
+    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+    'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
+  };
+
   @override
   void initState() {
     super.initState();
+    _prefetchJadwalSaya();
+  }
+
+  Future<void> _prefetchJadwalSaya() async {
+    final mulai = DateTime.now().subtract(const Duration(days: 30));
+    final selesai = DateTime.now().add(const Duration(days: 90));
+    final list = await _jadwalService.sayaDalamRentang(
+      _formatTanggal(mulai),
+      _formatTanggal(selesai),
+    );
+    if (!mounted) return;
+    final map = <String, JadwalItem>{};
+    for (final j in list) {
+      final tanggal = _parseTanggalBackend(j.tanggal);
+      if (tanggal != null) map[_keyTanggal(tanggal)] = j;
+    }
+    setState(() {
+      _jadwalSayaByTanggal = map;
+      _loadingPrefetch = false;
+    });
     _muatJadwalAsal(_tanggalAsal);
   }
+
+  // Backend kirim tanggal format 'd M Y' (mis. "23 Oct 2026", nama bulan
+  // Inggris dari Carbon::format(), BUKAN locale device) -- parse manual
+  // sendiri, jangan pakai DateFormat locale-dependent (lihat catatan
+  // konvensi FE soal ini).
+  DateTime? _parseTanggalBackend(String tanggal) {
+    final parts = tanggal.split(' ');
+    if (parts.length != 3) return null;
+    final hari = int.tryParse(parts[0]);
+    final bulan = _bulanIndex[parts[1]];
+    final tahun = int.tryParse(parts[2]);
+    if (hari == null || bulan == null || tahun == null) return null;
+    return DateTime(tahun, bulan, hari);
+  }
+
+  String _keyTanggal(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   @override
   void dispose() {
@@ -80,6 +128,12 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       initialDate: _tanggalAsal,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 90)),
+      selectableDayPredicate: (day) {
+        final item = _jadwalSayaByTanggal[_keyTanggal(day)];
+        if (item == null) return false; // gak ada Jadwal sama sekali
+        if (_mode == 'pindah' && item.jenis == 'libur') return false; // pindah: asal wajib hari kerja (fase 66)
+        return true;
+      },
     );
     if (picked != null) _muatJadwalAsal(picked);
   }
@@ -100,6 +154,10 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       initialDate: _tanggalBaru,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 90)),
+      selectableDayPredicate: (day) {
+        final item = _jadwalSayaByTanggal[_keyTanggal(day)];
+        return item != null && item.jenis == 'libur'; // tujuan pindah wajib hari libur sendiri (fase 66)
+      },
     );
     if (picked != null) setState(() => _tanggalBaru = picked);
   }
@@ -180,7 +238,13 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                 ],
                 selected: {_mode},
                 onSelectionChanged: (selected) {
-                  setState(() => _mode = selected.first);
+                  setState(() {
+                    _mode = selected.first;
+                    _jadwalTujuanTerpilih = null; // gak relevan di mode pindah
+                    if (_mode == 'pindah' && _jadwalAsal?.jenis == 'libur') {
+                      _jadwalAsal = null; // asal libur gak valid buat mode pindah
+                    }
+                  });
                 },
               ),
               const SizedBox(height: 16),
@@ -191,7 +255,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                 title: const Text('Tanggal'),
                 subtitle: Text(_formatTanggal(_tanggalAsal)),
                 trailing: const Icon(Icons.calendar_today),
-                onTap: _pilihTanggalAsal,
+                onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
+              ),
+              const Text(
+                'Tanggal abu-abu = tidak ada jadwal Anda di sana (atau bukan hari kerja untuk mode Pindah).',
+                style: TextStyle(fontSize: 11, color: Colors.grey),
               ),
               if (_loadingAsal)
                 const Padding(
@@ -263,7 +331,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   title: const Text('Tanggal Baru'),
                   subtitle: Text(_formatTanggal(_tanggalBaru)),
                   trailing: const Icon(Icons.calendar_today),
-                  onTap: _pilihTanggalBaru,
+                  onTap: _loadingPrefetch ? null : _pilihTanggalBaru,
+                ),
+                const Text(
+                  'Hanya tanggal libur Anda yang bisa dipilih (abu-abu = bukan hari libur Anda).',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
 

@@ -7,6 +7,7 @@ class UserModel {
   final String unitKerja;
   final String statusPegawai;
   final String role;
+  final String tipeJadwal; // 'umum' | 'rotasi'
   final String? fotoProfil;
   final int instansiId;
   final String instansiNama;
@@ -20,6 +21,7 @@ class UserModel {
     required this.unitKerja,
     required this.statusPegawai,
     required this.role,
+    required this.tipeJadwal,
     this.fotoProfil,
     required this.instansiId,
     required this.instansiNama,
@@ -35,6 +37,7 @@ class UserModel {
       unitKerja: json['unit_kerja'] ?? '',
       statusPegawai: json['status_pegawai'] ?? '',
       role: json['role'] ?? 'karyawan',
+      tipeJadwal: json['tipe_jadwal'] ?? 'umum',
       fotoProfil: json['foto_profil'],
       instansiId: json['instansi']?['id'] ?? 0,
       instansiNama: json['instansi']?['nama'] ?? '',

@@ -30,4 +30,16 @@ class JadwalService {
       return [];
     }
   }
+  /// Jadwal milik sendiri dalam rentang tanggal -- dipakai buat prefetch
+  /// sekali di awal form, supaya DatePicker bisa membedakan tanggal yang
+  /// ada jadwalnya vs yang tidak lewat selectableDayPredicate.
+  Future<List<JadwalItem>> sayaDalamRentang(String mulai, String selesai) async {
+    try {
+      final json = await _apiClient.get(ApiConstants.jadwalSaya(mulai, selesai));
+      final records = json['data']['records'] as List;
+      return records.map((e) => JadwalItem.fromJson(e)).toList();
+    } on ApiException {
+      return [];
+    }
+  }
 }
