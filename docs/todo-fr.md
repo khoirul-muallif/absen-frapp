@@ -40,13 +40,7 @@
       gak ada indikasi apapun ke user kalau item bisa di-swipe. Ditemukan
       saat testing Lembur (16 Okt 2026). Perlu tambahan hint (ikon panah,
       teks kecil "Geser untuk batalkan", atau ganti ke tombol eksplisit).
-- [ ] **Revert validasi client-side Lembur lintas tengah malam** —
-      `lembur_form_screen.dart` (fase 13, commit `a1132e6`) sengaja
-      menolak submit kalau `jam_selesai <= jam_mulai`, karena saat itu
-      backend juga salah menolak. Backend sudah diperbaiki (lihat
-      CHANGELOG backend fase 59) — FE sekarang jadi lebih ketat dari
-      yang seharusnya dan perlu di-revert supaya lembur lintas tengah
-      malam bisa diajukan dari app.
+
 
 ## Belum ditest end-to-end
 

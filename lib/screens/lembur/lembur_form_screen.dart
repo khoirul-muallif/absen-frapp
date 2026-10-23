@@ -74,15 +74,16 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
       return;
     }
 
-    // lembur_form_screen.dart — ganti pengecekan durasi nol jadi ini
-    if (!(_jamSelesai!.hour > _jamMulai!.hour ||
-        (_jamSelesai!.hour == _jamMulai!.hour && _jamSelesai!.minute > _jamMulai!.minute))) {
+    // Backend (LemburController::ajukan(), fase 59) cuma menolak durasi nol —
+    // lintas tengah malam (jam_selesai <= jam_mulai tapi beda) sudah diizinkan.
+    if (_jamSelesai!.hour == _jamMulai!.hour &&
+        _jamSelesai!.minute == _jamMulai!.minute) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jam selesai harus setelah jam mulai (belum bisa lintas tengah malam)')),
+        const SnackBar(content: Text('Jam selesai tidak boleh sama dengan jam mulai')),
       );
       return;
     }
-
+    
     setState(() => _submitting = true);
 
      final result = await _lemburService.ajukan(
