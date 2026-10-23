@@ -36,6 +36,12 @@
       gak ada indikasi apapun ke user kalau item bisa di-swipe. Ditemukan
       saat testing Lembur (16 Okt 2026). Perlu tambahan hint (ikon panah,
       teks kecil "Geser untuk batalkan", atau ganti ke tombol eksplisit).
+- [ ] **Opsi mode TukarJadwalFormScreen untuk karyawan umum** — form
+      sekarang selalu nawarin "Tukar dengan Rekan" & "Pindah Tanggal"
+      buat semua karyawan. Perlu dibatasi: karyawan tipe umum cuma
+      ditampilkan opsi "Pindah Tanggal" (sembunyikan Tukar). Alasan/
+      cakupannya belum dipastikan — konfirmasi dulu sebelum
+      dikerjakan.
 
 
 ## Belum ditest end-to-end
