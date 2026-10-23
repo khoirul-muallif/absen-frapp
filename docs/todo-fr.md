@@ -28,10 +28,6 @@
 
 ## Belum dibuat
 
-- [ ] **`TukarJadwalFormScreen`** (ajukan tukar/pindah baru) — endpoint
-      sumbernya (`GET /api/jadwal/saya` & `/rekan`) sudah ada di
-      backend (CHANGELOG fase 58), scope `rekan` instansi+unit_kerja.
-      Belum dikerjakan di FE.
 - [ ] **Layar "Jadwal"** (kalender + detail jadwal per tanggal) — belum
       ada sama sekali di frontend, dan referensi UI nunjukkin ini jadi
       titik masuk buat form Tukar Jadwal juga (lihat catatan di atas)

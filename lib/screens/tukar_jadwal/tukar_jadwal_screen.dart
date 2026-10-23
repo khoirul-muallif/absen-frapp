@@ -6,6 +6,7 @@ import '../../services/tukar_jadwal_service.dart';
 import '../../models/tukar_jadwal_model.dart';
 import 'menunggu_respon_screen.dart';
 import '../../widgets/status_badge.dart';
+import 'tukar_jadwal_form_screen.dart';
 
 
 class TukarJadwalScreen extends StatefulWidget {
@@ -133,7 +134,16 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
                     },
                   ),
       ),
-      // Belum ada FloatingActionButton "Ajukan" -- nunggu jawaban Gap 1.
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TukarJadwalFormScreen()),
+          );
+          _loadData();
+        },
+        tooltip: 'Ajukan Tukar/Pindah Jadwal',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

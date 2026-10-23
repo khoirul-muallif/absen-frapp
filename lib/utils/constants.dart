@@ -33,4 +33,8 @@ class ApiConstants {
   static String get tukarJadwal => '$baseUrl/tukar-jadwal';
   static String get tukarJadwalMenungguRespon => '$baseUrl/tukar-jadwal/menunggu-respon-saya';
   static String tukarJadwalResponRekan(String id) => '$baseUrl/tukar-jadwal/$id/respon-rekan';
+  static String jadwalSaya(String mulai, String selesai) =>
+      '$baseUrl/jadwal/saya?tanggal_mulai=$mulai&tanggal_selesai=$selesai';
+  static String jadwalRekan(String tanggal) =>
+      '$baseUrl/jadwal/rekan?tanggal=$tanggal';
 }

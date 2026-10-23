@@ -10,3 +10,6 @@ flutter run
 
 'email' => 'irul@rsb.com',
 'password' => 'irul',
+
+ cd E:\laragon\www\absensi-app
+ php artisan serve --host=0.0.0.0 --port=8001
