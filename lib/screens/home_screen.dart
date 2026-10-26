@@ -12,9 +12,30 @@ import 'lembur/lembur_screen.dart';
 import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
+import '../services/tukar_jadwal_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _tukarJadwalService = TukarJadwalService();
+  int _menungguTukarJadwalCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMenungguTukarJadwalCount();
+  }
+
+  Future<void> _loadMenungguTukarJadwalCount() async {
+    final items = await _tukarJadwalService.menungguResponSaya();
+    if (!mounted) return;
+    setState(() => _menungguTukarJadwalCount = items.length);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,13 +202,15 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    _MenuItem(
+                                        _MenuItem(
                       icon: Icons.swap_horiz,
                       label: 'Tukar Jadwal',
-                      onTap: () {
-                        Navigator.of(context).push(
+                      badgeCount: _menungguTukarJadwalCount,
+                      onTap: () async {
+                        await Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const TukarJadwalScreen()),
                         );
+                        _loadMenungguTukarJadwalCount();
                       },
                     ),
                   ],
@@ -205,11 +228,13 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _MenuItem({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -225,7 +250,11 @@ class _MenuItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 28),
+            Badge(
+              label: Text('$badgeCount'),
+              isLabelVisible: badgeCount > 0,
+              child: Icon(icon, size: 28),
+            ),
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(fontSize: 12)),
           ],

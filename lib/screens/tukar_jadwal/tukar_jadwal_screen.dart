@@ -20,11 +20,13 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
   final _service = TukarJadwalService();
   List<TukarJadwalItem> _items = [];
   bool _loading = true;
+  int _menungguCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadMenungguCount();
   }
 
   Future<void> _loadData() async {
@@ -35,6 +37,12 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
       _items = items;
       _loading = false;
     });
+  }
+
+  Future<void> _loadMenungguCount() async {
+    final items = await _service.menungguResponSaya();
+    if (!mounted) return;
+    setState(() => _menungguCount = items.length);
   }
 
 
@@ -63,17 +71,22 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
     final namaSaya = context.read<AuthProvider>().user?.nama;
 
     return Scaffold(
-      appBar: AppBar(
+     appBar: AppBar(
         title: const Text('Tukar Jadwal'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_active_outlined),
+            icon: Badge(
+              label: Text('$_menungguCount'),
+              isLabelVisible: _menungguCount > 0,
+              child: const Icon(Icons.notifications_active_outlined),
+            ),
             tooltip: 'Menunggu Respon Saya',
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MenungguResponScreen()),
               );
               _loadData();
+              _loadMenungguCount();
             },
           ),
         ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/tukar_jadwal_service.dart';
 import '../../services/jadwal_service.dart';
 import '../../models/jadwal_model.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class TukarJadwalFormScreen extends StatefulWidget {
   const TukarJadwalFormScreen({super.key});
@@ -31,7 +33,33 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
 
   // Mode pindah
   DateTime _tanggalBaru = DateTime.now();
+  bool _asalValidPredicate(DateTime day) {
+    final item = _jadwalSayaByTanggal[_keyTanggal(day)];
+    if (item == null) return false; // gak ada Jadwal sama sekali
+    if (_mode == 'pindah' && item.jenis == 'libur') return false; // pindah: asal wajib hari kerja (fase 66)
+    return true;
+  }
 
+  bool _tujuanPindahValidPredicate(DateTime day) {
+    final item = _jadwalSayaByTanggal[_keyTanggal(day)];
+    return item != null && item.jenis == 'libur'; // tujuan pindah wajib hari libur sendiri (fase 66)
+  }
+
+  // Flutter mensyaratkan initialDate pada showDatePicker harus lolos
+  // selectableDayPredicate, kalau tidak dialog gagal kebuka tanpa pesan
+  // apa pun. Cari tanggal valid terdekat dari titik acuan (maju-mundur
+  // bergantian) sebagai initialDate yang aman.
+  DateTime? _tanggalValidTerdekat(DateTime acuan, bool Function(DateTime) predicate) {
+    final firstDate = DateTime.now().subtract(const Duration(days: 30));
+    final lastDate = DateTime.now().add(const Duration(days: 90));
+    for (int offset = 0; offset <= 120; offset++) {
+      final maju = acuan.add(Duration(days: offset));
+      if (!maju.isAfter(lastDate) && predicate(maju)) return maju;
+      final mundur = acuan.subtract(Duration(days: offset));
+      if (!mundur.isBefore(firstDate) && predicate(mundur)) return mundur;
+    }
+    return null;
+  }
   // Prefetch jadwal sendiri (30 hari lalu s/d 90 hari depan) -- dipakai
   // selectableDayPredicate biar DatePicker bisa meng-abu-kan tanggal yang
   // gak relevan, bukan tampil polos semua bisa dipilih.
@@ -46,10 +74,17 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   @override
   void initState() {
     super.initState();
+    // Karyawan umum shift-nya tetap (assignment periode KaryawanShift),
+    // jadi "tukar" dengan rekan satu tim cuma dapat tanggal & jam yang
+    // sama persis -- gak masuk akal. Cuma rotasi yang ditawari mode tukar.
+    final tipeJadwal = context.read<AuthProvider>().user?.tipeJadwal;
+    if (tipeJadwal == 'umum') {
+      _mode = 'pindah';
+    }
     _prefetchJadwalSaya();
   }
 
-  Future<void> _prefetchJadwalSaya() async {
+    Future<void> _prefetchJadwalSaya() async {
     final mulai = DateTime.now().subtract(const Duration(days: 30));
     final selesai = DateTime.now().add(const Duration(days: 90));
     final list = await _jadwalService.sayaDalamRentang(
@@ -123,17 +158,23 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   }
 
   Future<void> _pilihTanggalAsal() async {
+    final initial = _asalValidPredicate(_tanggalAsal)
+        ? _tanggalAsal
+        : _tanggalValidTerdekat(_tanggalAsal, _asalValidPredicate);
+    if (initial == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_mode == 'pindah'
+            ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
+            : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan')),
+      );
+      return;
+    }
     final picked = await showDatePicker(
       context: context,
-      initialDate: _tanggalAsal,
+      initialDate: initial,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-      selectableDayPredicate: (day) {
-        final item = _jadwalSayaByTanggal[_keyTanggal(day)];
-        if (item == null) return false; // gak ada Jadwal sama sekali
-        if (_mode == 'pindah' && item.jenis == 'libur') return false; // pindah: asal wajib hari kerja (fase 66)
-        return true;
-      },
+      selectableDayPredicate: _asalValidPredicate,
     );
     if (picked != null) _muatJadwalAsal(picked);
   }
@@ -148,16 +189,54 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (picked != null) _muatRekan(picked);
   }
 
+  Future<void> _bukaPilihRekan() async {
+    final dipilih = await showModalBottomSheet<JadwalItem>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        builder: (context, scrollController) => ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text('Pilih Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            ..._rekanList.map((rekan) => RadioListTile<int>(
+                  value: rekan.jadwalId,
+                  groupValue: _jadwalTujuanTerpilih?.jadwalId,
+                  onChanged: rekan.bisaDiajukan
+                      ? (_) => Navigator.pop(context, rekan)
+                      : null,
+                  title: Text(rekan.karyawanNama ?? '-'),
+                  subtitle: Text(
+                    'Shift: ${rekan.shift ?? '(Libur)'}'
+                    '${rekan.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+    if (dipilih != null) setState(() => _jadwalTujuanTerpilih = dipilih);
+  }
+
   Future<void> _pilihTanggalBaru() async {
+    final initial = _tujuanPindahValidPredicate(_tanggalBaru)
+        ? _tanggalBaru
+        : _tanggalValidTerdekat(_tanggalBaru, _tujuanPindahValidPredicate);
+    if (initial == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan')),
+      );
+      return;
+    }
     final picked = await showDatePicker(
       context: context,
-      initialDate: _tanggalBaru,
+      initialDate: initial,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-      selectableDayPredicate: (day) {
-        final item = _jadwalSayaByTanggal[_keyTanggal(day)];
-        return item != null && item.jenis == 'libur'; // tujuan pindah wajib hari libur sendiri (fase 66)
-      },
+      selectableDayPredicate: _tujuanPindahValidPredicate,
     );
     if (picked != null) setState(() => _tanggalBaru = picked);
   }
@@ -231,22 +310,38 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'tukar', label: Text('Tukar dengan Rekan')),
-                  ButtonSegment(value: 'pindah', label: Text('Pindah Tanggal')),
-                ],
-                selected: {_mode},
-                onSelectionChanged: (selected) {
-                  setState(() {
-                    _mode = selected.first;
-                    _jadwalTujuanTerpilih = null; // gak relevan di mode pindah
-                    if (_mode == 'pindah' && _jadwalAsal?.jenis == 'libur') {
-                      _jadwalAsal = null; // asal libur gak valid buat mode pindah
-                    }
-                  });
-                },
-              ),
+              Builder(builder: (context) {
+                final tipeJadwal = context.watch<AuthProvider>().user?.tipeJadwal;
+                final bisaTukar = tipeJadwal != 'umum';
+
+                if (!bisaTukar) {
+                  // Karyawan umum: cuma mode Pindah, segmented button gak
+                  // perlu ditampilkan sama sekali (bukan ditampilkan lalu
+                  // di-disable -- opsi yang gak pernah relevan buat tipe
+                  // ini mending gak usah dilihat).
+                  return const Text(
+                    'Pindah Tanggal',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  );
+                }
+
+                return SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'tukar', label: Text('Tukar dengan Rekan')),
+                    ButtonSegment(value: 'pindah', label: Text('Pindah Tanggal')),
+                  ],
+                  selected: {_mode},
+                  onSelectionChanged: (selected) {
+                    setState(() {
+                      _mode = selected.first;
+                      _jadwalTujuanTerpilih = null; // gak relevan di mode pindah
+                      if (_mode == 'pindah' && _jadwalAsal?.jenis == 'libur') {
+                        _jadwalAsal = null; // asal libur gak valid buat mode pindah
+                      }
+                    });
+                  },
+                );
+              }),
               const SizedBox(height: 16),
 
               const Text('Jadwal Saya', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -297,6 +392,19 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   trailing: const Icon(Icons.calendar_today),
                   onTap: _pilihTanggalTujuan,
                 ),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  tileColor: Colors.grey.shade100,
+                  title: Text(_jadwalTujuanTerpilih == null
+                      ? 'Pilih rekan tujuan'
+                      : _jadwalTujuanTerpilih!.karyawanNama ?? '-'),
+                  subtitle: _jadwalTujuanTerpilih != null
+                      ? Text('Shift: ${_jadwalTujuanTerpilih!.shift ?? '(Libur)'}')
+                      : null,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: (_loadingRekan || _rekanList.isEmpty) ? null : _bukaPilihRekan,
+                ),
                 if (_loadingRekan)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
@@ -309,21 +417,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                       'Tidak ada rekan satu unit yang punya jadwal di tanggal ini.',
                       style: TextStyle(color: Colors.red),
                     ),
-                  )
-                else
-                  ..._rekanList.map((rekan) => RadioListTile<int>(
-                        contentPadding: EdgeInsets.zero,
-                        value: rekan.jadwalId,
-                        groupValue: _jadwalTujuanTerpilih?.jadwalId,
-                        onChanged: rekan.bisaDiajukan
-                            ? (_) => setState(() => _jadwalTujuanTerpilih = rekan)
-                            : null,
-                        title: Text(rekan.karyawanNama ?? '-'),
-                        subtitle: Text(
-                          'Shift: ${rekan.shift ?? '(Libur)'}'
-                          '${rekan.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
-                        ),
-                      )),
+                  ),
               ] else ...[
                 const Text('Pindah ke Tanggal', style: TextStyle(fontWeight: FontWeight.bold)),
                 ListTile(
