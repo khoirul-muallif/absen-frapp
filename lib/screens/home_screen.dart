@@ -13,6 +13,7 @@ import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
 import '../services/tukar_jadwal_service.dart';
+import '../utils/snackbar_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -127,9 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (!context.mounted) return;
 
                         if (status == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Gagal memuat status absen')),
-                          );
+                          showAppSnackBar(context, 'Gagal memuat status absen');
                           return;
                         }
 
@@ -142,9 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(builder: (_) => const AbsenPulangFlowScreen()),
                           );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Anda sudah absen masuk & pulang hari ini')),
-                          );
+                          showAppSnackBar(context, 'Anda sudah absen masuk & pulang hari ini');
                         }
                       },
                     ),

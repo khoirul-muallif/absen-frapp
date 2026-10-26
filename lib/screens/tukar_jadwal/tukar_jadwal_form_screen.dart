@@ -4,6 +4,7 @@ import '../../services/jadwal_service.dart';
 import '../../models/jadwal_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/snackbar_helper.dart';
 
 class TukarJadwalFormScreen extends StatefulWidget {
   const TukarJadwalFormScreen({super.key});
@@ -162,11 +163,9 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
         ? _tanggalAsal
         : _tanggalValidTerdekat(_tanggalAsal, _asalValidPredicate);
     if (initial == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_mode == 'pindah'
-            ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
-            : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan')),
-      );
+      showAppSnackBar(context, _mode == 'pindah'
+          ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
+          : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan');
       return;
     }
     final picked = await showDatePicker(
@@ -226,9 +225,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
         ? _tanggalBaru
         : _tanggalValidTerdekat(_tanggalBaru, _tujuanPindahValidPredicate);
     if (initial == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan')),
-      );
+      showAppSnackBar(context, 'Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan');
       return;
     }
     final picked = await showDatePicker(
@@ -245,15 +242,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jadwalAsal == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak ada jadwal Anda di tanggal ini, pilih tanggal lain')),
-      );
+      showAppSnackBar(context, 'Tidak ada jadwal Anda di tanggal ini, pilih tanggal lain');
       return;
     }
     if (!_jadwalAsal!.bisaDiajukan) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jadwal ini sedang terikat pengajuan tukar jadwal lain')),
-      );
+      showAppSnackBar(context, 'Jadwal ini sedang terikat pengajuan tukar jadwal lain');
       return;
     }
 
@@ -262,15 +255,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
 
     if (_mode == 'tukar') {
       if (_jadwalTujuanTerpilih == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pilih jadwal rekan tujuan dulu')),
-        );
+        showAppSnackBar(context, 'Pilih jadwal rekan tujuan dulu');
         return;
       }
       if (!_jadwalTujuanTerpilih!.bisaDiajukan) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Jadwal rekan ini sedang terikat pengajuan lain')),
-        );
+        showAppSnackBar(context, 'Jadwal rekan ini sedang terikat pengajuan lain');
         return;
       }
       jadwalTujuanId = _jadwalTujuanTerpilih!.jadwalId;
@@ -294,9 +283,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan');
     }
   }
 

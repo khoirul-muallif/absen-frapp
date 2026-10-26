@@ -1,6 +1,7 @@
 // lib/screens/dinas/dinas_form_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/dinas_service.dart';
+import '../../utils/snackbar_helper.dart';
 
 class DinasFormScreen extends StatefulWidget {
   const DinasFormScreen({super.key});
@@ -43,9 +44,7 @@ class _DinasFormScreenState extends State<DinasFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_rentang == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih tanggal mulai dan selesai dulu')),
-      );
+      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu');
       return;
     }
 
@@ -64,9 +63,7 @@ class _DinasFormScreenState extends State<DinasFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan dinas')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan dinas');
     }
   }
 

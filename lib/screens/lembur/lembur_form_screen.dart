@@ -1,6 +1,7 @@
 // lib/screens/lembur/lembur_form_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/lembur_service.dart';
+import '../../utils/snackbar_helper.dart';
 
 class LemburFormScreen extends StatefulWidget {
   const LemburFormScreen({super.key});
@@ -68,9 +69,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jamMulai == null || _jamSelesai == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih jam mulai dan jam selesai dulu')),
-      );
+      showAppSnackBar(context, 'Pilih jam mulai dan jam selesai dulu');
       return;
     }
 
@@ -78,9 +77,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     // lintas tengah malam (jam_selesai <= jam_mulai tapi beda) sudah diizinkan.
     if (_jamSelesai!.hour == _jamMulai!.hour &&
         _jamSelesai!.minute == _jamMulai!.minute) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jam selesai tidak boleh sama dengan jam mulai')),
-      );
+      showAppSnackBar(context, 'Jam selesai tidak boleh sama dengan jam mulai');
       return;
     }
     
@@ -99,9 +96,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan lembur')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan lembur');
     }
   }
 

@@ -7,6 +7,7 @@ import '../../models/tukar_jadwal_model.dart';
 import 'menunggu_respon_screen.dart';
 import '../../widgets/status_badge.dart';
 import 'tukar_jadwal_form_screen.dart';
+import '../../utils/snackbar_helper.dart';
 
 
 class TukarJadwalScreen extends StatefulWidget {
@@ -55,9 +56,7 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
+        showAppSnackBar(context, result['message']);
       }
       _loadData();
     }

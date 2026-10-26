@@ -4,6 +4,7 @@ import '../../services/dinas_service.dart';
 import '../../models/dinas_model.dart';
 import 'dinas_form_screen.dart';
 import '../../widgets/status_badge.dart';
+import '../../utils/snackbar_helper.dart';
 
 class DinasScreen extends StatefulWidget {
   const DinasScreen({super.key});
@@ -44,9 +45,7 @@ class _DinasScreenState extends State<DinasScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
+        showAppSnackBar(context, result['message']);
       }
       _loadData();
     }

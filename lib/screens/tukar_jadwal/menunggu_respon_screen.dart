@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../services/tukar_jadwal_service.dart';
 import '../../models/tukar_jadwal_model.dart';
+import '../../utils/snackbar_helper.dart';
 
 class MenungguResponScreen extends StatefulWidget {
   const MenungguResponScreen({super.key});
@@ -61,14 +62,10 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
     if (!mounted) return;
 
     if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'])),
-      );
+      showAppSnackBar(context, result['message']);
       _loadData();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal merespon')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal merespon');
     }
   }
 

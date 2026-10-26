@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../services/cuti_service.dart';
 import '../../models/cuti_kuota_model.dart';
+import '../../utils/snackbar_helper.dart';
 
 class CutiFormScreen extends StatefulWidget {
   const CutiFormScreen({super.key});
@@ -82,21 +83,15 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jenisTerpilih == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih jenis cuti dulu')),
-      );
+      showAppSnackBar(context, 'Pilih jenis cuti dulu');
       return;
     }
     if (_rentang == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih tanggal mulai dan selesai dulu')),
-      );
+      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu');
       return;
     }
     if (_jenisTerpilih!.perluLampiran && _lampiran == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_jenisTerpilih!.nama} wajib melampirkan surat keterangan')),
-      );
+      showAppSnackBar(context, '${_jenisTerpilih!.nama} wajib melampirkan surat keterangan');
       return;
     }
 
@@ -116,9 +111,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan cuti')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan cuti');
     }
   }
 

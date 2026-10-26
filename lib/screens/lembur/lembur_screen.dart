@@ -4,6 +4,7 @@ import '../../services/lembur_service.dart';
 import '../../models/lembur_model.dart';
 import 'lembur_form_screen.dart';
 import '../../widgets/status_badge.dart';
+import '../../utils/snackbar_helper.dart';
 
 
 class LemburScreen extends StatefulWidget {
@@ -52,9 +53,7 @@ class _LemburScreenState extends State<LemburScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
+        showAppSnackBar(context, result['message']);
       }
       _loadData();
     }

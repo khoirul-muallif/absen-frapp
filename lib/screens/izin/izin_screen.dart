@@ -3,6 +3,7 @@ import '../../services/izin_service.dart';
 import '../../models/izin_model.dart';
 import 'izin_form_screen.dart';
 import '../../widgets/status_badge.dart';
+import '../../utils/snackbar_helper.dart';
 
 
 class IzinScreen extends StatefulWidget {
@@ -51,9 +52,7 @@ class _IzinScreenState extends State<IzinScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
+        showAppSnackBar(context, result['message']);
       }
       _loadData();
     }
@@ -79,9 +78,7 @@ class _IzinScreenState extends State<IzinScreen> {
     if (result['success'] == true) {
       _loadData();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'])),
-      );
+      showAppSnackBar(context, result['message']);
     }
   }
 

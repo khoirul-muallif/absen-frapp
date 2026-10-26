@@ -4,6 +4,7 @@ import '../../services/cuti_service.dart';
 import '../../models/cuti_model.dart';
 import 'cuti_form_screen.dart';
 import '../../widgets/status_badge.dart';
+import '../../utils/snackbar_helper.dart';
 
 class CutiScreen extends StatefulWidget {
   const CutiScreen({super.key});
@@ -43,9 +44,7 @@ class _CutiScreenState extends State<CutiScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
+        showAppSnackBar(context, result['message']);
       }
       _loadData();
     }

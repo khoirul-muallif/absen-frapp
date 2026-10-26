@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/izin_service.dart';
+import '../../utils/snackbar_helper.dart';
 
 class IzinFormScreen extends StatefulWidget {
   const IzinFormScreen({super.key});
@@ -54,9 +55,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_jamKeluar == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih jam keluar dulu')),
-      );
+      showAppSnackBar(context, 'Pilih jam keluar dulu');
       return;
     }
 
@@ -74,9 +73,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Gagal mengajukan izin')),
-      );
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan izin');
     }
   }
 
