@@ -44,7 +44,7 @@ class _CutiScreenState extends State<CutiScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        showAppSnackBar(context, result['message']);
+        showAppSnackBar(context, result['message'], type: AppSnackBarType.error);
       }
       _loadData();
     }

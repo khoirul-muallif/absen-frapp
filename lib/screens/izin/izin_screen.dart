@@ -52,7 +52,7 @@ class _IzinScreenState extends State<IzinScreen> {
     final result = await _service.batalkan(item.id);
     if (result['success'] != true) {
       if (mounted) {
-        showAppSnackBar(context, result['message']);
+        showAppSnackBar(context, result['message'], type: AppSnackBarType.error);
       }
       _loadData();
     }
@@ -78,7 +78,7 @@ class _IzinScreenState extends State<IzinScreen> {
     if (result['success'] == true) {
       _loadData();
     } else {
-      showAppSnackBar(context, result['message']);
+      showAppSnackBar(context, result['message'], type: AppSnackBarType.error);
     }
   }
 

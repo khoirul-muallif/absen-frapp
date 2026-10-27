@@ -55,7 +55,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_jamKeluar == null) {
-      showAppSnackBar(context, 'Pilih jam keluar dulu');
+      showAppSnackBar(context, 'Pilih jam keluar dulu', type: AppSnackBarType.error);
       return;
     }
 
@@ -73,7 +73,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan izin');
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan izin', type: AppSnackBarType.error);
     }
   }
 

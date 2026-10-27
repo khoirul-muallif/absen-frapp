@@ -83,15 +83,15 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jenisTerpilih == null) {
-      showAppSnackBar(context, 'Pilih jenis cuti dulu');
+      showAppSnackBar(context, 'Pilih jenis cuti dulu', type: AppSnackBarType.error);
       return;
     }
     if (_rentang == null) {
-      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu');
+      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu', type: AppSnackBarType.error);
       return;
     }
     if (_jenisTerpilih!.perluLampiran && _lampiran == null) {
-      showAppSnackBar(context, '${_jenisTerpilih!.nama} wajib melampirkan surat keterangan');
+      showAppSnackBar(context, '${_jenisTerpilih!.nama} wajib melampirkan surat keterangan', type: AppSnackBarType.error);
       return;
     }
 
@@ -111,7 +111,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan cuti');
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan cuti', type: AppSnackBarType.error);
     }
   }
 

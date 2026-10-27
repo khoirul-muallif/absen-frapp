@@ -62,10 +62,10 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
     if (!mounted) return;
 
     if (result['success'] == true) {
-      showAppSnackBar(context, result['message']);
+      showAppSnackBar(context, result['message'], type: AppSnackBarType.success);
       _loadData();
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal merespon');
+      showAppSnackBar(context, result['message'] ?? 'Gagal merespon', type: AppSnackBarType.error);
     }
   }
 

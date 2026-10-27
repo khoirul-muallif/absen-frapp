@@ -69,7 +69,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jamMulai == null || _jamSelesai == null) {
-      showAppSnackBar(context, 'Pilih jam mulai dan jam selesai dulu');
+      showAppSnackBar(context, 'Pilih jam mulai dan jam selesai dulu', type: AppSnackBarType.error);
       return;
     }
 
@@ -77,7 +77,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     // lintas tengah malam (jam_selesai <= jam_mulai tapi beda) sudah diizinkan.
     if (_jamSelesai!.hour == _jamMulai!.hour &&
         _jamSelesai!.minute == _jamMulai!.minute) {
-      showAppSnackBar(context, 'Jam selesai tidak boleh sama dengan jam mulai');
+      showAppSnackBar(context, 'Jam selesai tidak boleh sama dengan jam mulai', type: AppSnackBarType.error);
       return;
     }
     
@@ -96,7 +96,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan lembur');
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan lembur', type: AppSnackBarType.error);
     }
   }
 

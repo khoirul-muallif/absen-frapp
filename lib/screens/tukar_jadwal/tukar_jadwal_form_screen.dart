@@ -163,9 +163,13 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
         ? _tanggalAsal
         : _tanggalValidTerdekat(_tanggalAsal, _asalValidPredicate);
     if (initial == null) {
-      showAppSnackBar(context, _mode == 'pindah'
-          ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
-          : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan');
+      showAppSnackBar(
+        context,
+        _mode == 'pindah'
+            ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
+            : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan',
+        type: AppSnackBarType.error,
+      );
       return;
     }
     final picked = await showDatePicker(
@@ -225,7 +229,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
         ? _tanggalBaru
         : _tanggalValidTerdekat(_tanggalBaru, _tujuanPindahValidPredicate);
     if (initial == null) {
-      showAppSnackBar(context, 'Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan');
+      showAppSnackBar(
+        context,
+        'Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan',
+        type: AppSnackBarType.error,
+      );
       return;
     }
     final picked = await showDatePicker(
@@ -242,11 +250,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jadwalAsal == null) {
-      showAppSnackBar(context, 'Tidak ada jadwal Anda di tanggal ini, pilih tanggal lain');
+      showAppSnackBar(context, 'Tidak ada jadwal Anda di tanggal ini, pilih tanggal lain', type: AppSnackBarType.error);
       return;
     }
     if (!_jadwalAsal!.bisaDiajukan) {
-      showAppSnackBar(context, 'Jadwal ini sedang terikat pengajuan tukar jadwal lain');
+      showAppSnackBar(context, 'Jadwal ini sedang terikat pengajuan tukar jadwal lain', type: AppSnackBarType.error);
       return;
     }
 
@@ -255,11 +263,11 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
 
     if (_mode == 'tukar') {
       if (_jadwalTujuanTerpilih == null) {
-        showAppSnackBar(context, 'Pilih jadwal rekan tujuan dulu');
+        showAppSnackBar(context, 'Pilih jadwal rekan tujuan dulu', type: AppSnackBarType.error);
         return;
       }
       if (!_jadwalTujuanTerpilih!.bisaDiajukan) {
-        showAppSnackBar(context, 'Jadwal rekan ini sedang terikat pengajuan lain');
+        showAppSnackBar(context, 'Jadwal rekan ini sedang terikat pengajuan lain', type: AppSnackBarType.error);
         return;
       }
       jadwalTujuanId = _jadwalTujuanTerpilih!.jadwalId;
@@ -283,7 +291,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan');
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan', type: AppSnackBarType.error);
     }
   }
 

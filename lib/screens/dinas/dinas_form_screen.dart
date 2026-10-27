@@ -44,7 +44,7 @@ class _DinasFormScreenState extends State<DinasFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_rentang == null) {
-      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu');
+      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu', type: AppSnackBarType.error);
       return;
     }
 
@@ -63,7 +63,7 @@ class _DinasFormScreenState extends State<DinasFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan dinas');
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan dinas', type: AppSnackBarType.error);
     }
   }
 

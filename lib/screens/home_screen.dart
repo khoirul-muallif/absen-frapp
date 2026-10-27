@@ -127,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (!context.mounted) return;
 
-                        if (status == null) {
-                          showAppSnackBar(context, 'Gagal memuat status absen');
+                         if (status == null) {
+                          showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
                           return;
                         }
 
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                                        _MenuItem(
+                    _MenuItem(
                       icon: Icons.swap_horiz,
                       label: 'Tukar Jadwal',
                       badgeCount: _menungguTukarJadwalCount,
