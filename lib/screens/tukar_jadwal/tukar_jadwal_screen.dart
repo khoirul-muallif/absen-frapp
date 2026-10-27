@@ -8,6 +8,7 @@ import 'menunggu_respon_screen.dart';
 import '../../widgets/status_badge.dart';
 import 'tukar_jadwal_form_screen.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/swipe_hint.dart';
 
 
 class TukarJadwalScreen extends StatefulWidget {
@@ -117,15 +118,21 @@ class _TukarJadwalScreenState extends State<TukarJadwalScreen> {
 
                       final card = Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text(item.mode == 'pindah' ? 'Pindah Jadwal' : 'Tukar Jadwal'),
-                          subtitle: Text(
-                            '$subtitle\n${item.alasan}'
-                            '${item.catatanPenolakanRekan != null ? '\nDitolak rekan: ${item.catatanPenolakanRekan}' : ''}'
-                            '${item.catatanApproval != null ? '\nCatatan admin: ${item.catatanApproval}' : ''}',
-                          ),
-                          isThreeLine: true,
-                          trailing: StatusBadge(status: item.status),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              title: Text(item.mode == 'pindah' ? 'Pindah Jadwal' : 'Tukar Jadwal'),
+                              subtitle: Text(
+                                '$subtitle\n${item.alasan}'
+                                '${item.catatanPenolakanRekan != null ? '\nDitolak rekan: ${item.catatanPenolakanRekan}' : ''}'
+                                '${item.catatanApproval != null ? '\nCatatan admin: ${item.catatanApproval}' : ''}',
+                              ),
+                              isThreeLine: true,
+                              trailing: StatusBadge(status: item.status),
+                            ),
+                            if (bisaDibatalkan) const SwipeHint(),
+                          ],
                         ),
                       );
 

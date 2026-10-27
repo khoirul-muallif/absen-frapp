@@ -5,6 +5,7 @@ import '../../models/lembur_model.dart';
 import 'lembur_form_screen.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/swipe_hint.dart';
 
 
 class LemburScreen extends StatefulWidget {
@@ -83,14 +84,20 @@ class _LemburScreenState extends State<LemburScreen> {
 
                       final card = Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text(item.tanggal),
-                          subtitle: Text(
-                            '${_formatJam(item.jamMulai)} - ${_formatJam(item.jamSelesai)}\n${item.alasan}'
-                            '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
-                          ),
-                          isThreeLine: true,
-                          trailing: StatusBadge(status: item.status),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              title: Text(item.tanggal),
+                              subtitle: Text(
+                                '${_formatJam(item.jamMulai)} - ${_formatJam(item.jamSelesai)}\n${item.alasan}'
+                                '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
+                              ),
+                              isThreeLine: true,
+                              trailing: StatusBadge(status: item.status),
+                            ),
+                            if (bisaDibatalkan) const SwipeHint(),
+                          ],
                         ),
                       );
 

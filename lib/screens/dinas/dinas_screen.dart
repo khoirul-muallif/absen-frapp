@@ -5,6 +5,7 @@ import '../../models/dinas_model.dart';
 import 'dinas_form_screen.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/swipe_hint.dart';
 
 class DinasScreen extends StatefulWidget {
   const DinasScreen({super.key});
@@ -75,14 +76,20 @@ class _DinasScreenState extends State<DinasScreen> {
 
                       final card = Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text('${item.tanggalMulai} s/d ${item.tanggalSelesai}'),
-                          subtitle: Text(
-                            '${item.tujuan}\n${item.keperluan}'
-                            '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
-                          ),
-                          isThreeLine: true,
-                          trailing: StatusBadge(status: item.status),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              title: Text('${item.tanggalMulai} s/d ${item.tanggalSelesai}'),
+                              subtitle: Text(
+                                '${item.tujuan}\n${item.keperluan}'
+                                '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
+                              ),
+                              isThreeLine: true,
+                              trailing: StatusBadge(status: item.status),
+                            ),
+                            if (bisaDibatalkan) const SwipeHint(),
+                          ],
                         ),
                       );
 

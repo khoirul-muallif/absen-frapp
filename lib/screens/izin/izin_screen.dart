@@ -4,6 +4,7 @@ import '../../models/izin_model.dart';
 import 'izin_form_screen.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/swipe_hint.dart';
 
 
 class IzinScreen extends StatefulWidget {
@@ -106,17 +107,23 @@ class _IzinScreenState extends State<IzinScreen> {
 
                       final card = Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text(item.tanggal),
-                          subtitle: Text(
-                            '${_formatJam(item.jamKeluar)} - ${_formatJam(item.jamKembali)}\n${item.keperluan}'
-                            '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
-                          ),
-                          isThreeLine: true,
-                          trailing: StatusBadge(status: item.status),
-                          onTap: item.jamKembali == null
-                              ? () => _isiJamKembali(item)
-                              : null,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              title: Text(item.tanggal),
+                              subtitle: Text(
+                                '${_formatJam(item.jamKeluar)} - ${_formatJam(item.jamKembali)}\n${item.keperluan}'
+                                '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
+                              ),
+                              isThreeLine: true,
+                              trailing: StatusBadge(status: item.status),
+                              onTap: item.jamKembali == null
+                                  ? () => _isiJamKembali(item)
+                                  : null,
+                            ),
+                            if (bisaDibatalkan) const SwipeHint(),
+                          ],
                         ),
                       );
 

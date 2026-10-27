@@ -5,6 +5,7 @@ import '../../models/cuti_model.dart';
 import 'cuti_form_screen.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/swipe_hint.dart';
 
 class CutiScreen extends StatefulWidget {
   const CutiScreen({super.key});
@@ -74,14 +75,20 @@ class _CutiScreenState extends State<CutiScreen> {
 
                       final card = Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text('${item.jenisCuti} (${item.jumlahHari} hari)'),
-                          subtitle: Text(
-                            '${item.tanggalMulai} s/d ${item.tanggalSelesai}\n${item.alasan}'
-                            '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
-                          ),
-                          isThreeLine: true,
-                          trailing: StatusBadge(status: item.status),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              title: Text('${item.jenisCuti} (${item.jumlahHari} hari)'),
+                              subtitle: Text(
+                                '${item.tanggalMulai} s/d ${item.tanggalSelesai}\n${item.alasan}'
+                                '${item.catatanApproval != null ? '\nCatatan: ${item.catatanApproval}' : ''}',
+                              ),
+                              isThreeLine: true,
+                              trailing: StatusBadge(status: item.status),
+                            ),
+                            if (bisaDibatalkan) const SwipeHint(),
+                          ],
                         ),
                       );
 
