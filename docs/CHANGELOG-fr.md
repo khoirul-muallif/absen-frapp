@@ -1,3 +1,50 @@
+## fix(ux): warna SnackBar sesuai jenis pesan + posisi pindah ke atas
+
+Commit: 6f021c6, 9136a82 (27 Okt 2026)
+
+Dua temuan testing manual yang digabung jadi satu perbaikan: SnackBar
+bawaan Flutter (floating, dicoba dulu di commit sebelumnya) masih sering
+ketutup jari/keyboard begitu baru submit form, dan semua pesan tampil
+warna netral yang sama tanpa bedain error vs sukses.
+
+`lib/utils/snackbar_helper.dart` (baru): notifikasi custom pakai
+`Overlay`, slide-in dari ATAS (di bawah status bar, bukan nempel di
+bawah layar), auto-dismiss 3 detik, tap-to-dismiss, notif baru otomatis
+gantiin yang masih nongol (gak numpuk). Ditambah `AppSnackBarType`
+(info/success/error) — merah buat validasi & pesan gagal, hijau buat
+sukses eksplisit (approve/reject TukarJadwal di
+`menunggu_respon_screen.dart`), abu-abu netral buat sisanya (default,
+pemanggilan lama yang belum diupdate tetap aman).
+
+Diterapkan ke semua pemanggilan `ScaffoldMessenger.showSnackBar` lama
+(11 file: Cuti/Izin/Lembur/Dinas/TukarJadwal — form & list screen,
+`home_screen.dart`). Menutup item lama todo-fr.md "SnackBar kurang user
+friendly" — diperbaiki dari sisi posisi+warna, bukan diganti popup
+(opsi awal yang diusulkan).
+
+## feat(tukar-jadwal): badge jumlah pengajuan menunggu respon + bottom sheet pilih rekan
+
+Commit: e246821 (26 Okt 2026)
+
+Dua temuan dari testing manual `TukarJadwalFormScreen` (yang ternyata
+sudah lengkap dibuat, bukan blocked seperti catatan lama):
+
+- Rekan sering gak sadar ada pengajuan tukar jadwal yang nunggu
+  direspon — ikon lonceng di app bar `TukarJadwalScreen` polos tanpa
+  indikator apa pun. Ditambah `Badge` count di 2 tempat: ikon lonceng
+  itu sendiri, dan card menu "Tukar Jadwal" di `home_screen.dart`
+  (`HomeScreen` diubah dari `StatelessWidget` ke `StatefulWidget`).
+  Sumbernya sama-sama `GET /api/tukar-jadwal/menunggu-respon-saya`.
+- Pemilihan rekan tujuan (mode Tukar) bikin scroll panjang begitu
+  banyak rekan yang punya jadwal di tanggal itu — daftar `RadioListTile`
+  sebelumnya dirender inline di `ListView` yang sama dengan field
+  Alasan & tombol submit. Dipindah ke `showModalBottomSheet` +
+  `DraggableScrollableSheet`, dibuka lewat `ListTile` ringkasan.
+
+Sempat ada insiden salah tempel (sisa blok lama `_rekanList.map`
+nyangkut, bracket gak nutup) yang bikin `flutter run` gagal — diperbaiki
+sebelum commit final.
+
 ## style: tema teal/mint terpusat + StatusBadge di semua modul
 
 Commit: 654b73a (19 Okt 2026)
