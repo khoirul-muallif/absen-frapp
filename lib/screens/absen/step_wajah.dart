@@ -12,16 +12,14 @@ class StepWajah extends StatefulWidget {
   final Position position;
   final String? kodeQr; // null kalau mode pulang
   final AbsenMode mode;
-  final VoidCallback onUlangiDariAwal;
-  final VoidCallback? onScanUlangQr; // null kalau mode pulang (gak ada step QR)
+  final VoidCallback onGagal;
 
   const StepWajah({
     super.key,
     required this.position,
     this.kodeQr,
     required this.mode,
-    required this.onUlangiDariAwal,
-    this.onScanUlangQr,
+    required this.onGagal,
   });
 
   @override
@@ -249,22 +247,10 @@ class _StepWajahState extends State<StepWajah> {
         if (_gagal && !_isProcessing)
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
-            child: Wrap(
-              spacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                if (widget.onScanUlangQr != null)
-                  OutlinedButton.icon(
-                    onPressed: widget.onScanUlangQr,
-                    icon: const Icon(Icons.qr_code, size: 18),
-                    label: const Text('Scan Ulang QR'),
-                  ),
-                OutlinedButton.icon(
-                  onPressed: widget.onUlangiDariAwal,
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Ulangi dari Awal'),
-                ),
-              ],
+            child: OutlinedButton.icon(
+              onPressed: widget.onGagal,
+              icon: const Icon(Icons.home_outlined, size: 18),
+              label: const Text('Kembali ke Beranda'),
             ),
           ),
       ],

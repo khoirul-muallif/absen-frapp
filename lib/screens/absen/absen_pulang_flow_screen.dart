@@ -21,6 +21,28 @@ class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
     });
   }
 
+  Future<void> _kembaliKeBerandaPeringatan() async {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Mulai Ulang dari Beranda'),
+        content: const Text(
+          'Anda akan kembali ke Beranda. Tunggu sekitar 5-10 detik sebelum '
+          'menekan tombol Absen lagi, supaya kamera siap dipakai ulang.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,12 +59,7 @@ class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
                   StepWajah(
                     position: _position!,
                     mode: AbsenMode.pulang,
-                    onUlangiDariAwal: () {
-                      setState(() {
-                        _currentStep = 0;
-                        _position = null;
-                      });
-                    },
+                    onGagal: _kembaliKeBerandaPeringatan,
                   )
                 else
                   const SizedBox(),

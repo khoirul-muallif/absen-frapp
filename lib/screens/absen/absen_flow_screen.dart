@@ -1,28 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'step_lokasi.dart';
-import 'step_wajah.dart';
 import 'step_qr.dart';
+import 'step_wajah.dart';
 
 class AbsenFlowScreen extends StatefulWidget {
-  final Position? initialPosition;
-  const AbsenFlowScreen({super.key, this.initialPosition});
+  const AbsenFlowScreen({super.key});
 
   @override
   State<AbsenFlowScreen> createState() => _AbsenFlowScreenState();
 }
 
 class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
-  late int _currentStep;
+  int _currentStep = 0;
+
   Position? _position;
   String? _kodeQr;
-
-  @override
-  void initState() {
-    super.initState();
-    _position = widget.initialPosition;
-    _currentStep = _position != null ? 1 : 0;
-  }
 
   void _onLokasiSukses(Position position) {
     setState(() {
@@ -38,6 +31,34 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
     });
   }
 
+  // Keluar total ke Beranda (bukan pindah step/rebuild screen) begitu user
+  // mau mengulang setelah gagal. StepQr (mobile_scanner) dan StepWajah
+  // (package:camera) rebutan hardware kamera kalau diulang dalam flow yang
+  // sama -- balik ke Beranda = teardown penuh, persis kondisi "restart
+  // bersih" yang terbukti selalu jalan normal. Peringatan ditampilkan dulu
+  // supaya user tahu kenapa harus tunggu sebentar sebelum tap Absen lagi.
+  Future<void> _kembaliKeBerandaPeringatan() async {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Mulai Ulang dari Beranda'),
+        content: const Text(
+          'Anda akan kembali ke Beranda. Tunggu sekitar 5-10 detik sebelum '
+          'menekan tombol Absen lagi, supaya kamera siap dipakai ulang.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +69,7 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
           Expanded(
             child: IndexedStack(
               index: _currentStep,
-                            children: [
+              children: [
                 StepLokasi(onSukses: _onLokasiSukses),
                 StepQr(onSukses: _onQrSukses),
                 if (_position != null && _kodeQr != null)
@@ -56,18 +77,7 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
                     position: _position!,
                     kodeQr: _kodeQr!,
                     mode: AbsenMode.masuk,
-                    onUlangiDariAwal: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
-                      );
-                    },
-                    onScanUlangQr: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (_) => AbsenFlowScreen(initialPosition: _position),
-                        ),
-                      );
-                    },
+                    onGagal: _kembaliKeBerandaPeringatan,
                   )
                 else
                   const SizedBox(),
