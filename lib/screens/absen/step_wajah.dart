@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../services/absensi_service.dart';
+import '../../utils/snackbar_helper.dart';
 
 enum AbsenMode { masuk, pulang }
 
@@ -11,12 +12,16 @@ class StepWajah extends StatefulWidget {
   final Position position;
   final String? kodeQr; // null kalau mode pulang
   final AbsenMode mode;
+  final VoidCallback onUlangiDariAwal;
+  final VoidCallback? onScanUlangQr; // null kalau mode pulang (gak ada step QR)
 
   const StepWajah({
     super.key,
     required this.position,
     this.kodeQr,
     required this.mode,
+    required this.onUlangiDariAwal,
+    this.onScanUlangQr,
   });
 
   @override
@@ -35,6 +40,7 @@ class _StepWajahState extends State<StepWajah> {
   bool _isInitializing = true;
   bool _isProcessing = false;
   bool _livenessPassed = false;
+  bool _gagal = false;
   String _statusText = 'Posisikan wajah di dalam frame';
   final AbsensiService _absensiService = AbsensiService();
 
@@ -84,6 +90,7 @@ class _StepWajahState extends State<StepWajah> {
         setState(() {
           _statusText = 'Wajah tidak terdeteksi. Coba lagi.';
           _isProcessing = false;
+          _gagal = true;
         });
         return;
       }
@@ -96,6 +103,7 @@ class _StepWajahState extends State<StepWajah> {
         setState(() {
           _statusText = 'Mata terdeteksi tertutup. Buka mata dan coba lagi.';
           _isProcessing = false;
+          _gagal = true;
         });
         return;
       }
@@ -106,6 +114,7 @@ class _StepWajahState extends State<StepWajah> {
       setState(() {
         _statusText = 'Terjadi kesalahan: $e';
         _isProcessing = false;
+        _gagal = true;
       });
     }
   }
@@ -159,7 +168,11 @@ class _StepWajahState extends State<StepWajah> {
         _statusText = result['message'] ?? 'Absen gagal.';
         _isProcessing = false;
         _livenessPassed = false;
+        _gagal = true;
       });
+      if (mounted) {
+        showAppSnackBar(context, result['message'] ?? 'Absen gagal.', type: AppSnackBarType.error);
+      }
     }
   }
 
@@ -233,6 +246,27 @@ class _StepWajahState extends State<StepWajah> {
                 : const Text('Ambil Foto & Absen'),
           ),
         ),
+        if (_gagal && !_isProcessing)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Wrap(
+              spacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                if (widget.onScanUlangQr != null)
+                  OutlinedButton.icon(
+                    onPressed: widget.onScanUlangQr,
+                    icon: const Icon(Icons.qr_code, size: 18),
+                    label: const Text('Scan Ulang QR'),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: widget.onUlangiDariAwal,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Ulangi dari Awal'),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }

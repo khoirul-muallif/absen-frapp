@@ -37,6 +37,57 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     setState(() => _menungguTukarJadwalCount = items.length);
   }
+  
+  Future<void> _handleAbsenMasuk() async {
+    final status = await AbsensiService().getStatus();
+    if (!mounted) return;
+
+    if (status == null) {
+      showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
+      return;
+    }
+
+    // Cuma blok kalau hari ini memang sudah lengkap masuk+pulang. Status
+    // "sudah masuk, belum pulang" SENGAJA tidak diblok di sini -- itu bisa
+    // berarti sesi hari ini yang masih terbuka, atau sesi kemarin yang
+    // kelupaan ditutup, dan client tidak bisa (dan tidak perlu) membedakan
+    // dua itu. Biarkan backend masuk() yang menolak dengan alasan pasti
+    // kalau ternyata ada sesi kemarin yang masih menggantung.
+    if (status.sudahMasuk && status.sudahPulang) {
+      showAppSnackBar(context, 'Anda sudah absen masuk & pulang hari ini');
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
+    );
+  }
+
+  Future<void> _handleAbsenPulang() async {
+    final status = await AbsensiService().getStatus();
+    if (!mounted) return;
+
+    if (status == null) {
+      showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
+      return;
+    }
+
+    if (!status.sudahMasuk) {
+      showAppSnackBar(context, 'Anda belum absen masuk, tidak bisa absen pulang', type: AppSnackBarType.error);
+      return;
+    }
+
+    if (status.sudahPulang) {
+      showAppSnackBar(context, 'Anda sudah absen pulang');
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AbsenPulangFlowScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,30 +171,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisSpacing: 16,
                   children: [
                     _MenuItem(
-                      icon: Icons.fingerprint,
-                      label: 'Absen',
-                      onTap: () async {
-                        final status = await AbsensiService().getStatus();
-
-                        if (!context.mounted) return;
-
-                         if (status == null) {
-                          showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
-                          return;
-                        }
-
-                        if (!status.sudahMasuk) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
-                          );
-                        } else if (!status.sudahPulang) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const AbsenPulangFlowScreen()),
-                          );
-                        } else {
-                          showAppSnackBar(context, 'Anda sudah absen masuk & pulang hari ini');
-                        }
-                      },
+                      icon: Icons.login,
+                      label: 'Absen Masuk',
+                      onTap: () => _handleAbsenMasuk(),
+                    ),
+                    _MenuItem(
+                      icon: Icons.logout,
+                      label: 'Absen Pulang',
+                      onTap: () => _handleAbsenPulang(),
                     ),
                     _MenuItem(
                       icon: Icons.calendar_today,

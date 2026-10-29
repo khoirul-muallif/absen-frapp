@@ -37,6 +37,12 @@ class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
                   StepWajah(
                     position: _position!,
                     mode: AbsenMode.pulang,
+                    onUlangiDariAwal: () {
+                      setState(() {
+                        _currentStep = 0;
+                        _position = null;
+                      });
+                    },
                   )
                 else
                   const SizedBox(),

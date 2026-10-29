@@ -52,6 +52,18 @@ class _StepQrState extends State<StepQr> {
               MobileScanner(
                 controller: _controller,
                 onDetect: _onDetect,
+                errorBuilder: (context, error, child) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Kamera error: ${error.errorCode}\n${error.errorDetails?.message ?? error.toString()}',
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                },
               ),
               Container(
                 width: 250,

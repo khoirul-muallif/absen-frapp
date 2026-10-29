@@ -199,25 +199,30 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       builder: (context) => DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.6,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text('Pilih Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 8),
-            ..._rekanList.map((rekan) => RadioListTile<int>(
-                  value: rekan.jadwalId,
-                  groupValue: _jadwalTujuanTerpilih?.jadwalId,
-                  onChanged: rekan.bisaDiajukan
-                      ? (_) => Navigator.pop(context, rekan)
-                      : null,
-                  title: Text(rekan.karyawanNama ?? '-'),
-                  subtitle: Text(
-                    'Shift: ${rekan.shift ?? '(Libur)'}'
-                    '${rekan.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
-                  ),
-                )),
-          ],
+        builder: (context, scrollController) => RadioGroup<int>(
+          groupValue: _jadwalTujuanTerpilih?.jadwalId,
+          onChanged: (value) {
+            final rekan = _rekanList.firstWhere((r) => r.jadwalId == value);
+            Navigator.pop(context, rekan);
+          },
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(16),
+            children: [
+              const Text('Pilih Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
+              ..._rekanList.map((rekan) => RadioListTile<int>(
+                    value: rekan.jadwalId,
+                    toggleable: false,
+                    title: Text(rekan.karyawanNama ?? '-'),
+                    subtitle: Text(
+                      'Shift: ${rekan.shift ?? '(Libur)'}'
+                      '${rekan.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
+                    ),
+                    enabled: rekan.bisaDiajukan,
+                  )),
+            ],
+          ),
         ),
       ),
     );

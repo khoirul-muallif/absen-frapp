@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'step_lokasi.dart';
-import 'step_qr.dart';
 import 'step_wajah.dart';
+import 'step_qr.dart';
 
 class AbsenFlowScreen extends StatefulWidget {
-  const AbsenFlowScreen({super.key});
+  final Position? initialPosition;
+  const AbsenFlowScreen({super.key, this.initialPosition});
 
   @override
   State<AbsenFlowScreen> createState() => _AbsenFlowScreenState();
 }
 
 class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
-  int _currentStep = 0;
-
-  // Data yang dikumpulkan sepanjang flow
+  late int _currentStep;
   Position? _position;
   String? _kodeQr;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    _currentStep = _position != null ? 1 : 0;
+  }
 
   void _onLokasiSukses(Position position) {
     setState(() {
@@ -42,7 +48,7 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
           Expanded(
             child: IndexedStack(
               index: _currentStep,
-              children: [
+                            children: [
                 StepLokasi(onSukses: _onLokasiSukses),
                 StepQr(onSukses: _onQrSukses),
                 if (_position != null && _kodeQr != null)
@@ -50,6 +56,18 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
                     position: _position!,
                     kodeQr: _kodeQr!,
                     mode: AbsenMode.masuk,
+                    onUlangiDariAwal: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
+                      );
+                    },
+                    onScanUlangQr: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => AbsenFlowScreen(initialPosition: _position),
+                        ),
+                      );
+                    },
                   )
                 else
                   const SizedBox(),
