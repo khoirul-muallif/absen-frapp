@@ -1,3 +1,57 @@
+## feat: redesign menu Absen — 2 tombol eksplisit, auto-lokasi, disable kondisional
+
+Commit: `905b9c3`, `e334d78`, `7d8108d`, `<isi hash commit terbaru>` (30 Okt 2026)
+
+Rangkaian 4 commit merombak alur absen di Home, dipicu bug auto-routing
+tombol "Absen" tunggal yang nebak sendiri mau diarahkan ke flow masuk
+atau pulang berdasar `getStatus()` (lihat todo-fr.md lama, item "bug
+absen auto-routing").
+
+**905b9c3 / e334d78**: tombol tunggal diganti 2 tombol eksplisit "Absen
+Masuk"/"Absen Pulang" (langkah awal, masih di grid Beranda). Sekalian
+benerin retry QR/wajah yang tadinya rebutan hardware kamera
+(IndexedStack nahan StepQr/StepWajah tetap hidup walau disembunyikan)
+-- beberapa percobaan fix gagal sebelum ketemu solusi: balik total ke
+Beranda (bukan rebuild di tempat) + peringatan tunggu 5-10 detik sebelum
+tap Absen lagi, lewat `StepWajah.onGagal` (digabung dari 2 callback
+`onUlangiDariAwal`/`onScanUlangQr` yang tadinya identik).
+
+**7d8108d**: lokasi (GPS + izin lokasi + izin kamera) dipindah dari step
+terpisah di dalam flow jadi di-fetch di Beranda SEBELUM push ke
+AbsenFlowScreen/AbsenPulangFlowScreen -- kalau gagal, user gak jadi
+masuk flow sama sekali (kamera gak kebuka). Logic diekstrak ke
+`LokasiHelper.ambilLokasi()` (`lib/utils/lokasi_helper.dart`), dipakai
+bareng oleh `StepLokasi` (dipertahankan sebagai fallback, tidak
+dihapus dari flow) dan pemanggil baru. `AbsenFlowScreen`/
+`AbsenPulangFlowScreen` dapat parameter opsional `initialPosition` --
+kalau diisi, step Lokasi di-skip.
+
+**<hash commit terbaru>**: 2 tombol di atas dipindah dari grid Beranda
+ke screen baru `AbsenMenuScreen` (dibuka lewat 1 tile "Absen" di
+Beranda) -- status absen sekarang dimuat sekali di awal screen ini
+(bukan per-tap), jadi kedua tombol bisa langsung menampilkan kondisi
+enabled/disabled begitu dibuka: "Absen Masuk" disabled kalau
+`sudahMasuk`, "Absen Pulang" disabled kalau belum masuk atau sudah
+pulang. Tombol disabled tetap ditampilkan (abu-abu) dengan keterangan
+("Sudah absen masuk pukul HH:mm"), tidak disembunyikan.
+
+### KEPUTUSAN: tidak menambahkan cek jadwal/libur di client
+
+Sempat dipertimbangkan nge-disable tombol kalau hari ini libur
+(mencegah tap yang pasti ditolak). Ditolak: backend `masuk()` sudah
+menangani ini dengan pesan eksplisit sejak fase 43 ("Hari ini jadwal
+Anda libur, tidak perlu absen masuk."), dan `step_wajah.dart` sudah
+menampilkan `result['message']` backend apa adanya. Menduplikasi cek
+ini di FE berarti menduplikasi logic `shiftYangDiharapkanPada()`
+(cuti/dinas approved + libur instansi + Jadwal, bukan cuma status
+libur) -- kelas masalah single-source-of-truth yang sama dengan yang
+sudah berulang kali ditutup di backend (`KuotaCuti::sisaUntuk()` fase
+26, `Shift::jamMasukString()` fase 14/27). Biarkan backend yang
+menolak, FE cuma merelay pesannya.
+
+Belum ditest end-to-end di device untuk commit terbaru -- lihat
+todo-fr.md kalau ada temuan saat testing.
+
 ## fix(ux): warna SnackBar sesuai jenis pesan + posisi pindah ke atas
 
 Commit: 6f021c6, 9136a82 (27 Okt 2026)

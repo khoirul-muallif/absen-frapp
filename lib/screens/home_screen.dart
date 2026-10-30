@@ -2,21 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
-import 'absen/absen_flow_screen.dart';
-import '../services/absensi_service.dart';
-import 'absen/absen_pulang_flow_screen.dart';
+import 'absen/absen_menu_screen.dart';
 import 'riwayat_screen.dart';
 import 'notifikasi_screen.dart';
-import 'izin/izin_screen.dart'; 
+import 'izin/izin_screen.dart';
 import 'lembur/lembur_screen.dart';
 import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
 import '../services/tukar_jadwal_service.dart';
-import '../utils/snackbar_helper.dart';
-// tambahan import di atas
-import 'package:geolocator/geolocator.dart';
-import '../utils/lokasi_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,78 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final items = await _tukarJadwalService.menungguResponSaya();
     if (!mounted) return;
     setState(() => _menungguTukarJadwalCount = items.length);
-  }
-  
-  Future<Position?> _ambilLokasiDenganLoading() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    final hasil = await LokasiHelper.ambilLokasi();
-
-    if (!mounted) return null;
-    Navigator.of(context, rootNavigator: true).pop(); // tutup loading dialog
-
-    if (!hasil.berhasil) {
-      showAppSnackBar(context, hasil.error ?? 'Gagal mendapatkan lokasi',
-          type: AppSnackBarType.error);
-      return null;
-    }
-
-    return hasil.position;
-  }
-
-  Future<void> _handleAbsenMasuk() async {
-    final status = await AbsensiService().getStatus();
-    if (!mounted) return;
-
-    if (status == null) {
-      showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
-      return;
-    }
-
-    if (status.sudahMasuk && status.sudahPulang) {
-      showAppSnackBar(context, 'Anda sudah absen masuk & pulang hari ini');
-      return;
-    }
-
-    final posisi = await _ambilLokasiDenganLoading();
-    if (posisi == null) return;
-
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AbsenFlowScreen(initialPosition: posisi)),
-    );
-  }
-
-  Future<void> _handleAbsenPulang() async {
-    final status = await AbsensiService().getStatus();
-    if (!mounted) return;
-
-    if (status == null) {
-      showAppSnackBar(context, 'Gagal memuat status absen', type: AppSnackBarType.error);
-      return;
-    }
-
-    if (!status.sudahMasuk) {
-      showAppSnackBar(context, 'Anda belum absen masuk, tidak bisa absen pulang', type: AppSnackBarType.error);
-      return;
-    }
-
-    if (status.sudahPulang) {
-      showAppSnackBar(context, 'Anda sudah absen pulang');
-      return;
-    }
-
-    final posisi = await _ambilLokasiDenganLoading();
-    if (posisi == null) return;
-
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AbsenPulangFlowScreen(initialPosition: posisi)),
-    );
   }
 
   @override
@@ -195,14 +117,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisSpacing: 16,
                   children: [
                     _MenuItem(
-                      icon: Icons.login,
-                      label: 'Absen Masuk',
-                      onTap: () => _handleAbsenMasuk(),
-                    ),
-                    _MenuItem(
-                      icon: Icons.logout,
-                      label: 'Absen Pulang',
-                      onTap: () => _handleAbsenPulang(),
+                      icon: Icons.fingerprint,
+                      label: 'Absen',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const AbsenMenuScreen()),
+                        );
+                      },
                     ),
                     _MenuItem(
                       icon: Icons.calendar_today,
@@ -220,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
                         );
-                      },  
+                      },
                     ),
                     _MenuItem(
                       icon: Icons.event_busy,
