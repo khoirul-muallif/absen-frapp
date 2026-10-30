@@ -45,6 +45,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
   DateTime _focusedMonth = DateTime.now();
   DateTime? _selectedDay;
   bool _loading = true;
+  bool _gagal = false;
   Map<DateTime, JadwalItem> _jadwalPerHari = {};
 
   @override
@@ -59,35 +60,41 @@ class _JadwalScreenState extends State<JadwalScreen> {
   Future<void> _loadBulan(DateTime bulan) async {
     setState(() {
       _loading = true;
+      _gagal = false;
     });
 
     final awal = DateTime(bulan.year, bulan.month, 1);
     final akhir = DateTime(bulan.year, bulan.month + 1, 0);
     final format = DateFormat('yyyy-MM-dd');
 
-    final items = await _service.sayaDalamRentang(
-      format.format(awal),
-      format.format(akhir),
-    );
+    try {
+      final items = await _service
+          .sayaDalamRentangOrThrow(format.format(awal), format.format(akhir))
+          .timeout(const Duration(seconds: 10));
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final perHari = <DateTime, JadwalItem>{};
-    for (final item in items) {
-      final tgl = _parseTanggal(item.tanggal);
-      if (tgl != null) perHari[_key(tgl)] = item;
-    }
+      final perHari = <DateTime, JadwalItem>{};
+      for (final item in items) {
+        final tgl = _parseTanggal(item.tanggal);
+        if (tgl != null) perHari[_key(tgl)] = item;
+      }
 
-    setState(() {
-      _jadwalPerHari = perHari;
-      _loading = false;
-    });
-
-    if (items.isEmpty) {
-      // sayaDalamRentang menelan ApiException dan balikin [] -- gak bisa
-      // bedain "kosong karena memang gak ada jadwal" vs "kosong karena
-      // request gagal". Biarkan tampilan kalender tetap muncul kosong,
-      // tanpa snackbar error yang bisa salah (lihat catatan di balasan).
+      setState(() {
+        _jadwalPerHari = perHari;
+        _loading = false;
+      });
+    } catch (e) {
+      // Menangkap ApiException (response sukses tapi success:false) MAUPUN
+      // error jaringan level socket (SocketException/TimeoutException saat
+      // WiFi/data mati total) -- keduanya harus berhenti nge-load, bukan
+      // cuma ApiException.
+      if (!mounted) return;
+      setState(() {
+        _jadwalPerHari = {};
+        _loading = false;
+        _gagal = true;
+      });
     }
   }
 
@@ -139,7 +146,25 @@ class _JadwalScreenState extends State<JadwalScreen> {
             const SizedBox(height: 16),
             const _Legenda(),
             const SizedBox(height: 16),
-            if (selected != null)
+            if (_gagal)
+              Card(
+                color: Colors.red[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[700]),
+                      const SizedBox(width: 12),
+                      const Expanded(child: Text('Gagal memuat jadwal bulan ini.')),
+                      TextButton(
+                        onPressed: () => _loadBulan(_focusedMonth),
+                        child: const Text('Coba Lagi'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (selected != null)
               _DetailCard(tanggal: _selectedDay!, item: selected)
             else if (_selectedDay != null && !_loading)
               Card(

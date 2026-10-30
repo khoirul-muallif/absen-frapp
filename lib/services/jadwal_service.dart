@@ -42,4 +42,13 @@ class JadwalService {
       return [];
     }
   }
+
+  /// Sama seperti [sayaDalamRentang], tapi TIDAK menelan ApiException --
+  /// dipakai oleh JadwalScreen supaya bisa membedakan "benar-benar kosong"
+  /// dari "request gagal" dan menampilkan state error yang sesuai.
+  Future<List<JadwalItem>> sayaDalamRentangOrThrow(String mulai, String selesai) async {
+    final json = await _apiClient.get(ApiConstants.jadwalSaya(mulai, selesai));
+    final records = json['data']['records'] as List;
+    return records.map((e) => JadwalItem.fromJson(e)).toList();
+  }
 }

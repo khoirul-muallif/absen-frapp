@@ -37,14 +37,6 @@ end-to-end per 26 Okt 2026)*
       `cuti_service.dart` sama-sama nulis `http.MultipartRequest` manual
       sendiri-sendiri karena `ApiClient` belum support file upload. Belum
       dirapikan jadi 1 helper bersama.
-- [ ] **`JadwalScreen` tidak bisa membedakan gagal-request dari
-      benar-benar-kosong** — `JadwalService.sayaDalamRentang()` menelan
-      `ApiException` dan balikin `[]` (desain lama untuk prefetch form
-      TukarJadwal, di mana itu wajar). Dipakai juga oleh `JadwalScreen`
-      (30 Okt 2026) tanpa mengubah kontraknya, jadi di layar itu kalender
-      kosong tanpa pesan error bisa berarti dua hal berbeda. Belum
-      diputuskan apakah perlu method baru terpisah yang tidak menelan
-      exception.
 
 ## Catatan konvensi FE (biar gak keulang)
 
