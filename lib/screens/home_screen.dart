@@ -11,6 +11,7 @@ import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
 import '../services/tukar_jadwal_service.dart';
+import 'jadwal/jadwal_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -122,6 +123,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const AbsenMenuScreen()),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.calendar_month,
+                      label: 'Jadwal',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const JadwalScreen()),
                         );
                       },
                     ),

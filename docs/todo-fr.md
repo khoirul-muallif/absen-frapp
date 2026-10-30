@@ -4,35 +4,8 @@
 > biar file ini tetep pendek dan gampang di-scan. Detail histori lengkap
 > tetap di CHANGELOG-fr.md.
 
-## Bug aktif
-
-- [ ] **Tombol "Absen" di Home auto-routing diam-diam, bikin salah niat
-      ketukar** — `onTap` tombol Absen manggil `getStatus()` terus nebak
-      sendiri mau diarahkan ke flow masuk atau pulang, tanpa user pernah
-      eksplisit milih. Dua kejadian nyata (27 Okt 2026):
-      1. Udah absen masuk pagi, buka app lagi jam 9 cuma buat cek/iseng
-         → otomatis didorong ke flow PULANG (karena logic "udah masuk,
-         belum pulang" match), padahal gak niat pulang beneran.
-      2. Lupa absen pulang kemarin (sesi masih terbuka) → pagi ini niat
-         absen masuk hari baru, malah kedetek sebagai pulang sesi
-         kemarin. (Catatan: ini SEBENERNYA sesuai desain backend fase 57
-         — shift malam masuk T pulang T+1 harus kedetek gini — tapi buat
-         kasus "beneran lupa", user gak py jalan buat bilang "ini masuk
-         baru, bukan nerusin kemarin".)
-
-      Rencana fix: pisah jadi 2 tombol eksplisit di Home — "Absen Masuk"
-      & "Absen Pulang" — masing-masing langsung ke flow-nya sendiri
-      tanpa nebak client-side. Backend udah punya guard yang benar
-      (`masuk()` nolak kalau sesi kemarin masih terbuka, `pulang()` cari
-      jendela 2 hari) — client tinggal nampilin pesan errornya apa
-      adanya (pakai `showAppSnackBar` yang udah ada) kalau ditolak,
-      bukan nyoba nebak duluan.
-
 ## Belum dibuat
 
-- [ ] **Layar "Jadwal"** (kalender + detail jadwal per tanggal) — belum
-      ada sama sekali di frontend, dan referensi UI nunjukkin ini jadi
-      titik masuk buat form Tukar Jadwal juga.
 - [ ] **Deteksi wajah otomatis via gesture** — sekarang foto wajah
       (absen masuk/pulang) masih manual pencet tombol capture. Rencana
       ke depan: auto-trigger begitu sistem deteksi gesture tertentu
@@ -64,17 +37,29 @@ end-to-end per 26 Okt 2026)*
       `cuti_service.dart` sama-sama nulis `http.MultipartRequest` manual
       sendiri-sendiri karena `ApiClient` belum support file upload. Belum
       dirapikan jadi 1 helper bersama.
+- [ ] **`JadwalScreen` tidak bisa membedakan gagal-request dari
+      benar-benar-kosong** — `JadwalService.sayaDalamRentang()` menelan
+      `ApiException` dan balikin `[]` (desain lama untuk prefetch form
+      TukarJadwal, di mana itu wajar). Dipakai juga oleh `JadwalScreen`
+      (30 Okt 2026) tanpa mengubah kontraknya, jadi di layar itu kalender
+      kosong tanpa pesan error bisa berarti dua hal berbeda. Belum
+      diputuskan apakah perlu method baru terpisah yang tidak menelan
+      exception.
 
 ## Catatan konvensi FE (biar gak keulang)
 
 - Field jam dari backend untuk Izin (`jam_keluar`/`jam_kembali`) dan
   Lembur (`jam_mulai`/`jam_selesai`) dikirim RAW `"08:00:00"`, bukan
   `H:i`. Potong string, jangan coba parse sebagai Carbon/DateTime.
-- Tanggal dari `DinasController`/`CutiController` dikirim format `'d M Y'`
-  (mis. "15 Oct 2026"), bukan ISO — aman ditampilkan mentah tanpa parsing,
-  tapi jangan dicoba di-parse jadi `DateTime`.
+- Tanggal dari `DinasController`/`CutiController`/`JadwalController`
+  dikirim format `'d M Y'` (mis. "15 Oct 2026"), bukan ISO — aman
+  ditampilkan mentah tanpa parsing. Kalau butuh di-parse jadi `DateTime`
+  (mis. buat key kalender di `JadwalScreen`), kunci locale eksplisit ke
+  `en_US` di parser-nya (`DateFormat('d MMM yyyy', 'en_US')`) — jangan
+  bergantung locale default device (`id_ID`), nama bulan Inggris gak
+  bakal cocok kalau device-nya Indonesia.
 - `lib/screens/<modul>/<file>.dart` (izin/, lembur/, dinas/, cuti/,
-  tukar_jadwal/) semuanya nested 1 level lebih dalam dari
+  tukar_jadwal/, jadwal/) semuanya nested 1 level lebih dalam dari
   `lib/screens/` — butuh `../../` buat reach `lib/widgets/`, `lib/theme/`,
   `lib/services/`, dkk, BUKAN `../`. `home_screen.dart` beda, langsung
   di `lib/screens/`, jadi tetap `../`.
