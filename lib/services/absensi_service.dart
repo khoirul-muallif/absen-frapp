@@ -1,16 +1,12 @@
 // lib/services/absensi_service.dart
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
-import 'auth_service.dart';
-import 'dart:convert';
 import 'api_client.dart';
 import '../models/absensi_model.dart';
 import '../models/riwayat_absen_model.dart';
 
 class AbsensiService {
   final ApiClient _apiClient = ApiClient();
-  final AuthService _authService = AuthService(); // dipakai khusus utk header multipart di bawah
 
   Future<AbsensiStatus?> getStatus() async {
     try {
@@ -57,19 +53,6 @@ class AbsensiService {
     }
   }
 
-  // --- Di bawah ini TIDAK dimigrasi ke ApiClient ---
-  // ApiClient.post() cuma support JSON body; endpoint masuk/pulang butuh
-  // multipart/form-data (file foto), jadi tetap pakai http.MultipartRequest
-  // manual seperti sebelumnya.
-
-  Future<Map<String, String>> _authHeaders() async {
-    final token = await _authService.getToken();
-    return {
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    };
-  }
-
   Future<Map<String, dynamic>> absenMasuk({
     required double latitude,
     required double longitude,
@@ -110,27 +93,22 @@ class AbsensiService {
     required Map<String, String> extraFields,
   }) async {
     try {
-      final headers = await _authHeaders();
-      final request = http.MultipartRequest('POST', Uri.parse(endpoint));
-      request.headers.addAll(headers);
-
-      request.fields['latitude'] = latitude.toString();
-      request.fields['longitude'] = longitude.toString();
-      request.fields.addAll(extraFields);
-
-      request.files.add(
-        await http.MultipartFile.fromPath(fotoFieldName, foto.path),
+      final json = await _apiClient.postMultipart(
+        endpoint,
+        fields: {
+          'latitude': latitude.toString(),
+          'longitude': longitude.toString(),
+          ...extraFields,
+        },
+        files: {fotoFieldName: foto},
       );
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      final json = jsonDecode(response.body);
-
       return {
-        'success': json['success'] ?? false,
+        'success': true,
         'message': json['message'] ?? '',
         'data': json['data'],
       };
+    } on ApiException catch (e) {
+      return {'success': false, 'message': e.message};
     } catch (e) {
       return {'success': false, 'message': 'Gagal terhubung ke server'};
     }

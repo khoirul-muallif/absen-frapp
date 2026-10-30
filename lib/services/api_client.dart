@@ -1,4 +1,5 @@
 // lib/services/api_client.dart
+import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'token_storage.dart';
@@ -48,6 +49,22 @@ class ApiClient {
       headers: {...await _headers(), 'Content-Type': 'application/json'},
       body: body != null ? jsonEncode(body) : null,
     );
+    return _handle(res);
+  }
+  
+  Future<Map<String, dynamic>> postMultipart(
+    String url, {
+    required Map<String, String> fields,
+    required Map<String, File> files,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+    request.headers.addAll(await _headers());
+    request.fields.addAll(fields);
+    for (final entry in files.entries) {
+      request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+    }
+    final streamed = await request.send();
+    final res = await http.Response.fromStream(streamed);
     return _handle(res);
   }
 
