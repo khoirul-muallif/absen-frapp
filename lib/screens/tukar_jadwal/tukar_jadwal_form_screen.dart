@@ -7,7 +7,9 @@ import '../../providers/auth_provider.dart';
 import '../../utils/snackbar_helper.dart';
 
 class TukarJadwalFormScreen extends StatefulWidget {
-  const TukarJadwalFormScreen({super.key});
+  final DateTime? tanggalAwal;
+
+  const TukarJadwalFormScreen({super.key, this.tanggalAwal});
 
   @override
   State<TukarJadwalFormScreen> createState() => _TukarJadwalFormScreenState();
@@ -25,6 +27,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   DateTime _tanggalAsal = DateTime.now();
   JadwalItem? _jadwalAsal;
   bool _loadingAsal = false;
+  bool _tanggalAsalTerkunci = false;
 
   // Mode tukar
   DateTime _tanggalTujuan = DateTime.now();
@@ -72,7 +75,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
   };
 
-  @override
+    @override
   void initState() {
     super.initState();
     // Karyawan umum shift-nya tetap (assignment periode KaryawanShift),
@@ -81,6 +84,10 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     final tipeJadwal = context.read<AuthProvider>().user?.tipeJadwal;
     if (tipeJadwal == 'umum') {
       _mode = 'pindah';
+    }
+    if (widget.tanggalAwal != null) {
+      _tanggalAsal = widget.tanggalAwal!;
+      _tanggalAsalTerkunci = true;
     }
     _prefetchJadwalSaya();
   }
@@ -345,43 +352,33 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
               const SizedBox(height: 16),
 
               const Text('Jadwal Saya', style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Tanggal'),
-                subtitle: Text(_formatTanggal(_tanggalAsal)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
-              ),
-              const Text(
-                'Tanggal abu-abu = tidak ada jadwal Anda di sana (atau bukan hari kerja untuk mode Pindah).',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
-              ),
-              if (_loadingAsal)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: LinearProgressIndicator(),
-                )
-              else if (_jadwalAsal == null)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Tidak ada jadwal Anda di tanggal ini.',
-                    style: TextStyle(color: Colors.red),
+              if (_tanggalAsalTerkunci)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.event_available, size: 20),
+                  title: Text(_formatTanggal(_tanggalAsal)),
+                  subtitle: const Text(
+                    'Tanggal dipilih dari layar Jadwal',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  trailing: TextButton(
+                    onPressed: () => setState(() => _tanggalAsalTerkunci = false),
+                    child: const Text('Ubah'),
                   ),
                 )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Shift: ${_jadwalAsal!.shift ?? '(Libur)'}'
-                    '${_jadwalAsal!.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
-                    style: TextStyle(
-                      color: _jadwalAsal!.bisaDiajukan ? null : Colors.orange[800],
-                    ),
-                  ),
+              else ...[
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Tanggal'),
+                  subtitle: Text(_formatTanggal(_tanggalAsal)),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
                 ),
-
-              const SizedBox(height: 16),
+                const Text(
+                  'Tanggal abu-abu = tidak ada jadwal Anda di sana (atau bukan hari kerja untuk mode Pindah).',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
 
               if (_mode == 'tukar') ...[
                 const Text('Jadwal Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold)),

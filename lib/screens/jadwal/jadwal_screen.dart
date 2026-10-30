@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../models/jadwal_model.dart';
 import '../../services/jadwal_service.dart';
+import '../tukar_jadwal/tukar_jadwal_form_screen.dart';
 
 (String, Color) _jenisDisplay(String jenis) {
   switch (jenis) {
@@ -165,17 +166,18 @@ class _JadwalScreenState extends State<JadwalScreen> {
                 ),
               )
             else if (selected != null)
-              _DetailCard(tanggal: _selectedDay!, item: selected)
-            else if (_selectedDay != null && !_loading)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Tidak ada jadwal tercatat pada tanggal ini.',
-                    style: TextStyle(color: Colors.grey[600]),
+            _DetailCard(
+              tanggal: _selectedDay!,
+              item: selected,
+              onAjukan: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TukarJadwalFormScreen(tanggalAwal: _selectedDay),
                   ),
-                ),
-              ),
+                );
+                _loadBulan(_focusedMonth);
+              },
+            ),
           ],
         ),
       ),
@@ -261,7 +263,8 @@ class _Legenda extends StatelessWidget {
 class _DetailCard extends StatelessWidget {
   final DateTime tanggal;
   final JadwalItem item;
-  const _DetailCard({required this.tanggal, required this.item});
+  final VoidCallback onAjukan;
+  const _DetailCard({required this.tanggal, required this.item, required this.onAjukan});
 
   @override
   Widget build(BuildContext context) {
@@ -269,23 +272,37 @@ class _DetailCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: warna),
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: warna),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.tanggal, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(label, style: TextStyle(color: warna, fontWeight: FontWeight.w600)),
+                      if (item.shift != null) Text('Shift: ${item.shift}'),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.tanggal, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(label, style: TextStyle(color: warna, fontWeight: FontWeight.w600)),
-                  if (item.shift != null) Text('Shift: ${item.shift}'),
-                ],
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onAjukan,
+                icon: const Icon(Icons.swap_horiz, size: 18),
+                label: const Text('Ajukan Tukar/Pindah'),
               ),
             ),
           ],
