@@ -1,18 +1,28 @@
+// lib/screens/absen/absen_pulang_flow_screen.dart
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'step_lokasi.dart';
 import 'step_wajah.dart';
 
 class AbsenPulangFlowScreen extends StatefulWidget {
-  const AbsenPulangFlowScreen({super.key});
+  final Position? initialPosition;
+
+  const AbsenPulangFlowScreen({super.key, this.initialPosition});
 
   @override
   State<AbsenPulangFlowScreen> createState() => _AbsenPulangFlowScreenState();
 }
 
 class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
-  int _currentStep = 0;
+  late int _currentStep;
   Position? _position;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    _currentStep = widget.initialPosition != null ? 1 : 0;
+  }
 
   void _onLokasiSukses(Position position) {
     setState(() {

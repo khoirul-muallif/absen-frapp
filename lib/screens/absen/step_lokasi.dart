@@ -1,6 +1,7 @@
+// lib/screens/absen/step_lokasi.dart
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../../utils/permission_helper.dart';
+import '../../utils/lokasi_helper.dart';
 
 class StepLokasi extends StatefulWidget {
   final void Function(Position position) onSukses;
@@ -20,46 +21,20 @@ class _StepLokasiState extends State<StepLokasi> {
       _error = null;
     });
 
-    try {
-      final granted = await PermissionHelper.requestLocation();
-      if (!granted) {
-        setState(() {
-          _error = 'Izin lokasi ditolak. Aktifkan di pengaturan HP.';
-          _loading = false;
-        });
-        return;
-      }
+    final hasil = await LokasiHelper.ambilLokasi();
 
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        setState(() {
-          _error = 'GPS tidak aktif. Aktifkan GPS terlebih dahulu.';
-          _loading = false;
-        });
-        return;
-      }
+    if (!mounted) return;
 
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
-      );
-      final cameraGranted = await PermissionHelper.requestCamera();
-      if (!cameraGranted) {
-        setState(() {
-          _error = 'Izin kamera diperlukan untuk langkah selanjutnya.';
-          _loading = false;
-        });
-        return;
-      }
-
-      widget.onSukses(position);
-
-    } catch (e) {
+    if (!hasil.berhasil) {
       setState(() {
-        _error = 'Gagal mendapatkan lokasi: $e';
+        _error = hasil.error;
+        _loading = false;
       });
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      return;
     }
+
+    setState(() => _loading = false);
+    widget.onSukses(hasil.position!);
   }
 
   @override

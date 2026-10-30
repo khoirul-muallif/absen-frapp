@@ -1,3 +1,4 @@
+// lib/screens/absen/absen_flow_screen.dart
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'step_lokasi.dart';
@@ -5,17 +6,28 @@ import 'step_qr.dart';
 import 'step_wajah.dart';
 
 class AbsenFlowScreen extends StatefulWidget {
-  const AbsenFlowScreen({super.key});
+  /// Kalau diisi (sudah didapat dari Beranda sebelum masuk sini), step
+  /// Lokasi dilewati -- flow langsung mulai dari Scan QR.
+  final Position? initialPosition;
+
+  const AbsenFlowScreen({super.key, this.initialPosition});
 
   @override
   State<AbsenFlowScreen> createState() => _AbsenFlowScreenState();
 }
 
 class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
-  int _currentStep = 0;
+  late int _currentStep;
 
   Position? _position;
   String? _kodeQr;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    _currentStep = widget.initialPosition != null ? 1 : 0;
+  }
 
   void _onLokasiSukses(Position position) {
     setState(() {
@@ -31,12 +43,6 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
     });
   }
 
-  // Keluar total ke Beranda (bukan pindah step/rebuild screen) begitu user
-  // mau mengulang setelah gagal. StepQr (mobile_scanner) dan StepWajah
-  // (package:camera) rebutan hardware kamera kalau diulang dalam flow yang
-  // sama -- balik ke Beranda = teardown penuh, persis kondisi "restart
-  // bersih" yang terbukti selalu jalan normal. Peringatan ditampilkan dulu
-  // supaya user tahu kenapa harus tunggu sebentar sebelum tap Absen lagi.
   Future<void> _kembaliKeBerandaPeringatan() async {
     await showDialog(
       context: context,

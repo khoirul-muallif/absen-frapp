@@ -14,6 +14,9 @@ import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
 import '../services/tukar_jadwal_service.dart';
 import '../utils/snackbar_helper.dart';
+// tambahan import di atas
+import 'package:geolocator/geolocator.dart';
+import '../utils/lokasi_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,6 +41,27 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _menungguTukarJadwalCount = items.length);
   }
   
+  Future<Position?> _ambilLokasiDenganLoading() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final hasil = await LokasiHelper.ambilLokasi();
+
+    if (!mounted) return null;
+    Navigator.of(context, rootNavigator: true).pop(); // tutup loading dialog
+
+    if (!hasil.berhasil) {
+      showAppSnackBar(context, hasil.error ?? 'Gagal mendapatkan lokasi',
+          type: AppSnackBarType.error);
+      return null;
+    }
+
+    return hasil.position;
+  }
+
   Future<void> _handleAbsenMasuk() async {
     final status = await AbsensiService().getStatus();
     if (!mounted) return;
@@ -47,20 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // Cuma blok kalau hari ini memang sudah lengkap masuk+pulang. Status
-    // "sudah masuk, belum pulang" SENGAJA tidak diblok di sini -- itu bisa
-    // berarti sesi hari ini yang masih terbuka, atau sesi kemarin yang
-    // kelupaan ditutup, dan client tidak bisa (dan tidak perlu) membedakan
-    // dua itu. Biarkan backend masuk() yang menolak dengan alasan pasti
-    // kalau ternyata ada sesi kemarin yang masih menggantung.
     if (status.sudahMasuk && status.sudahPulang) {
       showAppSnackBar(context, 'Anda sudah absen masuk & pulang hari ini');
       return;
     }
 
+    final posisi = await _ambilLokasiDenganLoading();
+    if (posisi == null) return;
+
     if (!mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AbsenFlowScreen()),
+      MaterialPageRoute(builder: (_) => AbsenFlowScreen(initialPosition: posisi)),
     );
   }
 
@@ -83,9 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    final posisi = await _ambilLokasiDenganLoading();
+    if (posisi == null) return;
+
     if (!mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AbsenPulangFlowScreen()),
+      MaterialPageRoute(builder: (_) => AbsenPulangFlowScreen(initialPosition: posisi)),
     );
   }
 
