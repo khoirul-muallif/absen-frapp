@@ -32,12 +32,6 @@ end-to-end per 26 Okt 2026)*
 
 ## Technical debt
 
-- [ ] **Multipart upload duplikat di 2 tempat** — `_absenMultipart` di
-      `absensi_service.dart` dan `CutiService.ajukan()` di
-      `cuti_service.dart` sama-sama nulis `http.MultipartRequest` manual
-      sendiri-sendiri karena `ApiClient` belum support file upload. Belum
-      dirapikan jadi 1 helper bersama.
-
 ## Catatan konvensi FE (biar gak keulang)
 
 - Field jam dari backend untuk Izin (`jam_keluar`/`jam_kembali`) dan
