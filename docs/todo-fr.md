@@ -15,6 +15,21 @@
       scope sesi tersendiri. Dicatat 27 Okt 2026, belum ada desain
       konkret.
 
+## Perlu investigasi sebelum dikerjakan
+
+- [ ] **Larangan tukar/cuti/dkk untuk tanggal yang sudah lewat — belum
+      jelas sisi mana yang perlu disentuh, atau mungkin sudah ada
+      sebagiannya.** Cuti/Dinas API sudah ada validasi `tanggal_mulai
+      after_or_equal:today` sejak fase 23 (backend absensi-app) — perlu
+      diverifikasi ulang masih berlaku. TukarJadwal belum jelas: FE
+      sengaja kasih jendela mundur 30 hari di date picker (buat pilih
+      jadwal ASAL yang sudah terjadi, use case valid), jadi "tanggal
+      lewat ditolak" di sini perlu didefinisikan lebih spesifik --
+      tanggal asal yang sudah lewat, atau tanggal tujuan (tukar/pindah)
+      yang sudah lewat? Dua kasus beda. Izin & Lembur belum dicek sama
+      sekali. Cek dulu behavior aktual tiap modul sebelum mutusin ini
+      kerjaan backend, frontend, atau dua-duanya.
+      
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
