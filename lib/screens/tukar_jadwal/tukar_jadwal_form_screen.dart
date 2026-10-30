@@ -351,7 +351,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
               }),
               const SizedBox(height: 16),
 
-              const Text('Jadwal Saya', style: TextStyle(fontWeight: FontWeight.bold)),
+                           const Text('Jadwal Saya', style: TextStyle(fontWeight: FontWeight.bold)),
               if (_tanggalAsalTerkunci)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -379,6 +379,30 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   style: TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
+              if (_loadingAsal)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: LinearProgressIndicator(),
+                )
+              else if (_jadwalAsal == null)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Tidak ada jadwal Anda di tanggal ini.',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Shift: ${_jadwalAsal!.shift ?? '(Libur)'}'
+                    '${_jadwalAsal!.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
+                    style: TextStyle(
+                      color: _jadwalAsal!.bisaDiajukan ? null : Colors.orange[800],
+                    ),
+                  ),
+                ),
 
               if (_mode == 'tukar') ...[
                 const Text('Jadwal Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold)),
