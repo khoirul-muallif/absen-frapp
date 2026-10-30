@@ -1,3 +1,55 @@
+## feat: layar Jadwal (kalender bulanan) + terhubung ke form Tukar/Pindah
+
+Commit: `ebadafb`, `624b911`, `1bf42b0` (30 Okt 2026)
+
+Tiga commit merombak akses ke jadwal — sebelumnya karyawan sama sekali
+tidak punya cara melihat jadwalnya sendiri dalam bentuk kalender
+(item lama todo-fr.md "Layar Jadwal belum ada sama sekali").
+
+**`ebadafb`**: layar baru `lib/screens/jadwal/jadwal_screen.dart`,
+dibuka lewat tile "Jadwal" di grid Beranda. Pakai package
+`table_calendar` (baru ditambah ke pubspec) — tiap tanggal ditandai
+titik warna sesuai `jenis` (hijau=reguler/piket "Kerja", abu=libur,
+oranye=cuti, ungu=dinas), tap tanggal menampilkan detail card di bawah
+kalender, geser bulan fetch ulang data. Sengaja tidak membuat
+model/service baru — `JadwalItem`/`JadwalService` sudah ada duluan
+(dipakai form TukarJadwal), layar ini cuma jadi consumer baru dari
+`sayaDalamRentang()` yang sudah ada, tanpa mengubah kontraknya.
+
+Parsing tanggal `'d M Y'` (format backend, nama bulan Inggris) dikunci
+locale `en_US` eksplisit di parser lokal layar ini
+(`DateFormat('d MMM yyyy', 'en_US')`) — tidak boleh ikut locale default
+device yang `id_ID`, akan gagal mencocokkan nama bulan kalau tidak.
+
+**`624b911`**: `sayaDalamRentang()` menelan `ApiException` dan
+membalikkan `[]` (desain lama, wajar untuk prefetch form TukarJadwal),
+sehingga di `JadwalScreen` gagal-request dan benar-benar-kosong tampil
+identik — dan saat koneksi terputus total, loading indicator berjalan
+tanpa batas (request HTTP tidak punya timeout, exception tidak pernah
+terpicu). Fix: `JadwalService.sayaDalamRentangOrThrow()` baru (tidak
+menelan exception, method lama tidak disentuh), dipakai dengan
+`.timeout(10 detik)` + `catch` generik (bukan cuma `ApiException`,
+supaya error koneksi level socket ikut tertangkap). State baru
+menampilkan card merah "Gagal memuat jadwal bulan ini" + tombol Coba
+Lagi. Dikonfirmasi di device: WiFi dimatikan saat buka/geser bulan,
+card error muncul setelah ~10 detik.
+
+**`1bf42b0`**: detail card di `JadwalScreen` dapat tombol "Ajukan
+Tukar/Pindah" yang membuka `TukarJadwalFormScreen` dengan tanggal yang
+dipilih sudah ter-prefill (`tanggalAwal` baru). Section "Jadwal Saya"
+di form dibedakan tampilannya tergantung sumber: dari `JadwalScreen`,
+tampil ringkas tanpa ikon kalender + keterangan "Tanggal dipilih dari
+layar Jadwal" dan tombol teks "Ubah" (unlock balik ke date picker biasa
+kalau salah tap) — sebelumnya menampilkan `ListTile` + ikon kalender
+yang sama persis seperti user baru mau memilih tanggal, padahal sudah
+dipilih di layar sebelumnya, terasa double. Form yang dibuka langsung
+dari tile "Tukar Jadwal" di Beranda (floating action button, tanpa
+`tanggalAwal`) tampilannya tidak berubah.
+
+Menutup item lama todo-fr.md "Layar Jadwal belum ada sama sekali" dan
+technical debt "JadwalScreen tidak bisa membedakan gagal-request dari
+benar-benar-kosong".
+
 ## feat: redesign menu Absen — 2 tombol eksplisit, auto-lokasi, disable kondisional
 
 Commit: `905b9c3`, `e334d78`, `7d8108d`, `<isi hash commit terbaru>` (30 Okt 2026)
