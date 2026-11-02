@@ -54,7 +54,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   // apa pun. Cari tanggal valid terdekat dari titik acuan (maju-mundur
   // bergantian) sebagai initialDate yang aman.
   DateTime? _tanggalValidTerdekat(DateTime acuan, bool Function(DateTime) predicate) {
-    final firstDate = DateTime.now().subtract(const Duration(days: 30));
+    final firstDate = DateTime.now();
     final lastDate = DateTime.now().add(const Duration(days: 90));
     for (int offset = 0; offset <= 120; offset++) {
       final maju = acuan.add(Duration(days: offset));
@@ -93,7 +93,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   }
 
     Future<void> _prefetchJadwalSaya() async {
-    final mulai = DateTime.now().subtract(const Duration(days: 30));
+    final mulai = DateTime.now();
     final selesai = DateTime.now().add(const Duration(days: 90));
     final list = await _jadwalService.sayaDalamRentang(
       _formatTanggal(mulai),
@@ -173,8 +173,8 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       showAppSnackBar(
         context,
         _mode == 'pindah'
-            ? 'Tidak ada jadwal hari kerja Anda dalam 30 hari lalu - 90 hari ke depan'
-            : 'Tidak ada jadwal Anda dalam 30 hari lalu - 90 hari ke depan',
+            ? 'Tidak ada jadwal hari kerja Anda dalam 90 hari ke depan'
+            : 'Tidak ada jadwal Anda dalam 90 hari ke depan',
         type: AppSnackBarType.error,
       );
       return;
@@ -182,7 +182,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      firstDate: DateTime.now(),   // sebelumnya: .subtract(const Duration(days: 30))
       lastDate: DateTime.now().add(const Duration(days: 90)),
       selectableDayPredicate: _asalValidPredicate,
     );
@@ -193,8 +193,8 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _tanggalTujuan,
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
+      firstDate: DateTime.now(),
+       lastDate: DateTime.now().add(const Duration(days: 90)),
     );
     if (picked != null) _muatRekan(picked);
   }
@@ -243,7 +243,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (initial == null) {
       showAppSnackBar(
         context,
-        'Tidak ada tanggal libur Anda yang bisa dipilih dalam 30 hari lalu - 90 hari ke depan',
+        'Tidak ada tanggal libur Anda yang bisa dipilih dalam 90 hari ke depan',
         type: AppSnackBarType.error,
       );
       return;

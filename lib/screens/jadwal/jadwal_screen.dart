@@ -169,6 +169,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
             _DetailCard(
               tanggal: _selectedDay!,
               item: selected,
+              bisaDiajukan: !_selectedDay!.isBefore(_key(DateTime.now())),
               onAjukan: () async {
                 await Navigator.of(context).push(
                   MaterialPageRoute(
@@ -263,8 +264,14 @@ class _Legenda extends StatelessWidget {
 class _DetailCard extends StatelessWidget {
   final DateTime tanggal;
   final JadwalItem item;
+  final bool bisaDiajukan;
   final VoidCallback onAjukan;
-  const _DetailCard({required this.tanggal, required this.item, required this.onAjukan});
+  const _DetailCard({
+    required this.tanggal,
+    required this.item,
+    required this.bisaDiajukan,
+    required this.onAjukan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,15 +303,17 @@ class _DetailCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onAjukan,
-                icon: const Icon(Icons.swap_horiz, size: 18),
-                label: const Text('Ajukan Tukar/Pindah'),
+            if (bisaDiajukan) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onAjukan,
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  label: const Text('Ajukan Tukar/Pindah'),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
