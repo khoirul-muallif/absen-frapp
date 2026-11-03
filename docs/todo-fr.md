@@ -17,12 +17,12 @@
 
 ## Perlu investigasi sebelum dikerjakan
 
-- [ ] **Izin & Lembur belum dicek apakah bisa diajukan untuk tanggal yang
-      sudah lewat.** Cuti/Dinas (API, `after_or_equal:today` sejak fase
-      23) dan TukarJadwal (ditutup 2 Nov 2026, lihat backend commit
-      `1211100` + FE commit `0d81c48`) sudah aman. Izin & Lembur belum
-      pernah diperiksa behavior-nya — cek dulu controller backend
-      sebelum mutusin ini perlu disentuh di sisi mana.
+*(kosong — Cuti/Dinas (fase 23), TukarJadwal (2 Nov 2026), dan
+Izin/Lembur (3 Nov 2026, backend commit `6ba3003`) semua sudah
+divalidasi `after_or_equal:today`. Belum ada verifikasi end-to-end di
+device untuk Izin/Lembur FE — form-nya sudah lama ada sejak fase
+10-11, tinggal pastikan submit tanggal lewat ditolak dengan pesan
+yang masuk akal di UI, bukan cuma validasi backend)*
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
