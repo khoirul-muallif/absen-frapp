@@ -15,6 +15,18 @@
       scope sesi tersendiri. Dicatat 27 Okt 2026, belum ada desain
       konkret.
 
+- [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
+      screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
+      pola yang kurang ramah pengguna: konsistensi visual antar modul
+      (section Card baru diterapkan di TukarJadwalFormScreen, modul
+      lain — Izin/Lembur/Cuti/Dinas — masih layout polos ListTile
+      rata tanpa sekat, lihat commit `7b42ee1`), copy/pesan yang
+      masih teknis atau kurang jelas, alur yang bisa dipangkas/
+      disederhanakan. Masih rencana, belum ada scope/checklist
+      konkret — perlu sesi tersendiri buat nentuin cakupannya (semua
+      modul sekaligus, atau satu-satu kayak pola review Filament
+      Resource di backend fase 25-36). Dicatat 4 Nov 2026.
+
 ## Perlu investigasi sebelum dikerjakan
 
 *(kosong — Cuti/Dinas (fase 23), TukarJadwal (2 Nov 2026), dan
