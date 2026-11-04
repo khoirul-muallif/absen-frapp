@@ -149,6 +149,15 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       _jadwalAsal = jadwal;
       _loadingAsal = false;
     });
+    // Tanggal tujuan (mode tukar) dikunci sama dengan tanggal asal -- tidak
+    // ada picker terpisah lagi, auto-sync begitu tanggal asal berubah.
+    // Tukar beda tanggal sebenarnya didukung backend (kalau salah satu sisi
+    // libur), tapi FE sengaja tidak menawarkan opsi itu -- lihat info text
+    // di UI, arahkan ke admin kalau butuh beda tanggal.
+    if (_mode == 'tukar') {
+      _muatRekan(tanggal);
+    }
+
   }
 
   Future<void> _muatRekan(DateTime tanggal) async {
@@ -189,15 +198,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (picked != null) _muatJadwalAsal(picked);
   }
 
-  Future<void> _pilihTanggalTujuan() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _tanggalTujuan,
-      firstDate: DateTime.now(),
-       lastDate: DateTime.now().add(const Duration(days: 90)),
-    );
-    if (picked != null) _muatRekan(picked);
-  }
+
 
   Future<void> _bukaPilihRekan() async {
     final dipilih = await showModalBottomSheet<JadwalItem>(
@@ -306,7 +307,40 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan', type: AppSnackBarType.error);
     }
   }
-
+  Widget _sectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 18, color: Colors.grey.shade700),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -322,154 +356,187 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                 final bisaTukar = tipeJadwal != 'umum';
 
                 if (!bisaTukar) {
-                  // Karyawan umum: cuma mode Pindah, segmented button gak
-                  // perlu ditampilkan sama sekali (bukan ditampilkan lalu
-                  // di-disable -- opsi yang gak pernah relevan buat tipe
-                  // ini mending gak usah dilihat).
-                  return const Text(
-                    'Pindah Tanggal',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  return _sectionCard(
+                    title: 'Jenis Pengajuan',
+                    icon: Icons.swap_horiz,
+                    children: const [
+                      Text('Pindah Tanggal', style: TextStyle(fontWeight: FontWeight.w500)),
+                    ],
                   );
                 }
 
-                return SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'tukar', label: Text('Tukar dengan Rekan')),
-                    ButtonSegment(value: 'pindah', label: Text('Pindah Tanggal')),
+                return _sectionCard(
+                  title: 'Jenis Pengajuan',
+                  icon: Icons.swap_horiz,
+                  children: [
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'tukar', label: Text('Tukar dengan Rekan')),
+                        ButtonSegment(value: 'pindah', label: Text('Pindah Tanggal')),
+                      ],
+                      selected: {_mode},
+                      onSelectionChanged: (selected) {
+                        setState(() {
+                          _mode = selected.first;
+                          _jadwalTujuanTerpilih = null;
+                          if (_mode == 'pindah' && _jadwalAsal?.jenis == 'libur') {
+                            _jadwalAsal = null;
+                          }
+                        });
+                        if (_mode == 'tukar' && _jadwalAsal != null) {
+                          _muatRekan(_tanggalAsal);
+                        }
+                      },
+                    ),
                   ],
-                  selected: {_mode},
-                  onSelectionChanged: (selected) {
-                    setState(() {
-                      _mode = selected.first;
-                      _jadwalTujuanTerpilih = null; // gak relevan di mode pindah
-                      if (_mode == 'pindah' && _jadwalAsal?.jenis == 'libur') {
-                        _jadwalAsal = null; // asal libur gak valid buat mode pindah
-                      }
-                    });
-                  },
                 );
               }),
-              const SizedBox(height: 16),
 
-                           const Text('Jadwal Saya', style: TextStyle(fontWeight: FontWeight.bold)),
-              if (_tanggalAsalTerkunci)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_available, size: 20),
-                  title: Text(_formatTanggal(_tanggalAsal)),
-                  subtitle: const Text(
-                    'Tanggal dipilih dari layar Jadwal',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  trailing: TextButton(
-                    onPressed: () => setState(() => _tanggalAsalTerkunci = false),
-                    child: const Text('Ubah'),
-                  ),
-                )
-              else ...[
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tanggal'),
-                  subtitle: Text(_formatTanggal(_tanggalAsal)),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
-                ),
-                const Text(
-                  'Tanggal abu-abu = tidak ada jadwal Anda di sana (atau bukan hari kerja untuk mode Pindah).',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-              ],
-              if (_loadingAsal)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: LinearProgressIndicator(),
-                )
-              else if (_jadwalAsal == null)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Tidak ada jadwal Anda di tanggal ini.',
-                    style: TextStyle(color: Colors.red),
-                  ),
+              _sectionCard(
+                title: 'Jadwal Saya',
+                icon: Icons.event_note,
+                children: [
+                  if (_tanggalAsalTerkunci)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.event_available, size: 20),
+                      title: Text(_formatTanggal(_tanggalAsal)),
+                      subtitle: const Text(
+                        'Tanggal dipilih dari layar Jadwal',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      trailing: TextButton(
+                        onPressed: () => setState(() => _tanggalAsalTerkunci = false),
+                        child: const Text('Ubah'),
+                      ),
+                    )
+                  else ...[
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Tanggal'),
+                      subtitle: Text(_formatTanggal(_tanggalAsal)),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
+                    ),
+                    const Text(
+                      'Tanggal abu-abu = tidak ada jadwal Anda di sana (atau bukan hari kerja untuk mode Pindah).',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                  if (_loadingAsal)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: LinearProgressIndicator(),
+                    )
+                  else if (_jadwalAsal == null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        'Tidak ada jadwal Anda di tanggal ini.',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        'Shift: ${_jadwalAsal!.shift ?? '(Libur)'}'
+                        '${_jadwalAsal!.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
+                        style: TextStyle(
+                          color: _jadwalAsal!.bisaDiajukan ? null : Colors.orange[800],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              if (_mode == 'tukar')
+                _sectionCard(
+                  title: 'Jadwal Rekan Tujuan',
+                  icon: Icons.people_outline,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.info_outline, size: 20, color: Colors.grey),
+                      title: Text('Tanggal: ${_formatTanggal(_tanggalAsal)}'),
+                      subtitle: const Text(
+                        'Tukar cuma bisa di tanggal yang sama dengan jadwal Anda. '
+                        'Mau tukar beda tanggal? Hubungi admin.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      tileColor: Colors.grey.shade100,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      title: Text(_jadwalTujuanTerpilih == null
+                          ? 'Pilih rekan tujuan'
+                          : _jadwalTujuanTerpilih!.karyawanNama ?? '-'),
+                      subtitle: _jadwalTujuanTerpilih != null
+                          ? Text('Shift: ${_jadwalTujuanTerpilih!.shift ?? '(Libur)'}')
+                          : null,
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: (_loadingRekan || _rekanList.isEmpty) ? null : _bukaPilihRekan,
+                    ),
+                    if (_loadingRekan)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: LinearProgressIndicator(),
+                      )
+                    else if (_rekanList.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          'Tidak ada rekan satu unit yang punya jadwal di tanggal ini.',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                  ],
                 )
               else
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Shift: ${_jadwalAsal!.shift ?? '(Libur)'}'
-                    '${_jadwalAsal!.bisaDiajukan ? '' : ' — sedang terikat pengajuan lain'}',
-                    style: TextStyle(
-                      color: _jadwalAsal!.bisaDiajukan ? null : Colors.orange[800],
+                _sectionCard(
+                  title: 'Pindah ke Tanggal',
+                  icon: Icons.event_repeat,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Tanggal Baru'),
+                      subtitle: Text(_formatTanggal(_tanggalBaru)),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: _loadingPrefetch ? null : _pilihTanggalBaru,
                     ),
-                  ),
+                    const Text(
+                      'Hanya tanggal libur Anda yang bisa dipilih (abu-abu = bukan hari libur Anda).',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
                 ),
 
-              if (_mode == 'tukar') ...[
-                const Text('Jadwal Rekan Tujuan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tanggal'),
-                  subtitle: Text(_formatTanggal(_tanggalTujuan)),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: _pilihTanggalTujuan,
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  tileColor: Colors.grey.shade100,
-                  title: Text(_jadwalTujuanTerpilih == null
-                      ? 'Pilih rekan tujuan'
-                      : _jadwalTujuanTerpilih!.karyawanNama ?? '-'),
-                  subtitle: _jadwalTujuanTerpilih != null
-                      ? Text('Shift: ${_jadwalTujuanTerpilih!.shift ?? '(Libur)'}')
-                      : null,
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: (_loadingRekan || _rekanList.isEmpty) ? null : _bukaPilihRekan,
-                ),
-                if (_loadingRekan)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: LinearProgressIndicator(),
-                  )
-                else if (_rekanList.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      'Tidak ada rekan satu unit yang punya jadwal di tanggal ini.',
-                      style: TextStyle(color: Colors.red),
+              _sectionCard(
+                title: 'Alasan',
+                icon: Icons.edit_note,
+                children: [
+                  TextFormField(
+                    controller: _alasanController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: 'Jelaskan alasan pengajuan...',
+                      border: OutlineInputBorder(),
                     ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
                   ),
-              ] else ...[
-                const Text('Pindah ke Tanggal', style: TextStyle(fontWeight: FontWeight.bold)),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tanggal Baru'),
-                  subtitle: Text(_formatTanggal(_tanggalBaru)),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: _loadingPrefetch ? null : _pilihTanggalBaru,
-                ),
-                const Text(
-                  'Hanya tanggal libur Anda yang bisa dipilih (abu-abu = bukan hari libur Anda).',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-              ],
-
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _alasanController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Alasan',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
+                ],
               ),
-              const SizedBox(height: 24),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                   child: _submitting
                       ? const SizedBox(
                           width: 20,

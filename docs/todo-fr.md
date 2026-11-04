@@ -45,6 +45,14 @@ end-to-end per 26 Okt 2026)*
 
 ## Catatan konvensi FE (biar gak keulang)
 
+- TukarJadwal mode Tukar: tanggal tujuan SENGAJA dikunci sama dengan
+  tanggal asal (bukan keterbatasan backend — backend mendukung beda
+  tanggal kalau salah satu sisi libur, lihat CHANGELOG backend fase
+  71-73). Keputusan produk: FE tidak menawarkan opsi beda tanggal
+  supaya user nggak kena kejutan submit gagal karena validasi silang
+  (pengaju/tujuan bentrok shift kerja sendiri di tanggal pasangan).
+  User diarahkan hubungi admin kalau butuh tukar beda tanggal.
+
 - Field jam dari backend untuk Izin (`jam_keluar`/`jam_kembali`) dan
   Lembur (`jam_mulai`/`jam_selesai`) dikirim RAW `"08:00:00"`, bukan
   `H:i`. Potong string, jangan coba parse sebagai Carbon/DateTime.
