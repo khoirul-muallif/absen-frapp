@@ -36,7 +36,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _tanggal,
-      firstDate: DateTime.now().subtract(const Duration(days: 7)),
+      firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
     );
     if (picked != null) setState(() => _tanggal = picked);
