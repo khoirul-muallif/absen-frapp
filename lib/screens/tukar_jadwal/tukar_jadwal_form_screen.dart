@@ -29,8 +29,6 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
   bool _loadingAsal = false;
   bool _tanggalAsalTerkunci = false;
 
-  // Mode tukar
-  DateTime _tanggalTujuan = DateTime.now();
   List<JadwalItem> _rekanList = [];
   JadwalItem? _jadwalTujuanTerpilih;
   bool _loadingRekan = false;
@@ -162,7 +160,6 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
 
   Future<void> _muatRekan(DateTime tanggal) async {
     setState(() {
-      _tanggalTujuan = tanggal;
       _jadwalTujuanTerpilih = null;
       _loadingRekan = true;
     });
