@@ -6,6 +6,13 @@
 
 ## Belum dibuat
 
+- [ ] **Fitur ganti email & password** — menu "Profil"/"Ubah Password"
+      sudah ada wadahnya di app bar (PopupMenuButton pojok kanan atas,
+      commit [isi setelah commit]), tapi isinya masih placeholder
+      snackbar "segera hadir". Perlu endpoint backend buat update
+      email/password (belum ada — cek dulu apakah `AuthController`
+      sudah punya atau perlu baru), dan screen form di FE. Dicatat
+      5 Nov 2026.
 
 - [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
       screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
