@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'absen/absen_menu_screen.dart';
-import 'riwayat_screen.dart';
 import 'notifikasi_screen.dart';
 import 'izin/izin_screen.dart';
 import 'lembur/lembur_screen.dart';
@@ -286,15 +285,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const JadwalScreen()),
-                        );
-                      },
-                    ),
-                    _MenuItem(
-                      icon: Icons.calendar_today,
-                      label: 'Riwayat',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RiwayatScreen()),
                         );
                       },
                     ),
