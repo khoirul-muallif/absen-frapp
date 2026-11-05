@@ -35,16 +35,43 @@ class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
   }
 
   Future<Position?> _ambilLokasiDenganLoading() async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    var dialogTampil = true;  
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 16),
+                  Flexible(child: Text('Mencari lokasi Anda...')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ).then((_) => dialogTampil = false);
 
     final hasil = await LokasiHelper.ambilLokasi();
+    if (dialogTampil) {
+      dialogTampil = false;
+      navigator.pop();
+    }
 
     if (!mounted) return null;
-    Navigator.of(context, rootNavigator: true).pop();
 
     if (!hasil.berhasil) {
       showAppSnackBar(context, hasil.error ?? 'Gagal mendapatkan lokasi',

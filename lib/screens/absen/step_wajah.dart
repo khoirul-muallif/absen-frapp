@@ -283,8 +283,9 @@ class _StepWajahState extends State<StepWajah> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                 Navigator.of(context)
+                  ..pop()  // tutup dialog
+                  ..pop(); // keluar dari flow absen
               },
               child: const Text('OK'),
             ),
