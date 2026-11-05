@@ -53,6 +53,26 @@ class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
     }
   }
 
+
+  /// Hanya step aktif yang di-mount, sejalan dengan AbsenFlowScreen --
+  /// IndexedStack sebelumnya mem-build StepWajah sejak step Lokasi,
+  /// sehingga kamera depan menyala sebelum layarnya terlihat.
+  Widget _buildStepAktif() {
+    switch (_currentStep) {
+      case 0:
+        return StepLokasi(onSukses: _onLokasiSukses);
+      case 1:
+        if (_position == null) return const SizedBox();
+        return StepWajah(
+          position: _position!,
+          mode: AbsenMode.pulang,
+          onGagal: _kembaliKeBerandaPeringatan,
+        );
+      default:
+        return const SizedBox();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,20 +81,7 @@ class _AbsenPulangFlowScreenState extends State<AbsenPulangFlowScreen> {
         children: [
           _StepIndicator(currentStep: _currentStep),
           Expanded(
-            child: IndexedStack(
-              index: _currentStep,
-              children: [
-                StepLokasi(onSukses: _onLokasiSukses),
-                if (_position != null)
-                  StepWajah(
-                    position: _position!,
-                    mode: AbsenMode.pulang,
-                    onGagal: _kembaliKeBerandaPeringatan,
-                  )
-                else
-                  const SizedBox(),
-              ],
-            ),
+            child: _buildStepAktif(),
           ),
         ],
       ),

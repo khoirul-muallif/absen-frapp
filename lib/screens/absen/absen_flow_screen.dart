@@ -17,6 +17,30 @@ class AbsenFlowScreen extends StatefulWidget {
 }
 
 class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
+
+  /// Hanya step aktif yang di-mount. Sebelumnya pakai IndexedStack yang
+  /// mem-build semua children sekaligus, sehingga StepQr memegang kamera
+  /// sejak step Lokasi dan masih mounted saat StepWajah mencoba membuka
+  /// kamera depan.
+  Widget _buildStepAktif() {
+    switch (_currentStep) {
+      case 0:
+        return StepLokasi(onSukses: _onLokasiSukses);
+      case 1:
+        return StepQr(onSukses: _onQrSukses);
+      case 2:
+        if (_position == null || _kodeQr == null) return const SizedBox();
+        return StepWajah(
+          position: _position!,
+          kodeQr: _kodeQr!,
+          mode: AbsenMode.masuk,
+          onGagal: _kembaliKeBerandaPeringatan,
+        );
+      default:
+        return const SizedBox();
+    }
+  }
+  
   late int _currentStep;
 
   Position? _position;
@@ -73,22 +97,7 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
         children: [
           _StepIndicator(currentStep: _currentStep),
           Expanded(
-            child: IndexedStack(
-              index: _currentStep,
-              children: [
-                StepLokasi(onSukses: _onLokasiSukses),
-                StepQr(onSukses: _onQrSukses),
-                if (_position != null && _kodeQr != null)
-                  StepWajah(
-                    position: _position!,
-                    kodeQr: _kodeQr!,
-                    mode: AbsenMode.masuk,
-                    onGagal: _kembaliKeBerandaPeringatan,
-                  )
-                else
-                  const SizedBox(),
-              ],
-            ),
+            child: _buildStepAktif(),
           ),
         ],
       ),

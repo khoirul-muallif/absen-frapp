@@ -300,10 +300,10 @@ class _StepWajahState extends State<StepWajah> {
     }
   }
 
-  void _gagalDenganPeringatan(String pesan) {
+  Future<void> _gagalDenganPeringatan(String pesan) async {
     if (_selesai) return;
     _selesai = true;
-    _hentikanStream();
+    await _hentikanStream();
     if (mounted) {
       showAppSnackBar(context, pesan, type: AppSnackBarType.error);
     }

@@ -13,7 +13,7 @@ class _StepQrState extends State<StepQr> {
   final MobileScannerController _controller = MobileScannerController();
   bool _isProcessing = false;
 
-  void _onDetect(BarcodeCapture capture) {
+  Future<void> _onDetect(BarcodeCapture capture) async {
     if (_isProcessing) return;
 
     final barcodes = capture.barcodes;
@@ -21,7 +21,8 @@ class _StepQrState extends State<StepQr> {
       final kode = barcodes.first.rawValue;
       if (kode != null && kode.isNotEmpty) {
         setState(() => _isProcessing = true);
-        _controller.stop();
+        await _controller.stop();
+        if (!mounted) return;
         widget.onSukses(kode);
       }
     }
