@@ -1,3 +1,76 @@
+## fix: audit modul Absen — race kamera, navigator, dan masa tenggang gesture
+
+Commit: `253a135`, `3b60b1c`, `cc15c3e`, `0adbe37`, `15fc835` (5 Nov 2026)
+
+Audit UX modul Absen (sesi pertama dari rencana audit per-modul).
+Temuan terbesar: dialog "tunggu 5-10 detik sebelum tap Absen lagi"
+dari `905b9c3`/`e334d78` ternyata menutup gejala dari tiga bug
+berbeda yang semuanya soal pelepasan kamera. Ketiganya dibereskan di
+sini, dialognya dihapus.
+
+**`253a135`**: dialog loading lokasi di `AbsenMenuScreen` di-pop tanpa
+referensi route. Tombol back Android menutup dialog (`barrierDismissible`
+tidak menahan back), lalu pop setelah GPS selesai mengenai route di
+bawahnya — `AbsenMenuScreen` ikut tertutup sendiri tanpa sebab yang
+jelas bagi user. Sebaliknya, kalau layar dilepas saat GPS masih
+berjalan, pengecekan `mounted` mendahului pop sehingga barrier modal
+menggantung di atas aplikasi. Perbaikan: `Navigator` disimpan sebelum
+`await`, `PopScope(canPop: false)`, dan flag `dialogTampil` mencegah
+pop ganda. Dialog sekalian diberi teks "Mencari lokasi Anda..." —
+GPS di dalam gedung bisa 20-30 detik dan sebelumnya hanya spinner
+tanpa keterangan. Di `StepWajah`, dialog sukses memanggil
+`Navigator.of(context)` dua kali dengan context builder dialog yang
+sudah tidak mounted setelah pop pertama; diganti cascade dari satu
+resolusi.
+
+**`3b60b1c`**: `IndexedStack` di kedua flow mem-build SELURUH children,
+bukan cuma step aktif. Akibatnya `StepQr` sudah mounted dan memegang
+kamera sejak step Lokasi, dan masih mounted saat `StepWajah` meminta
+kamera depan; di flow pulang, `StepWajah` menyalakan kamera depan
+sebelum layarnya terlihat. Diganti rendering kondisional lewat
+`_buildStepAktif()`, sehingga step yang ditinggalkan benar-benar
+ter-dispose. Selain itu `StepQr._onDetect` memanggil `_controller.stop()`
+tanpa menunggunya lalu langsung `onSukses` — `StepWajah._initCamera()`
+jalan sebelum `mobile_scanner` selesai melepas kamera. `stop()`
+sekarang di-`await`. `_gagalDenganPeringatan` juga tidak menunggu
+`_hentikanStream()`.
+
+**`cc15c3e`**: sisa race di arah sebaliknya — keluar flow lalu masuk
+lagi tanpa jeda memunculkan `MobileScannerErrorCode.controllerAlreadyInitialized`
+("The scanner was already started"). `dispose()` Flutter tidak bisa
+di-`await`, jadi race ini tidak bisa ditutup dari sisi pemanggil.
+`autoStart` dimatikan dan `start()` dikendalikan manual: kalau kena
+error itu, `stop()` dulu lalu coba lagi, maksimal 5 kali dengan jeda
+400ms. Lewat dari itu baru tampil pesan dengan tombol "Coba Lagi",
+jadi user tidak perlu keluar-masuk flow untuk memulihkannya. Pesan
+error tidak lagi menampilkan `errorCode` mentah ke user.
+
+**`0adbe37`**: efek samping tak terduga dari perbaikan di atas — karena
+kamera sekarang didapat bersih sejak awal, image stream langsung
+mengalir saat user masih memposisikan HP, sehingga kedipan refleks
+biasa (sebelum instruksi sempat dibaca) langsung meloloskan verifikasi.
+Dikonfirmasi lewat `git diff 752f889..HEAD` bahwa logika deteksi tidak
+tersentuh sama sekali, jadi ini bukan regresi. Secara keamanan tidak
+bocor (kedipan refleks tetap membuktikan ada orang hidup), tapi
+kejelasannya rusak. Gesture sekarang baru dinilai 1,5 detik setelah
+kamera siap; selama masa itu `_pernahTertutup` dan `_frameSenyumBerturut`
+di-reset tiap frame. Masa tenggang ditambahkan ke timeout total supaya
+tidak memakan jatah 20 detik. Ambang senyum sengaja dibiarkan 0.70 —
+menaikkannya berdasar satu device berisiko membuat senyum tipis gagal
+terus, dan kegagalan berulang lebih menyakitkan daripada lolos
+kecepatan.
+
+**`15fc835`**: dialog "tunggu 5-10 detik" dihapus dari kedua flow.
+Diverifikasi di device pada dua jalur kegagalan — timeout verifikasi
+wajah, dan QR salah yang ditolak backend — keduanya mendarat dengan
+benar dan kamera langsung bisa dipakai lagi tanpa jeda. Keluar dari
+flow sekarang `pop()` satu kali ke menu Absen, bukan `popUntil` ke
+root: melempar user sampai Beranda hanya masuk akal selama kamera
+butuh waktu bernapas, dan mendarat di menu Absen membuat retry cukup
+satu tap.
+
+Menutup technical debt "retry QR/wajah rebutan hardware kamera".
+
 ## feat: statistik kehadiran di Beranda + restrukturisasi navigasi
 
 Commit: `5b87ba1`, `439f89d`, `0bb3778`, `6f70fcb` (5 Nov 2026)
