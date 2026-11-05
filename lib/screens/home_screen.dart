@@ -15,6 +15,7 @@ import 'jadwal/jadwal_screen.dart';
 import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
+import '../services/notifikasi_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,8 +27,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _tukarJadwalService = TukarJadwalService();
   final _absensiService = AbsensiService();
-
+  final _notifikasiService = NotifikasiService();
   int _menungguTukarJadwalCount = 0;
+  int _notifBelumBaca = 0;
+
   RekapAbsen? _rekap;
   bool _loadingRekap = true;
 
@@ -36,7 +39,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadMenungguTukarJadwalCount();
     _loadRekap();
+    _loadNotifCount();
+  }
 
+
+  Future<void> _loadNotifCount() async {
+    final count = await _notifikasiService.getJumlahBelumBaca();
+    if (!mounted) return;
+    setState(() => _notifBelumBaca = count);
   }
 
   Future<void> _loadMenungguTukarJadwalCount() async {
@@ -65,11 +75,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Beranda'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
+           icon: Badge.count(
+              count: _notifBelumBaca,
+              isLabelVisible: _notifBelumBaca > 0,
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
               );
+              _loadNotifCount();
             },
           ),
           PopupMenuButton<String>(
