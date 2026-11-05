@@ -6,14 +6,6 @@
 
 ## Belum dibuat
 
-- [ ] **Deteksi wajah otomatis via gesture** — sekarang foto wajah
-      (absen masuk/pulang) masih manual pencet tombol capture. Rencana
-      ke depan: auto-trigger begitu sistem deteksi gesture tertentu
-      (mirip liveness detection), bukan capture sekali jepret manual.
-      Perlu `google_mlkit_face_detection` dipakai streaming dari kamera
-      (bukan sekali capture seperti sekarang) — perubahan besar,
-      scope sesi tersendiri. Dicatat 27 Okt 2026, belum ada desain
-      konkret.
 
 - [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
       screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
@@ -29,12 +21,9 @@
 
 ## Perlu investigasi sebelum dikerjakan
 
-*(kosong — Cuti/Dinas (fase 23), TukarJadwal (2 Nov 2026), dan
-Izin/Lembur (3 Nov 2026, backend commit `6ba3003`) semua sudah
-divalidasi `after_or_equal:today`. Belum ada verifikasi end-to-end di
-device untuk Izin/Lembur FE — form-nya sudah lama ada sejak fase
-10-11, tinggal pastikan submit tanggal lewat ditolak dengan pesan
-yang masuk akal di UI, bukan cuma validasi backend)*
+*(kosong — semua tervalidasi `after_or_equal:today` di backend DAN
+dicegah di sumbernya di FE (kalender gak nawarin tanggal lewat lagi
+sejak commit `4ebe805`): Cuti/Dinas, TukarJadwal, Izin/Lembur)*
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
