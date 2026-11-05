@@ -1,3 +1,74 @@
+## feat: statistik kehadiran di Beranda + restrukturisasi navigasi
+
+Commit: `5b87ba1`, `439f89d`, `0bb3778`, `6f70fcb` (5 Nov 2026)
+
+Empat commit merombak Beranda — dari grid menu datar tanpa informasi
+apa pun jadi punya ringkasan kehadiran, dan navigasi dipindah dari
+"semuanya di grid" ke pembagian app bar / bottom nav / grid.
+
+**`5b87ba1`**: kartu profil dapat section statistik dari
+`GET /api/absensi/rekap` (persentase tepat waktu, total hadir,
+terlambat, alpha, label bulan). Backend sudah menghitung semuanya
+termasuk persentase, jadi FE murni fetch & tampilkan — nol duplikasi
+logic agregasi. Loading state sengaja tanpa spinner: section statistik
+tidak muncul sama sekali selama fetching atau kalau gagal, kartu tetap
+valid tanpanya (konsisten pola `?? '-'` yang sudah dipakai di file
+ini). Terlambat diwarnai oranye dan alpha merah hanya kalau nilainya
+> 0, supaya nol tidak ikut terbaca sebagai peringatan.
+
+Catatan model: `RekapAbsen` berada di `models/riwayat_absen_model.dart`
+satu file dengan `RiwayatAbsenItem`, bukan di `absensi_model.dart`
+seperti dugaan awal — sempat bikin `undefined_class` di analyze.
+Field `sakit` di model itu tidak pernah diisi backend (`rekap()` tidak
+mengirimnya) sehingga selalu 0; sengaja tidak dipakai di tampilan
+daripada menampilkan angka yang dijamin salah.
+
+**`439f89d`**: ikon logout di app bar diganti ikon notifikasi, dan
+`_MenuItem` "Notifikasi" dihapus dari grid — notifikasi adalah
+informasi yang perlu terlihat terus, bukan tujuan yang dicari di
+daftar menu. Logout pindah ke `PopupMenuButton` (ikon akun) bersama
+"Profil" dan "Ubah Password". Dua item terakhir masih berupa snackbar
+"Fitur ini akan segera hadir", bukan screen kosong atau dialog
+setengah jadi — lebih jujur ke user daripada pura-pura fiturnya ada.
+Endpoint backend untuk update email/password belum dipastikan ada,
+dicatat di todo-fr.md (`620ad67`).
+
+**`0bb3778`**: ikon notifikasi dapat `Badge.count` dari
+`NotifikasiService.getJumlahBelumBaca()` — endpoint khusus yang sudah
+ada, tidak perlu fetch seluruh list cuma untuk ambil angka. `onPressed`
+dibuat async supaya badge di-refresh begitu user kembali dari
+`NotifikasiScreen`; tanpa itu angkanya basi sampai Beranda rebuild.
+Service sudah menelan `ApiException` dan mengembalikan 0, jadi gagal
+fetch berarti badge tidak muncul, bukan crash. Belum di-refresh saat
+berpindah antar tab bottom nav — technical debt kecil, dicatat.
+
+**`6f70fcb`**: file baru `main_screen.dart` sebagai shell berisi
+`NavigationBar` 3 tab (Beranda / Riwayat / Informasi) di atas
+`IndexedStack`, supaya state tiap tab tidak reset saat berpindah.
+Riwayat dihapus dari grid (grid jadi 7 item) dan `RiwayatScreen`
+dipasang apa adanya sebagai tab — Scaffold+AppBar miliknya dibiarkan
+utuh, tidak dibongkar, karena shell sengaja tidak punya AppBar sendiri.
+Tab Informasi diisi `informasi_screen.dart` baru berupa empty state
+("Belum ada informasi"), bukan placeholder "segera hadir": layar ini
+memang bisa kosong nanti saat fiturnya sudah jalan tapi belum ada
+pengumuman, jadi widget-nya tidak perlu diganti lagi. Model + endpoint
+Informasi belum ada sama sekali di backend, dicatat di todo.md
+backend (`absensi-app` commit `d97ace9`).
+
+Titik masuk di `splash_screen.dart` dan `login_screen.dart` dialihkan
+dari `HomeScreen` ke `MainScreen` — tanpa ini `MainScreen` jadi kode
+mati dan bottom nav tidak pernah terpasang (sempat terjadi saat
+testing). Logout tetap `pushAndRemoveUntil` ke `LoginScreen`, jadi
+`MainScreen` beserta state ketiga tab ikut dibuang saat keluar.
+
+Struktur navigasi mengikuti aplikasi absensi lama yang dipakai sebagai
+referensi (Riwayat + Informasi di footer). Gaya visualnya belum
+diikuti sama sekali — kartu melengkung, ikon bulat berwarna per
+kategori, ring chart kehadiran, tombol Presensi di tengah bottom nav
+— sengaja ditunda sampai audit UX per-modul selesai biar tidak nabrak
+perubahan struktural. Dicatat sebagai item todo-fr.md tersendiri
+(`ea998cc`).
+
 ## feat: layar Jadwal (kalender bulanan) + terhubung ke form Tukar/Pindah
 
 Commit: `ebadafb`, `624b911`, `1bf42b0` (30 Okt 2026)
