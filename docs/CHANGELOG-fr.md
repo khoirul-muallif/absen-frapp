@@ -1,6 +1,7 @@
 ## fix: audit modul Absen — race kamera, navigator, dan masa tenggang gesture
 
-Commit: `253a135`, `3b60b1c`, `cc15c3e`, `0adbe37`, `15fc835` (5 Nov 2026)
+Commit: `253a135`, `3b60b1c`, `cc15c3e`, `0adbe37`, `15fc835`,
+`74d973c` (5 Nov 2026)
 
 Audit UX modul Absen (sesi pertama dari rencana audit per-modul).
 Temuan terbesar: dialog "tunggu 5-10 detik sebelum tap Absen lagi"
@@ -68,6 +69,28 @@ flow sekarang `pop()` satu kali ke menu Absen, bukan `popUntil` ke
 root: melempar user sampai Beranda hanya masuk akal selama kamera
 butuh waktu bernapas, dan mendarat di menu Absen membuat retry cukup
 satu tap.
+
+**`74d973c`**: perbaikan UX setelah bug fungsional beres. `_StepIndicator`
+ternyata punya daftar label sejak awal (`['Lokasi', 'Scan QR', 'Wajah']`)
+tapi hanya dipakai `.length`-nya — user melihat lingkaran bernomor tanpa
+keterangan dan tidak tahu angka 2 itu QR atau wajah. Label sekarang
+dirender di bawah tiap lingkaran, dan garis penghubung ikut berwarna saat
+step-nya sudah lewat (sebelumnya selalu abu). Judul AppBar
+`AbsenFlowScreen` diubah 'Absen' → 'Absen Masuk'; sebelumnya identik
+dengan judul menu Absen sehingga setelah masuk flow tidak ada penanda ini
+masuk atau pulang.
+
+Keluar dari flow di tengah jalan minta konfirmasi lewat `PopScope`, tapi
+hanya kalau `_currentStep > _stepAwal` — ada progres yang benar-benar
+hilang. Praktisnya dialog cuma muncul di flow masuk pada step wajah
+(QR sudah ter-scan); flow pulang mulai langsung di step wajah sehingga
+back tetap langsung keluar. `PopScope` hanya mencegat back sistem dan
+tombol back AppBar, jadi dialog sukses dan `_kembaliKeMenu` tidak
+terpengaruh.
+
+Nilai konfirmasi ini diakui tipis (yang hilang cuma scan QR ulang,
+beberapa detik) dan sempat dipertimbangkan untuk dihapus — diputuskan
+dipertahankan karena biayanya nol di alur normal.
 
 Menutup technical debt "retry QR/wajah rebutan hardware kamera".
 
