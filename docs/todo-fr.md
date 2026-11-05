@@ -6,6 +6,19 @@
 
 ## Belum dibuat
 
+- [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`,
+      commit [isi setelah commit]) tapi hardcoded empty state. Nunggu
+      model + endpoint di backend (dicatat juga di todo.md). Setelah
+      itu: service, model, list kartu pengumuman + layar detail.
+      Dicatat 5 Nov 2026.
+
+- [ ] **Redesign visual Beranda** — struktur navigasi sudah final (bottom
+      nav 3 tab), tapi gaya visual masih default Material. Referensi dari
+      aplikasi lama: kartu profil dengan latar melengkung, ikon menu bulat
+      berwarna per kategori, ring chart kehadiran, tombol Presensi di
+      tengah bottom nav. Dikerjakan setelah audit UX per-modul selesai
+      biar nggak nabrak perubahan struktural. Dicatat 5 Nov 2026.
+
 - [ ] **Fitur ganti email & password** — menu "Profil"/"Ubah Password"
       sudah ada wadahnya di app bar (PopupMenuButton pojok kanan atas,
       commit [isi setelah commit]), tapi isinya masih placeholder
