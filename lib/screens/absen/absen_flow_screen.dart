@@ -34,7 +34,7 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
           position: _position!,
           kodeQr: _kodeQr!,
           mode: AbsenMode.masuk,
-          onGagal: _kembaliKeBerandaPeringatan,
+          onGagal: _kembaliKeMenu,
         );
       default:
         return const SizedBox();
@@ -67,26 +67,10 @@ class _AbsenFlowScreenState extends State<AbsenFlowScreen> {
     });
   }
 
-  Future<void> _kembaliKeBerandaPeringatan() async {
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Mulai Ulang dari Beranda'),
-        content: const Text(
-          'Anda akan kembali ke Beranda. Tunggu sekitar 5-10 detik sebelum '
-          'menekan tombol Absen lagi, supaya kamera siap dipakai ulang.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Mengerti'),
-          ),
-        ],
-      ),
-    );
-    if (mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
+  /// Keluar dari flow kembali ke menu Absen. Alasan kegagalannya sudah
+  /// disampaikan lewat snackbar di StepWajah, jadi tidak perlu dialog lagi.
+  void _kembaliKeMenu() {
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
