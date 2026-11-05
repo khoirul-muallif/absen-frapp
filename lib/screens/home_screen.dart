@@ -12,6 +12,8 @@ import 'cuti/cuti_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
 import '../services/tukar_jadwal_service.dart';
 import 'jadwal/jadwal_screen.dart';
+import '../services/absensi_service.dart';
+import '../models/riwayat_absen_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,18 +24,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _tukarJadwalService = TukarJadwalService();
+  final _absensiService = AbsensiService();
+
   int _menungguTukarJadwalCount = 0;
+  RekapAbsen? _rekap;
+  bool _loadingRekap = true;
 
   @override
   void initState() {
     super.initState();
     _loadMenungguTukarJadwalCount();
+    _loadRekap();
+
   }
 
   Future<void> _loadMenungguTukarJadwalCount() async {
     final items = await _tukarJadwalService.menungguResponSaya();
     if (!mounted) return;
     setState(() => _menungguTukarJadwalCount = items.length);
+  }
+
+  Future<void> _loadRekap() async {
+    final now = DateTime.now();
+    final rekap = await _absensiService.getRekap(bulan: now.month, tahun: now.year);
+    if (!mounted) return;
+    setState(() {
+      _rekap = rekap;
+      _loadingRekap = false;
+    });
   }
 
   @override
@@ -69,36 +87,109 @@ class _HomeScreenState extends State<HomeScreen> {
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundImage: user?.fotoProfil != null
-                            ? NetworkImage(user!.fotoProfil!)
-                            : null,
-                        child: user?.fotoProfil == null
-                            ? const Icon(Icons.person, size: 28)
-                            : null,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user?.nama ?? '-',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundImage: user?.fotoProfil != null
+                                ? NetworkImage(user!.fotoProfil!)
+                                : null,
+                            child: user?.fotoProfil == null
+                                ? const Icon(Icons.person, size: 28)
+                                : null,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user?.nama ?? '-',
+                                  style: const TextStyle(
+                                      fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Text(user?.jabatan ?? '-'),
+                                Text(
+                                  user?.instansiNama ?? '-',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ],
                             ),
-                            Text(user?.jabatan ?? '-'),
-                            Text(
-                              user?.instansiNama ?? '-',
-                              style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                      if (!_loadingRekap && _rekap != null) ...[
+                        const Divider(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${_rekap!.persentaseTepatWaktu}%',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                  const Text('Tepat Waktu', style: TextStyle(fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text('${_rekap!.totalHadir}',
+                                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                                  const Text('Total Hadir', style: TextStyle(fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${_rekap!.terlambat}',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: _rekap!.terlambat > 0 ? Colors.orange[800] : null,
+                                    ),
+                                  ),
+                                  const Text('Terlambat', style: TextStyle(fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${_rekap!.alpha}',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: _rekap!.alpha > 0 ? Colors.red[700] : null,
+                                    ),
+                                  ),
+                                  const Text('Alpha', style: TextStyle(fontSize: 11)),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            _rekap!.bulan,
+                            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                          ),
+                        ),
+                      ],
+                    ],                 
                   ),
                 ),
               ),
