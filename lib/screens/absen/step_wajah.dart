@@ -66,10 +66,15 @@ class _StepWajahState extends State<StepWajah> {
   Timer? _timeoutTimer;
   DateTime _lastFrameProcessedAt = DateTime.fromMillisecondsSinceEpoch(0);
 
+  // Gesture baru dinilai setelah masa tenggang ini, supaya kedipan refleks
+  // saat user baru mengangkat HP (sebelum sempat membaca instruksi) tidak
+  // langsung meloloskan verifikasi.
+  DateTime? _mulaiMenilaiPada;
+
   static const _throttle = Duration(milliseconds: 150);
   static const _batasTanpaWajah = Duration(seconds: 6);
   static const _batasTotalGesture = Duration(seconds: 20);
-
+  static const _masaTenggang = Duration(milliseconds: 1500);
   @override
   void initState() {
     super.initState();
@@ -101,6 +106,7 @@ class _StepWajahState extends State<StepWajah> {
 
       await _cameraController!.initialize();
       if (!mounted) return;
+      _mulaiMenilaiPada = DateTime.now().add(_masaTenggang);
       setState(() => _isInitializing = false);
       _mulaiTimeoutTotal();
       _mulaiStream();
@@ -118,7 +124,8 @@ class _StepWajahState extends State<StepWajah> {
 
   void _mulaiTimeoutTotal() {
     _timeoutTimer?.cancel();
-    _timeoutTimer = Timer(_batasTotalGesture, () {
+    // Masa tenggang tidak ikut memakan jatah waktu gesture.
+    _timeoutTimer = Timer(_batasTotalGesture + _masaTenggang, () {
       if (!mounted || _gesturePassed || _selesai) return;
       _gagalDenganPeringatan(
         'Waktu verifikasi habis. Pastikan pencahayaan cukup dan wajah terlihat jelas di kamera, lalu coba lagi.',
@@ -185,6 +192,17 @@ class _StepWajahState extends State<StepWajah> {
   }
 
   void _evaluasiGesture(Face face) {
+    final mulai = _mulaiMenilaiPada;
+    if (mulai != null && DateTime.now().isBefore(mulai)) {
+      // Buang progres apa pun yang terkumpul selama masa tenggang.
+      _pernahTertutup = false;
+      _frameSenyumBerturut = 0;
+      if (mounted && _statusText != 'Wajah terdeteksi, bersiap...') {
+        setState(() => _statusText = 'Wajah terdeteksi, bersiap...');
+      }
+      return;
+    }
+
     if (_target == _Gesture.kedip) {
       _evaluasiKedip(face);
     } else {
@@ -196,6 +214,10 @@ class _StepWajahState extends State<StepWajah> {
     final kiri = face.leftEyeOpenProbability;
     final kanan = face.rightEyeOpenProbability;
     if (kiri == null || kanan == null) return;
+    if (!_pernahTertutup && mounted && _statusText != _instruksiAwal()) {
+      setState(() => _statusText = _instruksiAwal());
+    }
+
 
     final tertutup = kiri < _ambangMataTertutup && kanan < _ambangMataTertutup;
     final terbuka = kiri > _ambangMataTerbuka && kanan > _ambangMataTerbuka;
@@ -213,6 +235,10 @@ class _StepWajahState extends State<StepWajah> {
   void _evaluasiSenyum(Face face) {
     final senyum = face.smilingProbability;
     if (senyum == null) return;
+
+    if (_frameSenyumBerturut == 0 && mounted && _statusText != _instruksiAwal()) {
+      setState(() => _statusText = _instruksiAwal());
+    }
 
     if (senyum >= _ambangSenyum) {
       _frameSenyumBerturut++;
@@ -403,7 +429,7 @@ class _StepWajahState extends State<StepWajah> {
           child: Text(
             _statusText,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ],
