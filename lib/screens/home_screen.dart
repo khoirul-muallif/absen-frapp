@@ -14,6 +14,7 @@ import '../services/tukar_jadwal_service.dart';
 import 'jadwal/jadwal_screen.dart';
 import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
+import '../utils/snackbar_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,16 +65,63 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Beranda'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
+              );
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle_outlined),
+            onSelected: (value) async {
+              switch (value) {
+                case 'profil':
+                case 'ubah_password':
+                  showAppSnackBar(
+                    context,
+                    'Fitur ini akan segera hadir',
+                    type: AppSnackBarType.info,
+                  );
+                  break;
+                case 'logout':
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  }
+                  break;
               }
             },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'profil',
+                child: ListTile(
+                  leading: Icon(Icons.person_outline),
+                  title: Text('Profil'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'ubah_password',
+                child: ListTile(
+                  leading: Icon(Icons.lock_outline),
+                  title: Text('Ubah Password'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'logout',
+                child: ListTile(
+                  leading: Icon(Icons.logout, color: Colors.red),
+                  title: Text('Keluar', style: TextStyle(color: Colors.red)),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -232,15 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const RiwayatScreen()),
-                        );
-                      },
-                    ),
-                    _MenuItem(
-                      icon: Icons.notifications,
-                      label: 'Notifikasi',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
                         );
                       },
                     ),
