@@ -1,3 +1,100 @@
+## fix: audit lintas-layar — timeout, gagal-vs-kosong, race ganti bulan
+
+Commit: `3d89e53`, `6e915ff`, `42fd9a5`, `a0e71e0`, `e1bbdae`
+(6 Nov 2026)
+
+Lanjutan audit per-modul. Berangkat dari satu temuan lintas-modul di
+sesi sebelumnya (timeout service), yang ternyata bercabang jadi dua
+kelas bug yang sama berulang di tiga layar berbeda.
+
+**`3d89e53`**: akar timeout bukan di service, tapi di `ApiClient` —
+`http.get`/`post` di sana tidak punya batas waktu sama sekali, jadi
+setiap request di seluruh aplikasi rentan menggantung kalau koneksi
+putus di level socket. Future-nya tidak selesai dan tidak melempar,
+sehingga service tidak pernah return dan layar memutar spinner
+selamanya. Pola yang sama sudah ditutup di `JadwalScreen` (`624b911`)
+dengan `.timeout()` di call site; cara itu tidak menskala ke sepuluh
+service.
+
+Pembungkus `_kirim()` baru dipakai `get`/`post`/`patch`/`delete`/
+`postMultipart`. `TimeoutException`, `SocketException` dan
+`http.ClientException` diterjemahkan jadi `ApiException`, sehingga
+semua pemanggil yang sudah menangkapnya ikut terlindungi tanpa satu pun
+file service disentuh. Tidak ada `catch` generik di sana — exception
+lain berarti bug di kode kita. Batas 10 detik mengikuti nilai yang
+sudah diuji di device untuk `JadwalScreen`; upload foto absen 45 detik,
+karena gagal di sana berarti user mengulang seluruh flow wajah.
+
+`ApiException` dapat flag `isKoneksi` untuk membedakan "tidak sampai ke
+server" dari error validasi. Sekalian `_handle()` dijaga: `jsonDecode`
+atas respons HTML (error 500 Laravel, 404 dari URL salah) melempar
+`FormatException`, yang bukan `ApiException` dan karena itu lolos dari
+semua `catch` di service.
+
+**`6e915ff`**: `getRiwayat()`/`getRekap()` menelan `ApiException` jadi
+`[]`/`null`, dan di `RiwayatScreen` akibatnya paling menyesatkan di
+seluruh aplikasi — koneksi putus tampil sebagai "Belum ada data absensi
+bulan ini", jadi user yang sinyalnya mati menyimpulkan dia tidak pernah
+absen bulan itu. Ditambah varian `OrThrow` (pola
+`sayaDalamRentangOrThrow()`, `624b911`); method lama tetap ada untuk
+`home_screen.dart` yang memang tidak punya tempat menampilkan
+kegagalan, tapi sekarang mendelegasi.
+
+Tiga bug lain di layar yang sama, digabung karena menyentuh `_loadData()
+dan struktur state yang sama: ganti bulan beruntun melepas beberapa
+request tanpa penanda, sehingga hasil bulan lama bisa menimpa bulan di
+header (ditutup dengan `_requestTerakhir`); rekap dan riwayat berjalan
+berurutan padahal independen, jadi koneksi buruk berarti dua kali
+timeout (digabung `Future.wait` — bukan record `.wait`, yang membungkus
+penyebabnya jadi `ParallelWaitError` sehingga `on ApiException` tidak
+kena); dan `ListView` tanpa `AlwaysScrollableScrollPhysics` membuat
+pull-to-refresh mati justru saat daftar kosong.
+
+**`42fd9a5`**: race ganti bulan yang sama di `JadwalScreen`, dan di sini
+lebih mudah terpicu — satu swipe di kalender sudah satu halaman. Salahnya
+juga tidak muncul sebagai error: titik warna di tanggal sekadar jadi
+keliru tanpa tanda apa pun. `_focusedMonth` yang selama ini di-assign
+tanpa `setState` dipindah ke dalam `setState` milik `_loadBulan` — bukan
+dibungkus di `onPageChanged`, karena `table_calendar` bisa memicu
+callback itu saat fase build masih berjalan. Pesan error tidak lagi
+generik: sejak `3d89e53` kegagalan socket sampai sebagai `ApiException`,
+jadi `e.message` memberi tahu user apa yang harus dilakukan.
+
+**`a0e71e0`**: pola gagal-vs-kosong yang sama di `TukarJadwalScreen` —
+koneksi putus tampil sebagai "Belum ada pengajuan" dan badge
+menunggu-respon jadi 0, sehingga user bisa melewatkan permintaan rekan
+yang sebenarnya menunggu dijawab. Dua request yang dipanggil terpisah
+di `initState` digabung `Future.wait`, menghapus `_loadMenungguCount()`
+beserta tiga pemanggilan terpisahnya.
+
+Pembatalan pindah dari `onDismissed` ke `confirmDismiss`. Pendekatan
+optimistis (hapus dulu, kembalikan kalau gagal) sempat ditulis dan
+ternyata tidak bisa: Flutter mensyaratkan widget yang sudah di-dismiss
+lenyap dari tree, jadi menyisipkannya kembali dengan `Key` yang sama
+melempar "A dismissed Dismissible widget is still part of the tree" —
+terbukti di device saat swipe dalam keadaan offline. Ongkos
+`confirmDismiss`: kartu tertahan selama request berjalan.
+
+**`e1bbdae`**: mode Pindah tidak pernah bisa dipakai karyawan umum.
+`_tujuanPindahValidPredicate` mensyaratkan tanggal tujuan punya baris
+`Jadwal` berjenis libur, padahal karyawan umum tidak punya baris untuk
+libur mingguannya sama sekali — generator hanya membuat baris hari
+kerja. Sementara `initState` memaksa semua karyawan umum ke mode Pindah,
+jadi satu-satunya mode yang tersedia bagi mereka adalah mode yang tidak
+bisa dipakai.
+
+FE ternyata lebih ketat daripada backend: `ajukanPindah()` menolak hanya
+kalau ada baris berjenis KERJA di tanggal tujuan; tidak ada baris sama
+sekali justru diterima. Predicate disamakan. Konsekuensi yang disadari:
+tanggal di luar periode assignment `KaryawanShift` ikut terbuka. Kalau
+itu perlu dibatasi, batasnya harus datang dari backend — menebaknya di
+FE berarti menduplikasi aturan periode assignment.
+
+Sekalian `firstDate` di `_pilihTanggalBaru`, yang masih menyisakan
+jendela mundur 30 hari; keputusan 30 Okt 2026 sudah mencabutnya dan
+`_pilihTanggalAsal` sudah ikut waktu itu, yang ini terlewat.
+
+
 ## fix: batas waktu request service-wide + respons non-JSON
 
 Commit: `3d89e53` (6 Nov 2026)
