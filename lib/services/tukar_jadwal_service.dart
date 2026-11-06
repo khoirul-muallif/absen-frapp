@@ -6,12 +6,25 @@ import 'api_client.dart';
 class TukarJadwalService {
   final ApiClient _apiClient = ApiClient();
 
+   /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong (pola sayaDalamRentangOrThrow,
+  /// 624b911).
+  Future<List<TukarJadwalItem>> riwayatOrThrow({String? status}) async {
+    final query = status != null ? '?status=$status' : '';
+    final json = await _apiClient.get('${ApiConstants.tukarJadwal}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => TukarJadwalItem.fromJson(e)).toList();
+  }
+
+  Future<List<TukarJadwalItem>> menungguResponSayaOrThrow() async {
+    final json = await _apiClient.get(ApiConstants.tukarJadwalMenungguRespon);
+    final records = json['data']['records'] as List;
+    return records.map((e) => TukarJadwalItem.fromJson(e)).toList();
+  }
+
   Future<List<TukarJadwalItem>> riwayat({String? status}) async {
     try {
-      final query = status != null ? '?status=$status' : '';
-      final json = await _apiClient.get('${ApiConstants.tukarJadwal}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => TukarJadwalItem.fromJson(e)).toList();
+      return await riwayatOrThrow(status: status);
     } on ApiException {
       return [];
     }
@@ -19,9 +32,7 @@ class TukarJadwalService {
 
   Future<List<TukarJadwalItem>> menungguResponSaya() async {
     try {
-      final json = await _apiClient.get(ApiConstants.tukarJadwalMenungguRespon);
-      final records = json['data']['records'] as List;
-      return records.map((e) => TukarJadwalItem.fromJson(e)).toList();
+      return await menungguResponSayaOrThrow();
     } on ApiException {
       return [];
     }
