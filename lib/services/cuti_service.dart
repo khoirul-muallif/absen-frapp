@@ -8,23 +8,34 @@ import 'api_client.dart';
 class CutiService {
   final ApiClient _apiClient = ApiClient();
 
+  Future<List<CutiKuotaItem>> kuotaOrThrow({int? tahun}) async {
+    final query = tahun != null ? '?tahun=$tahun' : '';
+    final json = await _apiClient.get('${ApiConstants.cutiKuota}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => CutiKuotaItem.fromJson(e)).toList();
+  }
+
   Future<List<CutiKuotaItem>> kuota({int? tahun}) async {
     try {
-      final query = tahun != null ? '?tahun=$tahun' : '';
-      final json = await _apiClient.get('${ApiConstants.cutiKuota}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => CutiKuotaItem.fromJson(e)).toList();
+      return await kuotaOrThrow(tahun: tahun);
     } on ApiException {
       return [];
     }
   }
 
+  /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong (pola sayaDalamRentangOrThrow,
+  /// 624b911).
+  Future<List<CutiItem>> riwayatOrThrow({String? status}) async {
+    final query = status != null ? '?status=$status' : '';
+    final json = await _apiClient.get('${ApiConstants.cuti}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => CutiItem.fromJson(e)).toList();
+  }
+
   Future<List<CutiItem>> riwayat({String? status}) async {
     try {
-      final query = status != null ? '?status=$status' : '';
-      final json = await _apiClient.get('${ApiConstants.cuti}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => CutiItem.fromJson(e)).toList();
+      return await riwayatOrThrow(status: status);
     } on ApiException {
       return [];
     }

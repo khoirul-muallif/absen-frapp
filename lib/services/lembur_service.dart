@@ -25,12 +25,19 @@ class LemburService {
     }
   }
 
+  /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong (pola sayaDalamRentangOrThrow,
+  /// 624b911).
+  Future<List<LemburItem>> riwayatOrThrow({String? status}) async {
+    final query = status != null ? '?status=$status' : '';
+    final json = await _apiClient.get('${ApiConstants.lembur}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => LemburItem.fromJson(e)).toList();
+  }
+
   Future<List<LemburItem>> riwayat({String? status}) async {
     try {
-      final query = status != null ? '?status=$status' : '';
-      final json = await _apiClient.get('${ApiConstants.lembur}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => LemburItem.fromJson(e)).toList();
+      return await riwayatOrThrow(status: status);
     } on ApiException {
       return [];
     }

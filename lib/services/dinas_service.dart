@@ -25,12 +25,19 @@ class DinasService {
     }
   }
 
+  /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong (pola sayaDalamRentangOrThrow,
+  /// 624b911).
+  Future<List<DinasItem>> riwayatOrThrow({String? status}) async {
+    final query = status != null ? '?status=$status' : '';
+    final json = await _apiClient.get('${ApiConstants.dinas}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => DinasItem.fromJson(e)).toList();
+  }
+
   Future<List<DinasItem>> riwayat({String? status}) async {
     try {
-      final query = status != null ? '?status=$status' : '';
-      final json = await _apiClient.get('${ApiConstants.dinas}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => DinasItem.fromJson(e)).toList();
+      return await riwayatOrThrow(status: status);
     } on ApiException {
       return [];
     }
