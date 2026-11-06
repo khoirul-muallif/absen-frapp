@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../models/jadwal_model.dart';
+import '../../services/api_client.dart';
 import '../../services/jadwal_service.dart';
 import '../tukar_jadwal/tukar_jadwal_form_screen.dart';
 
@@ -46,8 +47,15 @@ class _JadwalScreenState extends State<JadwalScreen> {
   DateTime _focusedMonth = DateTime.now();
   DateTime? _selectedDay;
   bool _loading = true;
-  bool _gagal = false;
+  String? _pesanGagal;
   Map<DateTime, JadwalItem> _jadwalPerHari = {};
+
+  /// Penanda request terakhir yang diminta. Satu swipe di kalender sudah
+  /// satu halaman, jadi berpindah bulan beruntun gampang sekali — dan
+  /// urutan mendaratnya tidak dijamin. Tanpa ini, hasil bulan lama bisa
+  /// menimpa bulan yang sedang tampil, dan salahnya tidak kelihatan
+  /// sebagai error: titik warna di tanggal sekadar jadi keliru.
+  int _requestTerakhir = 0;
 
   @override
   void initState() {
@@ -59,9 +67,16 @@ class _JadwalScreenState extends State<JadwalScreen> {
   DateTime _key(DateTime d) => DateTime(d.year, d.month, d.day);
 
   Future<void> _loadBulan(DateTime bulan) async {
+    final idRequest = ++_requestTerakhir;
+
     setState(() {
+      // _focusedMonth ikut di-set di sini supaya header kalender dan data
+      // yang sedang dimuat tidak pernah terpisah. Sebelumnya di-assign
+      // tanpa setState di onPageChanged, dan cuma kebetulan tidak terlihat
+      // rusak karena setState di bawah menyusul.
+      _focusedMonth = bulan;
       _loading = true;
-      _gagal = false;
+      _pesanGagal = null;
     });
 
     final awal = DateTime(bulan.year, bulan.month, 1);
@@ -69,11 +84,14 @@ class _JadwalScreenState extends State<JadwalScreen> {
     final format = DateFormat('yyyy-MM-dd');
 
     try {
-      final items = await _service
-          .sayaDalamRentangOrThrow(format.format(awal), format.format(akhir))
-          .timeout(const Duration(seconds: 10));
+      // .timeout() di sini dibuang — sejak 3d89e53 batas waktu dipasang di
+      // ApiClient dan berlaku ke semua request.
+      final items = await _service.sayaDalamRentangOrThrow(
+        format.format(awal),
+        format.format(akhir),
+      );
 
-      if (!mounted) return;
+      if (!mounted || idRequest != _requestTerakhir) return;
 
       final perHari = <DateTime, JadwalItem>{};
       for (final item in items) {
@@ -85,18 +103,24 @@ class _JadwalScreenState extends State<JadwalScreen> {
         _jadwalPerHari = perHari;
         _loading = false;
       });
-    } catch (e) {
-      // Menangkap ApiException (response sukses tapi success:false) MAUPUN
-      // error jaringan level socket (SocketException/TimeoutException saat
-      // WiFi/data mati total) -- keduanya harus berhenti nge-load, bukan
-      // cuma ApiException.
-      if (!mounted) return;
-      setState(() {
-        _jadwalPerHari = {};
-        _loading = false;
-        _gagal = true;
-      });
+    } on ApiException catch (e) {
+      // Sejak 3d89e53, kegagalan level socket juga sampai ke sini sebagai
+      // ApiException, jadi pesannya bisa dipakai apa adanya — tidak lagi
+      // perlu teks generik yang tidak memberi tahu apa-apa.
+      if (!mounted || idRequest != _requestTerakhir) return;
+      _tanganiGagal(e.message);
+    } catch (_) {
+      if (!mounted || idRequest != _requestTerakhir) return;
+      _tanganiGagal('Terjadi kesalahan saat memuat jadwal.');
     }
+  }
+
+  void _tanganiGagal(String pesan) {
+    setState(() {
+      _jadwalPerHari = {};
+      _loading = false;
+      _pesanGagal = pesan;
+    });
   }
 
   @override
@@ -130,10 +154,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
                   _focusedMonth = focusedDay;
                 });
               },
-              onPageChanged: (focusedDay) {
-                _focusedMonth = focusedDay;
-                _loadBulan(focusedDay);
-              },
+              onPageChanged: _loadBulan,
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, _) => _buildDayCell(context, day),
                 todayBuilder: (context, day, _) =>
@@ -147,7 +168,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
             const SizedBox(height: 16),
             const _Legenda(),
             const SizedBox(height: 16),
-            if (_gagal)
+            if (_pesanGagal != null)
               Card(
                 color: Colors.red[50],
                 child: Padding(
@@ -156,7 +177,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
                     children: [
                       Icon(Icons.error_outline, color: Colors.red[700]),
                       const SizedBox(width: 12),
-                      const Expanded(child: Text('Gagal memuat jadwal bulan ini.')),
+                      Expanded(child: Text(_pesanGagal!)),
                       TextButton(
                         onPressed: () => _loadBulan(_focusedMonth),
                         child: const Text('Coba Lagi'),
@@ -166,19 +187,20 @@ class _JadwalScreenState extends State<JadwalScreen> {
                 ),
               )
             else if (selected != null)
-            _DetailCard(
-              tanggal: _selectedDay!,
-              item: selected,
-              bisaDiajukan: !_selectedDay!.isBefore(_key(DateTime.now())),
-              onAjukan: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => TukarJadwalFormScreen(tanggalAwal: _selectedDay),
-                  ),
-                );
-                _loadBulan(_focusedMonth);
-              },
-            ),
+              _DetailCard(
+                tanggal: _selectedDay!,
+                item: selected,
+                bisaDiajukan: !_selectedDay!.isBefore(_key(DateTime.now())),
+                onAjukan: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          TukarJadwalFormScreen(tanggalAwal: _selectedDay),
+                    ),
+                  );
+                  _loadBulan(_focusedMonth);
+                },
+              ),
           ],
         ),
       ),
