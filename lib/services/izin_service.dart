@@ -22,12 +22,19 @@ class IzinService {
     }
   }
 
+  /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong (pola sayaDalamRentangOrThrow,
+  /// 624b911).
+  Future<List<IzinItem>> riwayatOrThrow({String? status}) async {
+    final query = status != null ? '?status=$status' : '';
+    final json = await _apiClient.get('${ApiConstants.izin}$query');
+    final records = json['data']['records'] as List;
+    return records.map((e) => IzinItem.fromJson(e)).toList();
+  }
+
   Future<List<IzinItem>> riwayat({String? status}) async {
     try {
-      final query = status != null ? '?status=$status' : '';
-      final json = await _apiClient.get('${ApiConstants.izin}$query');
-      final records = json['data']['records'] as List;
-      return records.map((e) => IzinItem.fromJson(e)).toList();
+      return await riwayatOrThrow(status: status);
     } on ApiException {
       return [];
     }

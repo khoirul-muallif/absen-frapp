@@ -5,6 +5,32 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+- [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada
+      diagnosis, baru firasat. Yang sudah terlihat: tidak ada tombol
+      sama sekali, cuma `onTap` pada ListTile tanpa petunjuk visual
+      bahwa kartu itu bisa ditekan; badge status hampir selalu
+      "approved" (izin auto-approve sejak keputusan RS 8 Okt, lihat
+      IzinController) sehingga nyaris tidak membawa informasi, sementara
+      yang benar-benar menentukan apa yang bisa dilakukan user —
+      terisi/tidaknya jam kembali — tidak ditandai apa pun; dan sekali
+      terisi tidak bisa dikoreksi sendiri (guard backend
+      `jam_kembali === null`, disengaja supaya "siapa & kapan mengisi"
+      terbaca dari `updated_at`), jadi salah pilih jam berarti harus
+      menghubungi admin. Perlu sesi analisis tersendiri: mungkin
+      jawabannya bukan memperbaiki tampilan, tapi mempertanyakan apakah
+      karyawan memang pihak yang tepat untuk mencatat jam kembali.
+      Dicatat 6 Nov 2026.
+
+- [ ] **IzinFormScreen masih layout polos** — Column putih tanpa sekat,
+      beda dari TukarJadwalFormScreen yang sudah pakai section Card
+      (`7b42ee1`). Berlaku juga ke form Lembur/Cuti/Dinas. Sudah
+      tercakup item "Telusur/audit UX frontend secara menyeluruh" di
+      atas, tapi dicatat terpisah karena perbaikannya mekanis dan bisa
+      dikerjakan lebih dulu tanpa menunggu scope audit UX ditentukan.
+      Dua hal kecil yang sekalian: `initialTime: TimeOfDay.now()` di
+      picker jam mengabaikan pilihan sebelumnya, dan jam keluar
+      divalidasi lewat snackbar sementara Keperluan pakai `validator`
+      Form. Dicatat 6 Nov 2026.
 
 - [ ] **RiwayatScreen: batasi tampilan awal** — daftar harian tampil utuh
       sebulan penuh. Cukup ~10 baris dulu + tombol "Lihat semua".
