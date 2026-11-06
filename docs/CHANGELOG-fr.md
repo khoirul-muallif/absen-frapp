@@ -1,3 +1,64 @@
+## fix: audit modul form+list, notifikasi, dan auth
+
+Commit: `c493872`, `879c010`, `fbb0b1b`, `727697d` (6 Nov 2026)
+
+Lanjutan sesi yang sama, menutup sisa urutan audit per-modul. Tiga
+kelas bug yang sama berulang di tujuh layar — buah dari dua perbaikan
+pagi ini (`3d89e53`, `6e915ff`) yang baru kelihatan cakupannya setelah
+polanya dikenali.
+
+**`c493872`** (Izin) dan **`879c010`** (Lembur, Cuti, Dinas): `riwayat()`
+di keempat service menelan `ApiException` jadi `[]`, jadi koneksi putus
+tampil sebagai "Belum ada pengajuan ...". Ditambah `riwayatOrThrow()`
+di masing-masing; method lama tetap ada dan mendelegasi.
+`CutiService.kuota()` ikut, karena kuota yang gagal dimuat tampil
+sebagai sisa 0 — menyesatkan justru saat orang hendak mengajukan.
+
+`_batalkan` di keempatnya menghapus item sebelum request dan memanggil
+`_loadData()` kalau gagal, yang mengembalikan item itu dengan `Key` yang
+sama sehingga `Dismissible` yang sudah mati hidup lagi dan Flutter
+melempar "A dismissed Dismissible widget is still part of the tree" —
+terbukti di device pada Tukar Jadwal saat swipe offline. Semuanya pindah
+ke `confirmDismiss`.
+
+Guard FE diperiksa terhadap controller masing-masing dan ternyata sudah
+benar, jadi tidak diubah: `status == 'pending'` di Lembur/Cuti/Dinas
+cocok dengan `isPending()`; `jamKembali == null` di Izin cocok dengan
+guard `jam_kembali === null` di `batalkan()` dan `isiJamKembali()`.
+Pengecekan ini bukan formalitas — ia menggugurkan dua dari empat temuan
+awal di Izin.
+
+**`fbb0b1b`**: pola yang sama di Notifikasi, dengan satu beda —
+`getNotifikasi()` sudah mengembalikan `success:false`, cuma flag-nya
+diabaikan layar. Tidak perlu varian `OrThrow`. `_tandaiBaca` dan "Tandai
+semua dibaca" juga mengabaikan nilai balik service sepenuhnya, jadi
+menandai yang gagal tampak berhasil sampai daftar dimuat ulang.
+
+**`727697d`**: regresi dari `3d89e53`. `getMe()` memanggil `logout()`
+untuk setiap `ApiException` — benar untuk token yang ditolak server,
+tapi sejak timeout pindah ke `ApiClient`, kegagalan koneksi juga datang
+sebagai `ApiException`. Akibatnya membuka aplikasi tanpa sinyal
+menghapus token, dan user harus login ulang padahal sesinya masih sah —
+yang juga mustahil, karena dia sedang offline. Flag `isKoneksi` yang
+disiapkan pagi ini dipakai persis untuk ini.
+
+`tryAutoLogin()` berhenti mengembalikan `bool`: nilai `false`-nya
+menyatukan "memang belum login" dengan "gagal konek padahal token masih
+ada", dan `SplashScreen` tidak punya cara membedakannya. Diganti enum
+`HasilAutoLogin`; splash berhenti di tempat dengan tombol Coba Lagi
+untuk kasus ketiga. Diverifikasi di device: koneksi dimatikan lalu
+aplikasi dibuka dari keadaan sudah login — berhenti di splash, dan
+begitu koneksi hidup, Coba Lagi langsung masuk menu tanpa login ulang.
+
+`LoginScreen` sekalian: controller di-`dispose()`, validasi lewat `Form`
++ `validator` (bukan menonaktifkan tombol — tombol mati tanpa
+keterangan membuat orang menebak apa yang kurang), dibungkus
+`SingleChildScrollView` supaya keyboard tidak bikin overflow, dan
+`textInputAction` + `onFieldSubmitted` supaya tombol next/done di
+keyboard berfungsi. Menutup dua item lama dari status 5 Nov.
+
+Menutup seluruh urutan audit per-modul (level 1 & 2).
+
 ## fix: audit lintas-layar — timeout, gagal-vs-kosong, race ganti bulan
 
 Commit: `3d89e53`, `6e915ff`, `42fd9a5`, `a0e71e0`, `e1bbdae`

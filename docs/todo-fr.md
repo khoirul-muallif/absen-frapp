@@ -6,6 +6,14 @@
 
 ## Belum dibuat
 
+- [ ] **LoginScreen masih polos** — tidak ada logo RS, tidak ada warna
+      atau identitas apa pun; dua field + satu tombol di tengah layar
+      putih. Ini layar pertama yang dilihat karyawan, jadi dampaknya
+      lebih besar daripada form-form lain yang sudah dicatat.
+      SplashScreen juga masih memakai `FlutterLogo` bawaan (komentar
+      "nanti diganti logo RS" sudah ada di kodenya sejak lama). Butuh
+      aset logo RSU Banyumanik 2 dulu. Dicatat 6 Nov 2026.
+
 - [ ] **LoginScreen ikut berubah kalau login pindah ke username** —
       label field, `keyboardType` (`emailAddress` → `text`), dan teks
       error. Menunggu keputusan + endpoint backend (lihat todo.md
