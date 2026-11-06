@@ -42,9 +42,15 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     return true;
   }
 
+  // Backend (ajukanPindah) menerima dua kasus: tidak ada baris Jadwal sama
+  // sekali di tanggal itu, atau ada baris berjenis libur. Yang ditolak cuma
+  // baris berjenis KERJA. Karyawan umum tidak punya baris untuk libur
+  // mingguannya — generator cuma membuat baris hari kerja — jadi syarat
+  // "harus ada baris berjenis libur" membuat mode Pindah mustahil dipakai
+  // mereka, padahal initState justru memaksa karyawan umum ke mode itu.
   bool _tujuanPindahValidPredicate(DateTime day) {
     final item = _jadwalSayaByTanggal[_keyTanggal(day)];
-    return item != null && item.jenis == 'libur'; // tujuan pindah wajib hari libur sendiri (fase 66)
+    return item == null || item.jenis == 'libur';
   }
 
   // Flutter mensyaratkan initialDate pada showDatePicker harus lolos
@@ -241,7 +247,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     if (initial == null) {
       showAppSnackBar(
         context,
-        'Tidak ada tanggal libur Anda yang bisa dipilih dalam 90 hari ke depan',
+                'Tidak ada tanggal kosong Anda dalam 90 hari ke depan',
         type: AppSnackBarType.error,
       );
       return;
@@ -249,7 +255,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 90)),
       selectableDayPredicate: _tujuanPindahValidPredicate,
     );
@@ -504,7 +510,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                       onTap: _loadingPrefetch ? null : _pilihTanggalBaru,
                     ),
                     const Text(
-                      'Hanya tanggal libur Anda yang bisa dipilih (abu-abu = bukan hari libur Anda).',
+                      'Hanya tanggal yang Anda tidak punya jadwal kerja (abu-abu = Anda ada jadwal kerja di sana).',
                       style: TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
