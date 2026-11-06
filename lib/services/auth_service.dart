@@ -65,7 +65,14 @@ class AuthService {
       final json = await _apiClient.get(ApiConstants.me);
       final user = UserModel.fromJson(json['data']);
       return {'success': true, 'user': user};
-    } on ApiException {
+    } on ApiException catch (e) {
+      // Hanya buang sesi kalau server benar-benar menolak tokennya. Sejak
+      // 3d89e53 kegagalan koneksi JUGA datang sebagai ApiException, dan
+      // sebelum perbaikan ini membuka aplikasi tanpa sinyal menghapus
+      // token — user harus login ulang padahal sesinya masih sah.
+      if (e.isKoneksi) {
+        return {'success': false, 'koneksi': true, 'message': e.message};
+      }
       await logout();
       return {'success': false, 'message': 'Sesi berakhir, silakan login ulang'};
     } catch (e) {

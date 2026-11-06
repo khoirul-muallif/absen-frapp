@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 
+/// Hasil percobaan auto-login saat splash. `false` yang lama menyatukan
+/// "memang belum login" dengan "gagal konek padahal token masih sah" —
+/// keduanya melempar user ke LoginScreen, di mana dia juga tidak bisa
+/// login karena offline.
+enum HasilAutoLogin { berhasil, belumLogin, gagalKoneksi }
+
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
@@ -40,18 +46,22 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> tryAutoLogin() async {
+  Future<HasilAutoLogin> tryAutoLogin() async {
     final token = await _authService.getToken();
-    if (token == null) return false;
+    if (token == null) return HasilAutoLogin.belumLogin;
 
     final result = await _authService.getMe();
 
     if (result['success'] == true) {
       _user = result['user'];
       notifyListeners();
-      return true;
+      return HasilAutoLogin.berhasil;
     }
 
-    return false;
+    // Token masih tersimpan dan belum dibuang getMe() — sesinya mungkin
+    // masih sah, cuma tidak bisa diverifikasi sekarang.
+    if (result['koneksi'] == true) return HasilAutoLogin.gagalKoneksi;
+
+    return HasilAutoLogin.belumLogin;
   }
 }

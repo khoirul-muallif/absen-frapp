@@ -12,6 +12,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _gagalKoneksi = false;
+
   @override
   void initState() {
     super.initState();
@@ -19,29 +21,68 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLogin() async {
+    if (_gagalKoneksi) setState(() => _gagalKoneksi = false);
+
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.tryAutoLogin();
+    final hasil = await authProvider.tryAutoLogin();
 
     if (!mounted) return;
 
+    // Gagal konek bukan berarti belum login. Melempar user ke LoginScreen
+    // di sini percuma — dia juga tidak bisa login tanpa koneksi, dan
+    // sesinya sebenarnya masih sah.
+    if (hasil == HasilAutoLogin.gagalKoneksi) {
+      setState(() => _gagalKoneksi = true);
+      return;
+    }
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => success ? const MainScreen() : const LoginScreen(),
+        builder: (_) => hasil == HasilAutoLogin.berhasil
+            ? const MainScreen()
+            : const LoginScreen(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FlutterLogo(size: 64), // nanti diganti logo RS
-            SizedBox(height: 16),
-            CircularProgressIndicator(),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const FlutterLogo(size: 64), // nanti diganti logo RS
+              const SizedBox(height: 16),
+              if (_gagalKoneksi) ...[
+                const Text(
+                  'Tidak bisa terhubung ke server.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Periksa koneksi Anda, lalu coba lagi.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.tonal(
+                  onPressed: _checkLogin,
+                  child: const Text('Coba Lagi'),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  ),
+                  child: const Text('Masuk dengan akun lain'),
+                ),
+              ] else
+                const CircularProgressIndicator(),
+            ],
+          ),
         ),
       ),
     );
