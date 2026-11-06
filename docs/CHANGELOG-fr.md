@@ -1,3 +1,58 @@
+## fix: batas waktu request service-wide + respons non-JSON
+
+Commit: `3d89e53` (6 Nov 2026)
+
+Temuan lintas-modul dari audit modul Absen: `getStatus()`, `getRiwayat()`
+dan `getRekap()` tidak punya `.timeout()`. Akarnya bukan di service,
+tapi di `ApiClient` — `http.get`/`post` di sana tidak punya batas waktu
+sama sekali, jadi setiap request di seluruh aplikasi rentan menggantung
+kalau koneksi putus di level socket. Future-nya tidak selesai dan tidak
+melempar, sehingga service tidak pernah return dan layar memutar spinner
+selamanya.
+
+Pola yang sama sudah ditutup di `JadwalScreen` (`624b911`) dengan
+`.timeout()` di call site. Cara itu benar untuk satu layar tapi tidak
+menskala ke sepuluh service, dan tiap service baru harus ingat
+menambahkannya sendiri — jadi di sini timeout dipindah ke lapisan HTTP.
+
+Pembungkus `_kirim()` baru di `ApiClient` dipakai oleh `get`, `post`,
+`patch`, `delete` dan `postMultipart`. `TimeoutException`,
+`SocketException` dan `http.ClientException` diterjemahkan jadi
+`ApiException`, sehingga semua pemanggil yang sudah menangkap
+`ApiException` ikut terlindungi **tanpa satu pun file service
+disentuh** — termasuk modul yang belum diaudit. Tidak ada `catch (e)`
+generik di `_kirim()`: exception lain berarti bug di kode kita, dan
+menelannya cuma menyulitkan pelacakan nanti.
+
+`ApiException` dapat flag `isKoneksi` (plus konstruktor
+`ApiException.koneksi()`) untuk membedakan "request tidak sampai ke
+server" dari error validasi/bisnis. Belum ada pemakainya — disiapkan
+untuk audit per-layar, di mana layar perlu memutuskan antara pesan
+dengan tombol Coba Lagi atau pesan validasi biasa.
+
+Batas 10 detik mengikuti nilai yang sudah diuji di device untuk
+`JadwalScreen`. Upload foto absen (`postMultipart`) diberi 45 detik:
+kirim JPEG lewat data seluler di dalam gedung bisa lama, dan gagal di
+sana berarti user mengulang seluruh flow verifikasi wajah dari nol.
+
+Sekalian: `_handle()` langsung `jsonDecode(res.body)` tanpa penjagaan.
+Respons HTML — halaman error 500 Laravel, 404 dari URL salah, sisipan
+proxy — melempar `FormatException`, yang bukan `ApiException` dan karena
+itu lolos dari semua `catch` di service. Sekarang dibungkus jadi
+`ApiException` dengan kode statusnya.
+
+Diverifikasi di device dengan data seluler dan WiFi dimatikan:
+`AbsenMenuScreen` mendarat di state "Gagal memuat status absen" +
+tombol Coba Lagi, tidak lagi menggantung.
+
+Belum selesai: `getStatus()`/`getRiwayat()`/`getRekap()` masih menelan
+`ApiException` dan membalikkan `null`/`[]`, jadi layar belum bisa
+membedakan gagal-request dari benar-benar-kosong. Untuk `getRiwayat()`
+dan `getRekap()` ini lebih menyesatkan daripada di `getStatus()` —
+layar menampilkan "belum ada data" seolah normal, padahal request
+gagal. Perbaikannya per-layar (varian `...OrThrow()` seperti
+`sayaDalamRentangOrThrow()`), menyusul di audit `riwayat_screen.dart`.
+
 ## fix: audit modul Absen — race kamera, navigator, dan masa tenggang gesture
 
 Commit: `253a135`, `3b60b1c`, `cc15c3e`, `0adbe37`, `15fc835`,

@@ -6,6 +6,19 @@
 
 ## Belum dibuat
 
+- [ ] **RiwayatScreen: batasi tampilan awal** — daftar harian tampil utuh
+      sebulan penuh. Cukup ~10 baris dulu + tombol "Lihat semua".
+      Sempat dipertimbangkan membatasi ke 30 hari terakhir dan membuang
+      navigasi bulan, ditolak: riwayat justru paling dicari saat ada
+      selisih dengan rekap HRD, dan itu baru ketahuan setelah tutup
+      bulan — datanya sudah lewat dari 30 hari. Endpoint juga cuma
+      menerima `bulan`/`tahun`, jadi rolling 30 hari berarti gabung dua
+      request di FE dan rekap bulanannya jadi janggal. Dicatat 6 Nov 2026.
+
+- [ ] **RiwayatScreen: batasi chevron kanan** — bisa maju tanpa batas ke
+      bulan yang pasti kosong (tidak ada data masa depan di backend).
+      Kunci di bulan berjalan. Dicatat 6 Nov 2026.
+
 - [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`,
       commit [isi setelah commit]) tapi hardcoded empty state. Nunggu
       model + endpoint di backend (dicatat juga di todo.md). Setelah
@@ -46,6 +59,16 @@ dicegah di sumbernya di FE (kalender gak nawarin tanggal lewat lagi
 sejak commit `4ebe805`): Cuti/Dinas, TukarJadwal, Izin/Lembur)*
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
+
+- [ ] **"Sakit" di kartu rekap RiwayatScreen** — field `sakit` tidak
+      pernah diisi backend (`rekap()` tidak mengirimnya), jadi angkanya
+      permanen 0 bagi semua orang, tapi tetap ditampilkan di
+      `_RekapCard`. Hapus dari kartu, atau backend mulai mengisinya?
+      Nyambung ke Known Gap #5 di QUICK_CONTEXT.md (enum
+      `absensi.status` punya opsi `'sakit'` yang belum jelas
+      peruntukannya). Sekalian: label "Alpha" itu istilah administratif,
+      di kartu yang dibaca karyawan sendiri "Tidak Hadir" lebih jelas.
+      Dicatat 6 Nov 2026.
 
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope

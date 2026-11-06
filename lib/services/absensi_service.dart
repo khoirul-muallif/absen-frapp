@@ -17,13 +17,39 @@ class AbsensiService {
     }
   }
 
-  Future<List<RiwayatAbsenItem>> getRiwayat({required int bulan, required int tahun}) async {
+  /// Varian yang TIDAK menelan error — untuk layar yang perlu membedakan
+  /// gagal-request dari benar-benar-kosong. Pola sama dengan
+  /// JadwalService.sayaDalamRentangOrThrow() (624b911).
+  Future<List<RiwayatAbsenItem>> getRiwayatOrThrow({
+    required int bulan,
+    required int tahun,
+  }) async {
+    final json = await _apiClient.get(
+      '${ApiConstants.baseUrl}/absensi/riwayat?bulan=$bulan&tahun=$tahun',
+    );
+    final records = json['data']['records'] as List;
+    return records.map((e) => RiwayatAbsenItem.fromJson(e)).toList();
+  }
+
+  Future<RekapAbsen> getRekapOrThrow({
+    required int bulan,
+    required int tahun,
+  }) async {
+    final json = await _apiClient.get(
+      '${ApiConstants.baseUrl}/absensi/rekap?bulan=$bulan&tahun=$tahun',
+    );
+    return RekapAbsen.fromJson(json['data']);
+  }
+
+  /// Menelan error jadi list kosong. Dipertahankan untuk pemanggil yang
+  /// memang tidak punya cara menampilkan kegagalan (mis. ringkasan di
+  /// Beranda) — jangan dipakai di layar yang punya state error sendiri.
+  Future<List<RiwayatAbsenItem>> getRiwayat({
+    required int bulan,
+    required int tahun,
+  }) async {
     try {
-      final json = await _apiClient.get(
-        '${ApiConstants.baseUrl}/absensi/riwayat?bulan=$bulan&tahun=$tahun',
-      );
-      final records = json['data']['records'] as List;
-      return records.map((e) => RiwayatAbsenItem.fromJson(e)).toList();
+      return await getRiwayatOrThrow(bulan: bulan, tahun: tahun);
     } on ApiException {
       return [];
     }
@@ -31,10 +57,7 @@ class AbsensiService {
 
   Future<RekapAbsen?> getRekap({required int bulan, required int tahun}) async {
     try {
-      final json = await _apiClient.get(
-        '${ApiConstants.baseUrl}/absensi/rekap?bulan=$bulan&tahun=$tahun',
-      );
-      return RekapAbsen.fromJson(json['data']);
+      return await getRekapOrThrow(bulan: bulan, tahun: tahun);
     } on ApiException {
       return null;
     }
