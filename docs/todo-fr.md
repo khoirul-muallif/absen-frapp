@@ -5,6 +5,12 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+
+- [ ] **LoginScreen ikut berubah kalau login pindah ke username** —
+      label field, `keyboardType` (`emailAddress` → `text`), dan teks
+      error. Menunggu keputusan + endpoint backend (lihat todo.md
+      backend). Dicatat 6 Nov 2026.
+
 - [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada
       diagnosis, baru firasat. Yang sudah terlihat: tidak ada tombol
       sama sekali, cuma `onTap` pada ListTile tanpa petunjuk visual
@@ -21,16 +27,34 @@
       karyawan memang pihak yang tepat untuk mencatat jam kembali.
       Dicatat 6 Nov 2026.
 
-- [ ] **IzinFormScreen masih layout polos** — Column putih tanpa sekat,
-      beda dari TukarJadwalFormScreen yang sudah pakai section Card
-      (`7b42ee1`). Berlaku juga ke form Lembur/Cuti/Dinas. Sudah
-      tercakup item "Telusur/audit UX frontend secara menyeluruh" di
-      atas, tapi dicatat terpisah karena perbaikannya mekanis dan bisa
-      dikerjakan lebih dulu tanpa menunggu scope audit UX ditentukan.
-      Dua hal kecil yang sekalian: `initialTime: TimeOfDay.now()` di
-      picker jam mengabaikan pilihan sebelumnya, dan jam keluar
-      divalidasi lewat snackbar sementara Keperluan pakai `validator`
-      Form. Dicatat 6 Nov 2026.
+- [ ] **Form Izin/Lembur/Cuti/Dinas masih layout polos** — Column putih
+      tanpa sekat, beda dari TukarJadwalFormScreen yang sudah pakai
+      section Card (`7b42ee1`). Sudah tercakup item "Telusur/audit UX
+      frontend secara menyeluruh" di atas, tapi dicatat terpisah karena
+      perbaikannya mekanis dan bisa dikerjakan lebih dulu tanpa menunggu
+      scope audit UX ditentukan. Dua hal kecil yang sekalian:
+      `initialTime: TimeOfDay.now()` di picker jam mengabaikan pilihan
+      sebelumnya, dan jam keluar divalidasi lewat snackbar sementara
+      Keperluan pakai `validator` Form. Dicatat 6 Nov 2026.
+      
+- [ ] **Pemilihan rentang tanggal di Cuti & Dinas kurang ramah** —
+      dua date picker terpisah (mulai, selesai) tanpa gambaran rentang
+      yang terbentuk; user baru harus menebak sendiri berapa hari yang
+      dia ajukan. Belum ada diagnosis lengkap, baru keluhan dari
+      pemakaian pertama. Hal-hal yang patut dilihat saat digarap:
+      jumlah hari tidak ditampilkan sebelum submit padahal backend
+      menghitungnya (`jumlah_hari`) dan itu yang memotong kuota; sisa
+      kuota juga tidak terlihat di form Cuti padahal endpoint
+      `/api/cuti/kuota` sudah ada dan `CutiService.kuota()` sudah
+      dipakai di layar lain; aturan backend yang bisa menolak setelah
+      submit (tidak boleh melintasi tahun, tidak boleh melintasi
+      semester untuk jenis cuti semesteran, bentrok dengan cuti/dinas
+      approved) tidak dicegah di sumbernya seperti yang sudah dilakukan
+      di TukarJadwal lewat `selectableDayPredicate`. Kandidat solusi:
+      `showDateRangePicker` satu kali, atau tetap dua picker tapi
+      dengan ringkasan rentang + sisa kuota yang hidup. Perlu sesi
+      tersendiri. Dicatat 6 Nov 2026.
+
 
 - [ ] **RiwayatScreen: batasi tampilan awal** — daftar harian tampil utuh
       sebulan penuh. Cukup ~10 baris dulu + tombol "Lihat semua".
