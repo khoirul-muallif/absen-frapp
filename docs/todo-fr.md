@@ -76,7 +76,41 @@
 - [ ] **RiwayatScreen: batasi chevron kanan** — bisa maju tanpa batas ke
       bulan yang pasti kosong (tidak ada data masa depan di backend).
       Kunci di bulan berjalan. Dicatat 6 Nov 2026.
+- [ ] **NotifikasiScreen harus mengenal `tipe: 'tukar_jadwal'`** — backend
+      mulai mengirim nilai `tipe` baru ini sejak fase 74 (4 kelas
+      notifikasi TukarJadwal). Sebelumnya cuma ada `'terlambat'` dan
+      nilai milik `BelumAbsen`. **Cek dulu apakah switch ikon/warna di
+      `notifikasi_screen.dart` punya cabang `default`** — kalau tidak,
+      nilai baru ini bisa bikin ikon kosong atau crash. Ini satu-satunya
+      hal yang masih bisa menggagalkan fitur notifikasi tukar jadwal di
+      device meski backend-nya sudah hijau total.
 
+      Bentuk `data` yang dikirim: `judul`, `pesan`, `tipe`
+      (selalu `'tukar_jadwal'`), `aksi`, `tukar_jadwal_id`, `tanggal`.
+      Nilai `aksi`: `diajukan`, `disetujui_rekan`, `ditolak_rekan`,
+      `approved`, `rejected`, `dibatalkan_admin`, `dibatalkan_pengaju`.
+      `tipe` sengaja satu nilai untuk ketujuh kejadian supaya FE tidak
+      perlu tujuh cabang — kalau nanti ikonnya mau dibedakan per
+      kejadian, pakai `aksi`, bukan `tipe`.
+
+      **Catatan penting:** untuk `aksi: 'dibatalkan_pengaju'`, baris
+      TukarJadwal-nya sudah DIHAPUS di backend, jadi `tukar_jadwal_id`
+      menunjuk ke id yang tidak ada lagi (keputusan 9 Nov 2026: id tetap
+      dikirim demi konsistensi bentuk `data`). Kalau nanti notifikasi
+      dibuat bisa di-tap untuk membuka detail, yang ini harus ditangani
+      — jangan sampai 404 jadi crash. Dicatat 9 Nov 2026.
+
+- [ ] **Ikon lonceng + badge di TukarJadwalScreen sekarang boleh dicabut**
+      — blocker-nya sudah hilang: backend mengirim notifikasi ke rekan
+      tujuan setiap ada pengajuan masuk (fase 74), jadi mencabut lonceng
+      tidak lagi menghapus satu-satunya cara rekan tahu ada yang
+      menunggu dijawab. Ini membuka perombakan navigasi yang tertahan
+      sejak 6 Nov (tab Riwayat menyerap riwayat tukar jadwal, satu pintu
+      pengajuan lewat JadwalScreen). Prasyarat: item NotifikasiScreen di
+      atas dikerjakan DULU — kalau lonceng dicabut sementara
+      NotifikasiScreen belum mengenal `tipe` barunya, rekan justru
+      kehilangan kedua jalur sekaligus. Dicatat 9 Nov 2026.
+      
 - [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`,
       commit [isi setelah commit]) tapi hardcoded empty state. Nunggu
       model + endpoint di backend (dicatat juga di todo.md). Setelah
