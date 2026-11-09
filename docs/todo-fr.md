@@ -6,6 +6,14 @@
 
 ## Belum dibuat
 
+- [ ] **Hapus "Sakit" dari kartu rekap RiwayatScreen** — TERJAWAB
+      9 Nov 2026: enum `absensi.status = 'sakit'` adalah dead value,
+      bukan fitur yang belum dibuat. Cuti sakit sudah dicover modul
+      Cuti. Jadi backend TIDAK akan mulai mengisinya — hapus field
+      `sakit` dari `_RekapCard` dan dari model `RekapAbsen`.
+      Sekalian: ganti label "Alpha" jadi "Tidak Hadir" (istilah
+      administratif vs yang dibaca karyawan sendiri).
+
 - [ ] **LoginScreen masih polos** — tidak ada logo RS, tidak ada warna
       atau identitas apa pun; dua field + satu tombol di tengah layar
       putih. Ini layar pertama yang dilihat karyawan, jadi dampaknya
