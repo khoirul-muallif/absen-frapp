@@ -328,13 +328,11 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final int badgeCount;
 
   const _MenuItem({
     required this.icon,
     required this.label,
     required this.onTap,
-    this.badgeCount = 0,
   });
 
   @override
@@ -350,11 +348,7 @@ class _MenuItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Badge(
-              label: Text('$badgeCount'),
-              isLabelVisible: badgeCount > 0,
-              child: Icon(icon, size: 28),
-            ),
+            Icon(icon, size: 28),
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(fontSize: 12)),
           ],
