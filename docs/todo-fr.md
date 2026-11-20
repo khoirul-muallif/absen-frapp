@@ -16,26 +16,7 @@
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
       
-- [ ] **LoginScreen WAJIB pindah ke username — FE sekarang pasti gagal
-      login** — backend sudah mengubah `POST /api/auth/login` dari
-      `email` ke `username` (fase 79, 9 Nov 2026). FE masih mengirim
-      `email`, jadi responnya 422 `username: required` dan tidak ada
-      satu pun karyawan yang bisa masuk. Ini bukan lagi "menunggu
-      keputusan" — ini blocker rilis.
 
-      Yang perlu diubah: label field, `keyboardType` (`emailAddress` →
-      `text`), kunci yang dikirim di body request, dan kunci error yang
-      dibaca untuk menempelkan pesan (`errors.email` → `errors.username`
-      — kalau tidak ikut diubah, pesan "Username atau password salah"
-      tidak muncul di mana-mana).
-
-      Catatan: `email` TETAP ada di response login dan `/auth/me`
-      sebagai data profil, jadi layar profil tidak perlu diubah.
-      `username` ditambahkan di sebelahnya kalau mau ditampilkan.
-
-      Password default & reset: admin bisa me-reset password karyawan
-      dari panel (fase 78), dikembalikan ke password default. Karyawan
-      yang lupa password menghubungi admin.
 
 - [ ] **Hapus "Sakit" dari kartu rekap RiwayatScreen** — TERJAWAB
       9 Nov 2026: enum `absensi.status = 'sakit'` adalah dead value,
@@ -53,10 +34,6 @@
       "nanti diganti logo RS" sudah ada di kodenya sejak lama). Butuh
       aset logo RSU Banyumanik 2 dulu. Dicatat 6 Nov 2026.
 
-- [ ] **LoginScreen ikut berubah kalau login pindah ke username** —
-      label field, `keyboardType` (`emailAddress` → `text`), dan teks
-      error. Menunggu keputusan + endpoint backend (lihat todo.md
-      backend). Dicatat 6 Nov 2026.
 
 - [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada
       diagnosis, baru firasat. Yang sudah terlihat: tidak ada tombol

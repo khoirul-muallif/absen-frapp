@@ -101,17 +101,50 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     return true;
   }
 
-  IconData _iconForTipe(String tipe) {
-    switch (tipe) {
-      case 'peringatan':
-        return Icons.warning_amber_rounded;
-      case 'sukses':
-        return Icons.check_circle_outline;
-      case 'error':
-        return Icons.error_outline;
+  /// Nilai `tipe` dari backend (dikunci oleh KontrakNotifikasiTest, fase 85):
+  /// terlambat, belum_absen_masuk, belum_absen_pulang, tukar_jadwal.
+  ///
+  /// Versi lama memakai 'peringatan'/'sukses'/'error' — nilai yang tidak
+  /// pernah dikirim siapa pun, jadi SEMUA notifikasi jatuh ke default dan
+  /// tampil identik.
+  IconData _iconForNotifikasi(NotifikasiItem item) {
+    switch (item.tipe) {
+      case 'terlambat':
+        return Icons.running_with_errors_outlined;
+      case 'belum_absen_masuk':
+      case 'belum_absen_pulang':
+        return Icons.alarm_outlined;
+      case 'tukar_jadwal':
+        return Icons.swap_horiz;
       default:
         return Icons.info_outline;
     }
+  }
+
+  /// Warna dibedakan lewat `aksi`, bukan `tipe`. Ketujuh notifikasi
+  /// TukarJadwal memakai tipe yang SAMA — tanpa membaca aksi, "disetujui
+  /// admin" dan "ditolak admin" tampil identik padahal berlawanan arti.
+  Color _warnaForNotifikasi(NotifikasiItem item, BuildContext context) {
+    if (item.sudahBaca) return Colors.grey;
+
+    switch (item.aksi) {
+      case 'approved':
+      case 'disetujui_rekan':
+        return Colors.green.shade600;
+      case 'rejected':
+      case 'ditolak_rekan':
+      case 'dibatalkan_admin':
+      case 'dibatalkan_pengaju':
+        return Colors.red.shade600;
+      case 'diajukan':
+        return Colors.blue.shade600;
+    }
+
+    return switch (item.tipe) {
+      'terlambat' => Colors.orange.shade700,
+      'belum_absen_masuk' || 'belum_absen_pulang' => Colors.orange.shade700,
+      _ => Colors.teal,
+    };
   }
 
   @override
@@ -186,8 +219,8 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                             confirmDismiss: (_) => _hapus(item),
                             child: ListTile(
                               leading: Icon(
-                                _iconForTipe(item.tipe),
-                                color: item.sudahBaca ? Colors.grey : Colors.teal,
+                                _iconForNotifikasi(item),
+                                color: _warnaForNotifikasi(item, context),
                               ),
                               title: Text(
                                 item.judul,
