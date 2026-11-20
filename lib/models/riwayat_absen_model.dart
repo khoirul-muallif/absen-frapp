@@ -48,7 +48,8 @@ class RekapAbsen {
   final int terlambat;
   final int alpha;
   final int izin;
-  final int sakit;
+  // `sakit` dihapus 20 Nov 2026 — dead value, tidak pernah dikirim
+  // rekap(). Cuti sakit dicover modul Cuti.
   final int cuti;
   final int dinas;
   final int libur;
@@ -61,7 +62,6 @@ class RekapAbsen {
     required this.terlambat,
     required this.alpha,
     required this.izin,
-    required this.sakit,
     required this.cuti,
     required this.dinas,
     required this.libur,
@@ -76,7 +76,6 @@ class RekapAbsen {
       terlambat: json['terlambat'] ?? 0,
       alpha: json['alpha'] ?? 0,
       izin: json['izin'] ?? 0,
-      sakit: json['sakit'] ?? 0,
       cuti: json['cuti'] ?? 0,
       dinas: json['dinas'] ?? 0,
       libur: json['libur'] ?? 0,

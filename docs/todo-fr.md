@@ -15,16 +15,13 @@
       Yang tersisa cuma tampilan: `Text(user.email)` jadi baris kosong,
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
-      
+          
+- [ ] **Ikon lonceng + badge di TukarJadwalScreen sekarang boleh dicabut**
+      — prasyaratnya LENGKAP per 20 Nov 2026: notifikasi sudah mengenal
+      tipe & aksi, dan sudah bisa ditekan untuk membuka MenungguResponScreen.
+      Lonceng tidak lagi jadi satu-satunya pintu ke tombol Setuju/Tolak.
+      Ini membuka perombakan navigasi yang tertahan sejak 6 Nov.
 
-
-- [ ] **Hapus "Sakit" dari kartu rekap RiwayatScreen** — TERJAWAB
-      9 Nov 2026: enum `absensi.status = 'sakit'` adalah dead value,
-      bukan fitur yang belum dibuat. Cuti sakit sudah dicover modul
-      Cuti. Jadi backend TIDAK akan mulai mengisinya — hapus field
-      `sakit` dari `_RekapCard` dan dari model `RekapAbsen`.
-      Sekalian: ganti label "Alpha" jadi "Tidak Hadir" (istilah
-      administratif vs yang dibaca karyawan sendiri).
 
  - [ ] **SplashScreen masih pakai `FlutterLogo` bawaan** — komentar "nanti
       diganti logo RS" sudah ada di kodenya sejak lama. LoginScreen sudah
@@ -116,46 +113,12 @@
 - [ ] **RiwayatScreen: batasi chevron kanan** — bisa maju tanpa batas ke
       bulan yang pasti kosong (tidak ada data masa depan di backend).
       Kunci di bulan berjalan. Dicatat 6 Nov 2026.
-- [ ] **NotifikasiScreen harus mengenal `tipe: 'tukar_jadwal'`** — backend
-      mulai mengirim nilai `tipe` baru ini sejak fase 74 (4 kelas
-      notifikasi TukarJadwal). Sebelumnya cuma ada `'terlambat'` dan
-      nilai milik `BelumAbsen`. **Cek dulu apakah switch ikon/warna di
-      `notifikasi_screen.dart` punya cabang `default`** — kalau tidak,
-      nilai baru ini bisa bikin ikon kosong atau crash. Ini satu-satunya
-      hal yang masih bisa menggagalkan fitur notifikasi tukar jadwal di
-      device meski backend-nya sudah hijau total.
-
-      Bentuk `data` yang dikirim: `judul`, `pesan`, `tipe`
-      (selalu `'tukar_jadwal'`), `aksi`, `tukar_jadwal_id`, `tanggal`.
-      Nilai `aksi`: `diajukan`, `disetujui_rekan`, `ditolak_rekan`,
-      `approved`, `rejected`, `dibatalkan_admin`, `dibatalkan_pengaju`.
-      `tipe` sengaja satu nilai untuk ketujuh kejadian supaya FE tidak
-      perlu tujuh cabang — kalau nanti ikonnya mau dibedakan per
-      kejadian, pakai `aksi`, bukan `tipe`.
-
-      **Catatan penting:** untuk `aksi: 'dibatalkan_pengaju'`, baris
-      TukarJadwal-nya sudah DIHAPUS di backend, jadi `tukar_jadwal_id`
-      menunjuk ke id yang tidak ada lagi (keputusan 9 Nov 2026: id tetap
-      dikirim demi konsistensi bentuk `data`). Kalau nanti notifikasi
-      dibuat bisa di-tap untuk membuka detail, yang ini harus ditangani
-      — jangan sampai 404 jadi crash. Dicatat 9 Nov 2026.
-
-- [ ] **Ikon lonceng + badge di TukarJadwalScreen sekarang boleh dicabut**
-      — blocker-nya sudah hilang: backend mengirim notifikasi ke rekan
-      tujuan setiap ada pengajuan masuk (fase 74), jadi mencabut lonceng
-      tidak lagi menghapus satu-satunya cara rekan tahu ada yang
-      menunggu dijawab. Ini membuka perombakan navigasi yang tertahan
-      sejak 6 Nov (tab Riwayat menyerap riwayat tukar jadwal, satu pintu
-      pengajuan lewat JadwalScreen). Prasyarat: item NotifikasiScreen di
-      atas dikerjakan DULU — kalau lonceng dicabut sementara
-      NotifikasiScreen belum mengenal `tipe` barunya, rekan justru
-      kehilangan kedua jalur sekaligus. Dicatat 9 Nov 2026.
       
-- [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`,
-      commit [isi setelah commit]) tapi hardcoded empty state. Nunggu
-      model + endpoint di backend (dicatat juga di todo.md). Setelah
-      itu: service, model, list kartu pengumuman + layar detail.
-      Dicatat 5 Nov 2026.
+- [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`)
+      tapi hardcoded empty state. Backend SIAP sejak fase 75 (9 Nov 2026):
+      dua endpoint, cari + paging. Perlu service, model, list kartu
+      pengumuman + layar detail. Modul pertama yang pakai paging, jadi
+      polanya belum ada di FE.
 
 - [ ] **Redesign visual Beranda** — struktur navigasi sudah final (bottom
       nav 3 tab), tapi gaya visual masih default Material. Referensi dari
@@ -192,15 +155,6 @@ sejak commit `4ebe805`): Cuti/Dinas, TukarJadwal, Izin/Lembur)*
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
-- [ ] **"Sakit" di kartu rekap RiwayatScreen** — field `sakit` tidak
-      pernah diisi backend (`rekap()` tidak mengirimnya), jadi angkanya
-      permanen 0 bagi semua orang, tapi tetap ditampilkan di
-      `_RekapCard`. Hapus dari kartu, atau backend mulai mengisinya?
-      Nyambung ke Known Gap #5 di QUICK_CONTEXT.md (enum
-      `absensi.status` punya opsi `'sakit'` yang belum jelas
-      peruntukannya). Sekalian: label "Alpha" itu istilah administratif,
-      di kartu yang dibaca karyawan sendiri "Tidak Hadir" lebih jelas.
-      Dicatat 6 Nov 2026.
 
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope
@@ -220,6 +174,23 @@ end-to-end per 26 Okt 2026)*
 *(kosong)*
 
 ## Catatan konvensi FE (biar gak keulang)
+
+- Notifikasi: empat nilai `tipe` dari backend — `terlambat`,
+  `belum_absen_masuk`, `belum_absen_pulang`, `tukar_jadwal` (dikunci
+  `KontrakNotifikasiTest` di backend, fase 85). Ketujuh notifikasi
+  TukarJadwal memakai `tipe` yang SAMA; yang membedakan `aksi`:
+  `diajukan`, `disetujui_rekan`, `ditolak_rekan`, `approved`,
+  `rejected`, `dibatalkan_admin`, `dibatalkan_pengaju`. Kalau ikon atau
+  warna mau dibedakan per kejadian, pakai `aksi`, bukan `tipe`.
+
+  `aksi` TIDAK diratakan ke akar response — `NotifikasiController` cuma
+  mengangkat `judul`, `pesan`, `tipe`. Sisanya di dalam `data`, yang
+  dikirim utuh. Baca lewat `json['data']?['aksi']`.
+
+  Untuk `aksi: 'dibatalkan_pengaju'`, baris TukarJadwal-nya sudah
+  DIHAPUS backend dan `tukar_jadwal_id` menunjuk id yang tidak ada lagi
+  (keputusan 9 Nov 2026: id tetap dikirim demi konsistensi bentuk
+  `data`). Getter `NotifikasiItem.detailSudahTidakAda` menandainya.
 
 - TukarJadwal mode Tukar: tanggal tujuan SENGAJA dikunci sama dengan
   tanggal asal (bukan keterbatasan backend — backend mendukung beda

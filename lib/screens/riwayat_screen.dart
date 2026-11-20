@@ -250,7 +250,9 @@ class _RekapCard extends StatelessWidget {
               children: [
                 _RekapItem(label: 'Tepat Waktu', value: rekap.tepatWaktu),
                 _RekapItem(label: 'Terlambat', value: rekap.terlambat),
-                _RekapItem(label: 'Alpha', value: rekap.alpha),
+                // "Alpha" istilah administratif. Di kartu yang dibaca
+                // karyawan sendiri, "Tidak Hadir" lebih jelas.
+                _RekapItem(label: 'Tidak Hadir', value: rekap.alpha),
               ],
             ),
             const SizedBox(height: 12),
@@ -258,8 +260,8 @@ class _RekapCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _RekapItem(label: 'Izin', value: rekap.izin),
-                _RekapItem(label: 'Sakit', value: rekap.sakit),
                 _RekapItem(label: 'Cuti', value: rekap.cuti),
+                _RekapItem(label: 'Dinas', value: rekap.dinas),
               ],
             ),
             const Divider(height: 24),
