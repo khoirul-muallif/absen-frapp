@@ -4,7 +4,12 @@ import '../services/api_client.dart';
 import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
 import '../widgets/status_badge.dart';
+import 'tukar_jadwal/tukar_jadwal_form_screen.dart';
+import 'tukar_jadwal/tukar_jadwal_list.dart';
 
+/// Shell bertab. Dua tab saja — Presensi dan Tukar Jadwal. Izin, Cuti,
+/// Dinas, dan Lembur SENGAJA tidak ikut: keputusan 20 Nov 2026, mereka
+/// tetap di layar terpisah lewat grid Beranda.
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
 
@@ -12,7 +17,79 @@ class RiwayatScreen extends StatefulWidget {
   State<RiwayatScreen> createState() => _RiwayatScreenState();
 }
 
-class _RiwayatScreenState extends State<RiwayatScreen> {
+class _RiwayatScreenState extends State<RiwayatScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final _tukarJadwalKey = GlobalKey<TukarJadwalListState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Listener supaya FAB muncul/hilang saat tab berganti — FAB hanya
+    // relevan di tab Tukar Jadwal.
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final diTabTukarJadwal = _tabController.index == 1;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Riwayat'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Presensi'),
+            Tab(text: 'Tukar Jadwal'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          const _PresensiTab(),
+          TukarJadwalList(key: _tukarJadwalKey),
+        ],
+      ),
+      // FAB masih di sini untuk SEMENTARA. Langkah berikutnya memindahkan
+      // pengajuan ke JadwalScreen; sampai itu selesai, mencabutnya di sini
+      // berarti tidak ada jalan membuat pengajuan baru sama sekali.
+      floatingActionButton: diTabTukarJadwal
+          ? FloatingActionButton(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const TukarJadwalFormScreen()),
+                );
+                _tukarJadwalKey.currentState
+                    ?.muatUlang(tampilkanSpinner: false);
+              },
+              tooltip: 'Ajukan Tukar/Pindah Jadwal',
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+}
+
+/// Isi RiwayatScreen yang lama, tanpa Scaffold dan AppBar-nya.
+class _PresensiTab extends StatefulWidget {
+  const _PresensiTab();
+
+  @override
+  State<_PresensiTab> createState() => _PresensiTabState();
+}
+
+class _PresensiTabState extends State<_PresensiTab>
+    with AutomaticKeepAliveClientMixin {
   final AbsensiService _service = AbsensiService();
   late int _bulan;
   late int _tahun;
@@ -21,6 +98,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   String? _error;
   RekapAbsen? _rekap;
   List<RiwayatAbsenItem> _riwayat = [];
+
+  /// Tanpa ini, berpindah ke tab Tukar Jadwal lalu kembali membuang bulan
+  /// yang sedang dilihat dan memuat ulang dari bulan berjalan.
+  @override
+  bool get wantKeepAlive => true;
 
   /// Penanda request terakhir yang diminta. Ganti bulan beruntun melepas
   /// beberapa request sekaligus dan urutan mendaratnya tidak dijamin —
@@ -115,79 +197,77 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Riwayat Absensi')),
-      body: RefreshIndicator(
-        onRefresh: () => _loadData(tampilkanSpinner: false),
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                // Tanpa ini RefreshIndicator mati saat konten lebih pendek
-                // dari layar — justru di bulan kosong, saat orang paling
-                // ingin menarik untuk memuat ulang.
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: () => _gantiBulan(-1),
-                      ),
-                      Text(
-                        '${_namaBulan[_bulan - 1]} $_tahun',
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: () => _gantiBulan(1),
-                      ),
-                    ],
+    super.build(context); // wajib untuk AutomaticKeepAliveClientMixin
+
+    return RefreshIndicator(
+      onRefresh: () => _loadData(tampilkanSpinner: false),
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              // Tanpa ini RefreshIndicator mati saat konten lebih pendek
+              // dari layar — justru di bulan kosong, saat orang paling
+              // ingin menarik untuk memuat ulang.
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () => _gantiBulan(-1),
+                    ),
+                    Text(
+                      '${_namaBulan[_bulan - 1]} $_tahun',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () => _gantiBulan(1),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (_error != null)
+                  _ErrorCard(pesan: _error!, onCobaLagi: _loadData)
+                else ...[
+                  if (_rekap != null) _RekapCard(rekap: _rekap!),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Detail Harian',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  if (_error != null)
-                    _ErrorCard(pesan: _error!, onCobaLagi: _loadData)
-                  else ...[
-                    if (_rekap != null) _RekapCard(rekap: _rekap!),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Detail Harian',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    if (_riwayat.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 32),
-                        child: Center(
-                            child: Text('Belum ada data absensi bulan ini')),
-                      )
-                    else
-                      ..._riwayat.map((item) {
-                        final (_, warna) = statusDisplay(item.status);
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: warna.withValues(alpha: 0.15),
-                              child: Icon(Icons.circle, size: 12, color: warna),
-                            ),
-                            title: Text('${item.tanggal} • ${item.hari}'),
-                            subtitle: Text(
-                              '${item.shift} • Masuk: ${item.waktuMasuk} • Pulang: ${item.waktuPulang}'
-                              '${item.terlambat != null ? '\nTerlambat ${item.terlambat}' : ''}',
-                            ),
-                            isThreeLine: item.terlambat != null,
-                            trailing: StatusBadge(status: item.status),
+                  if (_riwayat.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                          child: Text('Belum ada data absensi bulan ini')),
+                    )
+                  else
+                    ..._riwayat.map((item) {
+                      final (_, warna) = statusDisplay(item.status);
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: warna.withValues(alpha: 0.15),
+                            child: Icon(Icons.circle, size: 12, color: warna),
                           ),
-                        );
-                      }),
-                  ],
+                          title: Text('${item.tanggal} • ${item.hari}'),
+                          subtitle: Text(
+                            '${item.shift} • Masuk: ${item.waktuMasuk} • Pulang: ${item.waktuPulang}'
+                            '${item.terlambat != null ? '\nTerlambat ${item.terlambat}' : ''}',
+                          ),
+                          isThreeLine: item.terlambat != null,
+                          trailing: StatusBadge(status: item.status),
+                        ),
+                      );
+                    }),
                 ],
-              ),
-      ),
+              ],
+            ),
     );
   }
 }
