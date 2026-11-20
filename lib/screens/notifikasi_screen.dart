@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/notifikasi_service.dart';
 import '../models/notifikasi_model.dart';
 import '../utils/snackbar_helper.dart';
+import 'tukar_jadwal/menunggu_respon_screen.dart';
+import 'tukar_jadwal/tukar_jadwal_screen.dart';
 
 class NotifikasiScreen extends StatefulWidget {
   const NotifikasiScreen({super.key});
@@ -57,6 +59,45 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     });
   }
 
+  /// Sebelum ini, satu-satunya yang terjadi saat notifikasi ditekan adalah
+  /// menandainya dibaca — tidak ada notifikasi yang bisa membuka apa pun.
+  ///
+  /// Hanya `tukar_jadwal` yang diarahkan: dari lima tipe yang ada, cuma itu
+  /// yang menuntut tindakan. `terlambat` dan `belum_absen_*` sifatnya
+  /// pemberitahuan — membawa orang ke RiwayatScreen tidak memberinya apa pun
+  /// untuk dikerjakan.
+  Future<void> _bukaNotifikasi(NotifikasiItem item) async {
+    await _tandaiBaca(item);
+    if (!mounted) return;
+
+    if (item.tipe != 'tukar_jadwal') return;
+
+    // Baris TukarJadwal-nya sudah DIHAPUS backend (keputusan 9 Nov 2026:
+    // id tetap dikirim demi konsistensi bentuk data). Membuka layarnya
+    // cuma menampilkan daftar tanpa pengajuan itu — membingungkan.
+    if (item.detailSudahTidakAda) {
+      showAppSnackBar(
+        context,
+        'Pengajuan ini sudah dibatalkan, tidak ada yang perlu ditindaklanjuti.',
+      );
+      return;
+    }
+
+    // `diajukan` berarti rekan menunggu jawaban SAYA — tombol Setuju/Tolak
+    // ada di MenungguResponScreen, bukan di TukarJadwalScreen (yang isinya
+    // riwayat pengajuan saya sendiri).
+    final tujuan = item.aksi == 'diajukan'
+        ? const MenungguResponScreen()
+        : const TukarJadwalScreen();
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => tujuan),
+    );
+
+    if (!mounted) return;
+    _loadData(tampilkanSpinner: false);
+  }
+
   Future<void> _tandaiBaca(NotifikasiItem item) async {
     if (item.sudahBaca) return;
 
@@ -66,12 +107,9 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     if (!berhasil) {
       showAppSnackBar(context, 'Gagal menandai notifikasi sebagai dibaca',
           type: AppSnackBarType.error);
-      return;
     }
-
-    // Muat ulang tanpa spinner layar penuh. Mengubah item di tempat tidak
-    // bisa: NotifikasiItem.sudahBaca final.
-    _loadData(tampilkanSpinner: false);
+    // Pemuatan ulang diserahkan ke pemanggil — _bukaNotifikasi() sudah
+    // melakukannya setelah kembali dari layar tujuan.
   }
 
   Future<void> _tandaiSemuaBaca() async {
@@ -242,7 +280,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                              onTap: () => _tandaiBaca(item),
+                              onTap: () => _bukaNotifikasi(item),
                             ),
                           );
                         },

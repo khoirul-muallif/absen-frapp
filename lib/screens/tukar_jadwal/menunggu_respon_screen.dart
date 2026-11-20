@@ -14,6 +14,15 @@ class MenungguResponScreen extends StatefulWidget {
 
 class _MenungguResponScreenState extends State<MenungguResponScreen> {
   final _service = TukarJadwalService();
+
+  /// Dimiliki State, bukan dibuat per-dialog. Versi lama membuangnya di
+  /// `finally` tepat setelah showDialog mengembalikan nilai — padahal
+  /// animasi penutupan dialog masih berjalan dan TextField-nya masih
+  /// memakai controller itu. Hasilnya layar merah sepersekian detik
+  /// ("used after being disposed"), lalu hilang sendiri saat animasi
+  /// selesai, jadi mudah dikira kedipan biasa.
+  final _alasanTolakController = TextEditingController();
+
   List<TukarJadwalItem> _items = [];
   bool _loading = true;
   String? _error;
@@ -22,6 +31,12 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _alasanTolakController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData({bool tampilkanSpinner = true}) async {
@@ -79,31 +94,31 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
     }
   }
 
-  /// Controller-nya dimiliki State, bukan dibuat di dalam builder dialog —
-  /// di sana tidak ada tempat untuk dispose()-nya.
   Future<String?> _tanyaAlasanTolak() async {
-    final controller = TextEditingController();
-    try {
-      return await showDialog<String>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Alasan menolak (opsional)'),
-          content: TextField(controller: controller, maxLines: 2),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('Tolak'),
-            ),
-          ],
+    _alasanTolakController.clear();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Alasan menolak (opsional)'),
+        content: TextField(
+          controller: _alasanTolakController,
+          maxLines: 2,
+          autofocus: true,
         ),
-      );
-    } finally {
-      controller.dispose();
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(context, _alasanTolakController.text.trim()),
+            child: const Text('Tolak'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
