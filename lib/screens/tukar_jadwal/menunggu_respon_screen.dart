@@ -27,6 +27,13 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
   bool _loading = true;
   String? _error;
 
+  /// Id pengajuan yang sedang diproses. Tanpa ini, tekan cepat dua kali
+  /// mengirim dua request: yang pertama berhasil, yang kedua ditolak
+  /// backend dengan "Pengajuan ini bukan lagi tahap menunggu respon
+  /// rekan" — kotak merah besar yang terlihat seperti kegagalan padahal
+  /// aksinya sudah berhasil.
+  int? _sedangDiproses;
+  
   @override
   void initState() {
     super.initState();
@@ -76,21 +83,30 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
   }
 
   Future<void> _respon(TukarJadwalItem item, bool setuju) async {
+    if (_sedangDiproses != null) return;
+
     String? catatan;
     if (!setuju) {
       catatan = await _tanyaAlasanTolak();
       if (catatan == null) return; // dialog dibatalkan
+      if (!mounted) return;
     }
 
-    final result = await _service.responRekan(item.id, setuju, catatan: catatan);
-    if (!mounted) return;
+    setState(() => _sedangDiproses = item.id);
 
-    if (result['success'] == true) {
-      showAppSnackBar(context, result['message'], type: AppSnackBarType.success);
-      _loadData();
-    } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal merespon',
-          type: AppSnackBarType.error);
+    try {
+      final result = await _service.responRekan(item.id, setuju, catatan: catatan);
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        showAppSnackBar(context, result['message'], type: AppSnackBarType.success);
+        _loadData();
+      } else {
+        showAppSnackBar(context, result['message'] ?? 'Gagal merespon',
+            type: AppSnackBarType.error);
+      }
+    } finally {
+      if (mounted) setState(() => _sedangDiproses = null);
     }
   }
 
@@ -200,15 +216,28 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
                                     children: [
                                       Expanded(
                                         child: OutlinedButton(
-                                          onPressed: () => _respon(item, false),
+                                          onPressed: _sedangDiproses != null
+                                              ? null
+                                              : () => _respon(item, false),
                                           child: const Text('Tolak'),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: ElevatedButton(
-                                          onPressed: () => _respon(item, true),
-                                          child: const Text('Setuju'),
+                                          onPressed: _sedangDiproses != null
+                                              ? null
+                                              : () => _respon(item, true),
+                                          child: _sedangDiproses == item.id
+                                              ? const SizedBox(
+                                                  height: 18,
+                                                  width: 18,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                              : const Text('Setuju'),
                                         ),
                                       ),
                                     ],
