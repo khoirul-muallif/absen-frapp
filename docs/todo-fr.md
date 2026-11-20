@@ -26,13 +26,37 @@
       Sekalian: ganti label "Alpha" jadi "Tidak Hadir" (istilah
       administratif vs yang dibaca karyawan sendiri).
 
-- [ ] **LoginScreen masih polos** — tidak ada logo RS, tidak ada warna
-      atau identitas apa pun; dua field + satu tombol di tengah layar
-      putih. Ini layar pertama yang dilihat karyawan, jadi dampaknya
-      lebih besar daripada form-form lain yang sudah dicatat.
-      SplashScreen juga masih memakai `FlutterLogo` bawaan (komentar
-      "nanti diganti logo RS" sudah ada di kodenya sejak lama). Butuh
-      aset logo RSU Banyumanik 2 dulu. Dicatat 6 Nov 2026.
+ - [ ] **SplashScreen masih pakai `FlutterLogo` bawaan** — komentar "nanti
+      diganti logo RS" sudah ada di kodenya sejak lama. LoginScreen sudah
+      dirapikan 20 Nov 2026 (identitas, kartu form, tombol solid,
+      prefixIcon); Splash belum disentuh. Nyambung ke item logo instansi
+      di atas.
+
+- [ ] **Logo instansi dari backend** — LoginScreen dan SplashScreen masih
+      pakai placeholder (lingkaran hijau berisi ikon rumah sakit di Login,
+      `FlutterLogo` di Splash). Usul 20 Nov 2026: ambil dari API bagian
+      instansi, bukan aset yang di-bundle — lebih benar kalau nanti ada
+      instansi kedua, dan logo bisa diganti tanpa rilis ulang aplikasi.
+
+      MASALAH URUTAN yang perlu diselesaikan dulu: LoginScreen tampil
+      SEBELUM ada yang login, jadi aplikasi belum tahu instansi mana dan
+      kemungkinan endpoint-nya butuh token. Tiga kemungkinan jalan keluar:
+
+      1. Endpoint publik untuk logo instansi (tanpa auth). Paling
+         sederhana, tapi perlu diputuskan apakah logo RS itu informasi
+         yang boleh diakses tanpa login — kemungkinan besar iya, logo
+         bukan rahasia.
+      2. Logo disimpan lokal setelah login pertama, dipakai di login
+         berikutnya. Login pertama tetap pakai placeholder.
+      3. Hanya Beranda dan layar dalam yang pakai logo dari API; Login
+         dan Splash tetap pakai aset bundle.
+
+      Backend juga perlu kolomnya dulu — cek apakah tabel `instansi`
+      sudah punya field logo. Kalau belum: migration + FileUpload di
+      InstansiResource + field di response API.
+
+      Di FE, ganti isi `_identitas()` di login_screen.dart — ukuran dan
+      posisinya sudah disiapkan, tinggal tukar Icon jadi Image.
 
 
 - [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada

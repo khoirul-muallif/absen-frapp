@@ -28,6 +28,14 @@ ThemeData buildAppTheme() {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
+        // M3 default ElevatedButton = latar surfaceContainerLow + teks
+        // primary, yang dengan seed hijau ini terlihat seperti tombol
+        // NONAKTIF. Tombol utama harus solid.
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+        disabledForegroundColor: Colors.white70,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
