@@ -5,6 +5,13 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+
+- [ ] **TukarJadwalList di tab tidak memuat ulang saat tab dibuka** —
+      memuat sekali di initState lalu diam. Kalau karyawan menjawab
+      pengajuan lewat notifikasi lalu buka tab Riwayat, banner masih
+      menampilkan angka lama sampai ditarik untuk refresh. Dicatat
+      20 Nov 2026.
+      
 - [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
       membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
       punya email). KOREKSI 10 Nov 2026: kekhawatiran parsing melempar
