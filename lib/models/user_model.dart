@@ -43,4 +43,8 @@ class UserModel {
       instansiNama: json['instansi']?['nama'] ?? '',
     );
   }
+  /// Email bisa kosong: backend fase 81 membuat kolomnya nullable karena
+  /// tidak semua karyawan RS punya email. Login memakai username, jadi
+  /// kosong tidak mengunci siapa pun di luar.
+  bool get punyaEmail => email.isNotEmpty;
 }

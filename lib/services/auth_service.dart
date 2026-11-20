@@ -9,11 +9,14 @@ class AuthService {
   final ApiClient _apiClient = ApiClient();
   final TokenStorage _tokenStorage = TokenStorage();
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       final json = await _apiClient.post(
         ApiConstants.login,
-        body: {'email': email, 'password': password},
+        // Backend pindah dari `email` ke `username` (fase 79, 9 Nov 2026).
+        // Mengirim `email` dijawab 422 `username: required` — tidak ada
+        // satu pun karyawan yang bisa masuk.
+        body: {'username': username, 'password': password},
       );
 
       final data = json['data'];

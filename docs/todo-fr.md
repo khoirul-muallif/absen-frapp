@@ -5,21 +5,16 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
-- [ ] **`email` di response profil bisa null** — backend fase 81 (10 Nov
-      2026) membuat `karyawan.email` nullable. Pihak RS mengonfirmasi tidak
-      semua karyawan punya email, dan sejak login pindah ke username (fase
-      79) email cuma data profil biasa.
+- [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
+      membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
+      punya email). KOREKSI 10 Nov 2026: kekhawatiran parsing melempar
+      TIDAK terbukti — `UserModel.fromJson()` sudah pakai
+      `json['email'] ?? ''` sejak awal, jadi null jadi string kosong dan
+      tidak ada yang crash.
 
-      Yang perlu dicek: model Dart untuk profil karyawan. Kalau field-nya
-      `String email` bukan `String? email`, parsing JSON melempar dan layar
-      profil mati — bukan untuk satu-dua orang, tapi untuk ~110 dari 150
-      karyawan. Cek juga setiap tempat yang menampilkan email langsung
-      (`Text(user.email)`) — perlu fallback, bukan string kosong yang
-      menyisakan label menggantung.
-
-      Ini TIDAK berkaitan dengan blocker LoginScreen (fase 79). Di situ
-      `email` dicabut dari request body; di sini `email` tetap ada di
-      response, cuma bisa bernilai null.
+      Yang tersisa cuma tampilan: `Text(user.email)` jadi baris kosong,
+      dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
+      barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
       
 - [ ] **LoginScreen WAJIB pindah ke username — FE sekarang pasti gagal
       login** — backend sudah mengubah `POST /api/auth/login` dari

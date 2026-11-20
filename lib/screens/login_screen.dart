@@ -12,13 +12,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = context.read<AuthProvider>();
 
     final success = await authProvider.login(
-      _emailController.text.trim(),
+      _usernameController.text.trim(),
       _passwordController.text.trim(),
     );
 
@@ -66,15 +66,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
 
                 TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
+                  controller: _usernameController,
+                  // Bukan emailAddress: keyboard email memunculkan @ dan .,
+                  // dan di sebagian Android ikut mengaktifkan autocorrect
+                  // yang bisa mengubah apa yang diketik.
+                  keyboardType: TextInputType.text,
+                  textCapitalization: TextCapitalization.none,
+                  autocorrect: false,
+                  autofillHints: const [AutofillHints.username],
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Username',
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Email wajib diisi'
+                      ? 'Username wajib diisi'
                       : null,
                 ),
                 const SizedBox(height: 16),
@@ -83,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.password],
                   onFieldSubmitted: (_) =>
                       authProvider.isLoading ? null : _handleLogin(),
                   decoration: InputDecoration(
