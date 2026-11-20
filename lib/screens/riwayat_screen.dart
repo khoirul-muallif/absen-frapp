@@ -4,7 +4,6 @@ import '../services/api_client.dart';
 import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
 import '../widgets/status_badge.dart';
-import 'tukar_jadwal/tukar_jadwal_form_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_list.dart';
 
 /// Shell bertab. Dua tab saja — Presensi dan Tukar Jadwal. Izin, Cuti,
@@ -39,7 +38,6 @@ class _RiwayatScreenState extends State<RiwayatScreen>
 
   @override
   Widget build(BuildContext context) {
-    final diTabTukarJadwal = _tabController.index == 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -59,23 +57,6 @@ class _RiwayatScreenState extends State<RiwayatScreen>
           TukarJadwalList(key: _tukarJadwalKey),
         ],
       ),
-      // FAB masih di sini untuk SEMENTARA. Langkah berikutnya memindahkan
-      // pengajuan ke JadwalScreen; sampai itu selesai, mencabutnya di sini
-      // berarti tidak ada jalan membuat pengajuan baru sama sekali.
-      floatingActionButton: diTabTukarJadwal
-          ? FloatingActionButton(
-              onPressed: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => const TukarJadwalFormScreen()),
-                );
-                _tukarJadwalKey.currentState
-                    ?.muatUlang(tampilkanSpinner: false);
-              },
-              tooltip: 'Ajukan Tukar/Pindah Jadwal',
-              child: const Icon(Icons.add),
-            )
-          : null,
     );
   }
 }

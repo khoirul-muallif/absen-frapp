@@ -8,8 +8,6 @@ import 'izin/izin_screen.dart';
 import 'lembur/lembur_screen.dart';
 import 'dinas/dinas_screen.dart';
 import 'cuti/cuti_screen.dart';
-import 'tukar_jadwal/tukar_jadwal_screen.dart';
-import '../services/tukar_jadwal_service.dart';
 import 'jadwal/jadwal_screen.dart';
 import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
@@ -24,10 +22,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _tukarJadwalService = TukarJadwalService();
   final _absensiService = AbsensiService();
   final _notifikasiService = NotifikasiService();
-  int _menungguTukarJadwalCount = 0;
   int _notifBelumBaca = 0;
 
   RekapAbsen? _rekap;
@@ -36,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMenungguTukarJadwalCount();
     _loadRekap();
     _loadNotifCount();
   }
@@ -46,12 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final count = await _notifikasiService.getJumlahBelumBaca();
     if (!mounted) return;
     setState(() => _notifBelumBaca = count);
-  }
-
-  Future<void> _loadMenungguTukarJadwalCount() async {
-    final items = await _tukarJadwalService.menungguResponSaya();
-    if (!mounted) return;
-    setState(() => _menungguTukarJadwalCount = items.length);
   }
 
   Future<void> _loadRekap() async {
@@ -322,17 +311,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const CutiScreen()),
                         );
-                      },
-                    ),
-                    _MenuItem(
-                      icon: Icons.swap_horiz,
-                      label: 'Tukar Jadwal',
-                      badgeCount: _menungguTukarJadwalCount,
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const TukarJadwalScreen()),
-                        );
-                        _loadMenungguTukarJadwalCount();
                       },
                     ),
                   ],
