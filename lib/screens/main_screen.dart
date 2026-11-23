@@ -38,9 +38,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _muatJumlahMenunggu() async {
-    final items = await _tukarJadwalService.menungguResponSaya();
-    if (!mounted) return;
-    setState(() => _menungguTukarJadwal = items.length);
+    // Gagal diam-diam, jangan melempar. Dipanggil dari initState tanpa
+    // await, jadi lemparan di sini jadi unhandled async error — dan
+    // badge gagal memberi tahu justru saat jaringan bermasalah.
+    try {
+      final items = await _tukarJadwalService.menungguResponSaya();
+      if (!mounted) return;
+      setState(() => _menungguTukarJadwal = items.length);
+    } catch (_) {
+      // Biarkan angka sebelumnya. Badge yang usang lebih baik daripada
+      // badge yang mendadak 0 dan membuat karyawan mengira sudah beres.
+    }
   }
 
   @override

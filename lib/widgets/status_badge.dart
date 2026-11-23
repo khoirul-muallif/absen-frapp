@@ -18,8 +18,6 @@ import 'package:flutter/material.dart';
       return ('Menunggu Admin', Colors.grey.shade700);
     case 'ditolak_rekan':
       return ('Ditolak Rekan', Colors.red.shade700);
-    // lib/theme/status_badge.dart — tambahin case ini ke statusDisplay(),
-    // di ATAS baris `default:` yang sudah ada
     case 'tepat_waktu':
       return ('Tepat Waktu', Colors.green.shade700);
     case 'terlambat':
