@@ -20,14 +20,30 @@ class _RiwayatScreenState extends State<RiwayatScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final _tukarJadwalKey = GlobalKey<TukarJadwalListState>();
+  int _tabTerakhir = 0;
 
   @override
   void initState() {
     super.initState();
-    // Listener supaya FAB muncul/hilang saat tab berganti — FAB hanya
-    // relevan di tab Tukar Jadwal.
     _tabController = TabController(length: 2, vsync: this)
-      ..addListener(() => setState(() {}));
+      ..addListener(_saatTabBerganti);
+  }
+
+  /// Tanpa ini TukarJadwalList memuat sekali di initState lalu diam:
+  /// menjawab pengajuan lewat notifikasi, lalu kembali ke tab ini, dan
+  /// banner masih menyebut angka lama sampai ditarik untuk refresh.
+  void _saatTabBerganti() {
+    // Listener ini dipanggil berkali-kali selama animasi dan geseran.
+    // Kerjakan sekali saja, setelah indeksnya benar-benar berpindah.
+    if (_tabController.indexIsChanging) return;
+    if (_tabController.index == _tabTerakhir) return;
+    _tabTerakhir = _tabController.index;
+
+    if (_tabController.index == 1) {
+      // Tanpa spinner: isinya sudah ada di layar, menggantinya dengan
+      // spinner membuat tab berkedip kosong tiap kali dibuka.
+      _tukarJadwalKey.currentState?.muatUlang(tampilkanSpinner: false);
+    }
   }
 
   @override
@@ -180,6 +196,11 @@ class _PresensiTabState extends State<_PresensiTab>
   Widget build(BuildContext context) {
     super.build(context); // wajib untuk AutomaticKeepAliveClientMixin
 
+    // Tidak ada data masa depan di backend, jadi maju melewati bulan
+    // berjalan selalu menghasilkan layar kosong yang terlihat seperti bug.
+    final sekarang = DateTime.now();
+    final diBulanBerjalan = _bulan == sekarang.month && _tahun == sekarang.year;
+
     return RefreshIndicator(
       onRefresh: () => _loadData(tampilkanSpinner: false),
       child: _loading
@@ -205,7 +226,7 @@ class _PresensiTabState extends State<_PresensiTab>
                     ),
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
-                      onPressed: () => _gantiBulan(1),
+                      onPressed: diBulanBerjalan ? null : () => _gantiBulan(1),
                     ),
                   ],
                 ),
