@@ -13,6 +13,7 @@ import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
 import '../services/notifikasi_service.dart';
+import 'profil/ubah_password_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -80,11 +81,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: (value) async {
               switch (value) {
                 case 'profil':
-                case 'ubah_password':
                   showAppSnackBar(
                     context,
                     'Fitur ini akan segera hadir',
                     type: AppSnackBarType.info,
+                  );
+                  break;
+                case 'ubah_password':
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const UbahPasswordScreen(),
+                    ),
                   );
                   break;
                 case 'logout':

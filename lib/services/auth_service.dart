@@ -58,6 +58,38 @@ class AuthService {
 
   Future<String?> getToken() => _tokenStorage.getToken();
 
+    /// Ganti password sendiri. Mengembalikan `errors` per field (bukan satu
+  /// pesan gabungan seperti login) karena endpoint ini punya dua field
+  /// yang bisa ditolak terpisah — `password_lama` dan `password`.
+  Future<Map<String, dynamic>> ubahPassword({
+    required String passwordLama,
+    required String passwordBaru,
+  }) async {
+    try {
+      final json = await _apiClient.post(
+        ApiConstants.ubahPassword,
+        body: {
+          'password_lama': passwordLama,
+          'password': passwordBaru,
+          'password_confirmation': passwordBaru,
+        },
+      );
+
+      return {
+        'success': true,
+        'message': json['message'] ?? 'Password berhasil diubah.',
+      };
+    } on ApiException catch (e) {
+      return {
+        'success': false,
+        'message': e.message,
+        'errors': e.errors,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak bisa terhubung ke server'};
+    }
+  }
+
   Future<Map<String, dynamic>> getMe() async {
     final token = await getToken();
     if (token == null) {

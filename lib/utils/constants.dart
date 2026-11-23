@@ -15,6 +15,7 @@ class ApiConstants {
   static String get login => '$baseUrl/auth/login';
   static String get logout => '$baseUrl/auth/logout';
   static String get me => '$baseUrl/auth/me';
+  static String get ubahPassword => '$baseUrl/auth/ubah-password';
 
   static String get notifikasi => '$baseUrl/notifikasi';
   static String get notifikasiJumlah => '$baseUrl/notifikasi/jumlah';
