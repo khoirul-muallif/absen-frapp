@@ -18,45 +18,6 @@
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
           
-- [ ] **Ikon lonceng + badge di TukarJadwalScreen sekarang boleh dicabut**
-      — prasyaratnya LENGKAP per 20 Nov 2026: notifikasi sudah mengenal
-      tipe & aksi, dan sudah bisa ditekan untuk membuka MenungguResponScreen.
-      Lonceng tidak lagi jadi satu-satunya pintu ke tombol Setuju/Tolak.
-      Ini membuka perombakan navigasi yang tertahan sejak 6 Nov.
-
-
- - [ ] **SplashScreen masih pakai `FlutterLogo` bawaan** — komentar "nanti
-      diganti logo RS" sudah ada di kodenya sejak lama. LoginScreen sudah
-      dirapikan 20 Nov 2026 (identitas, kartu form, tombol solid,
-      prefixIcon); Splash belum disentuh. Nyambung ke item logo instansi
-      di atas.
-
-- [ ] **Logo instansi dari backend** — LoginScreen dan SplashScreen masih
-      pakai placeholder (lingkaran hijau berisi ikon rumah sakit di Login,
-      `FlutterLogo` di Splash). Usul 20 Nov 2026: ambil dari API bagian
-      instansi, bukan aset yang di-bundle — lebih benar kalau nanti ada
-      instansi kedua, dan logo bisa diganti tanpa rilis ulang aplikasi.
-
-      MASALAH URUTAN yang perlu diselesaikan dulu: LoginScreen tampil
-      SEBELUM ada yang login, jadi aplikasi belum tahu instansi mana dan
-      kemungkinan endpoint-nya butuh token. Tiga kemungkinan jalan keluar:
-
-      1. Endpoint publik untuk logo instansi (tanpa auth). Paling
-         sederhana, tapi perlu diputuskan apakah logo RS itu informasi
-         yang boleh diakses tanpa login — kemungkinan besar iya, logo
-         bukan rahasia.
-      2. Logo disimpan lokal setelah login pertama, dipakai di login
-         berikutnya. Login pertama tetap pakai placeholder.
-      3. Hanya Beranda dan layar dalam yang pakai logo dari API; Login
-         dan Splash tetap pakai aset bundle.
-
-      Backend juga perlu kolomnya dulu — cek apakah tabel `instansi`
-      sudah punya field logo. Kalau belum: migration + FileUpload di
-      InstansiResource + field di response API.
-
-      Di FE, ganti isi `_identitas()` di login_screen.dart — ukuran dan
-      posisinya sudah disiapkan, tinggal tukar Icon jadi Image.
-
 
 - [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada
       diagnosis, baru firasat. Yang sudah terlihat: tidak ada tombol
@@ -87,23 +48,6 @@
       approved. Yang ketiga perlu prefetch dulu seperti
       `_prefetchJadwalSaya()` di TukarJadwalFormScreen.
       
-- [ ] **Pemilihan rentang tanggal di Cuti & Dinas kurang ramah** —
-      dua date picker terpisah (mulai, selesai) tanpa gambaran rentang
-      yang terbentuk; user baru harus menebak sendiri berapa hari yang
-      dia ajukan. Belum ada diagnosis lengkap, baru keluhan dari
-      pemakaian pertama. Hal-hal yang patut dilihat saat digarap:
-      jumlah hari tidak ditampilkan sebelum submit padahal backend
-      menghitungnya (`jumlah_hari`) dan itu yang memotong kuota; sisa
-      kuota juga tidak terlihat di form Cuti padahal endpoint
-      `/api/cuti/kuota` sudah ada dan `CutiService.kuota()` sudah
-      dipakai di layar lain; aturan backend yang bisa menolak setelah
-      submit (tidak boleh melintasi tahun, tidak boleh melintasi
-      semester untuk jenis cuti semesteran, bentrok dengan cuti/dinas
-      approved) tidak dicegah di sumbernya seperti yang sudah dilakukan
-      di TukarJadwal lewat `selectableDayPredicate`. Kandidat solusi:
-      `showDateRangePicker` satu kali, atau tetap dua picker tapi
-      dengan ringkasan rentang + sisa kuota yang hidup. Perlu sesi
-      tersendiri. Dicatat 6 Nov 2026.
 
 
 - [ ] **RiwayatScreen: batasi tampilan awal** — daftar harian tampil utuh
@@ -116,11 +60,6 @@
       request di FE dan rekap bulanannya jadi janggal. Dicatat 6 Nov 2026.
 
       
-- [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`)
-      tapi hardcoded empty state. Backend SIAP sejak fase 75 (9 Nov 2026):
-      dua endpoint, cari + paging. Perlu service, model, list kartu
-      pengumuman + layar detail. Modul pertama yang pakai paging, jadi
-      polanya belum ada di FE.
 
 - [ ] **Redesign visual Beranda** — struktur navigasi sudah final (bottom
       nav 3 tab), tapi gaya visual masih default Material. Referensi dari
@@ -150,15 +89,14 @@
 
 - [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
       screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
-      pola yang kurang ramah pengguna: konsistensi visual antar modul
-      (section Card baru diterapkan di TukarJadwalFormScreen, modul
-      lain — Izin/Lembur/Cuti/Dinas — masih layout polos ListTile
-      rata tanpa sekat, lihat commit `7b42ee1`), copy/pesan yang
-      masih teknis atau kurang jelas, alur yang bisa dipangkas/
-      disederhanakan. Masih rencana, belum ada scope/checklist
-      konkret — perlu sesi tersendiri buat nentuin cakupannya (semua
-      modul sekaligus, atau satu-satu kayak pola review Filament
-      Resource di backend fase 25-36). Dicatat 4 Nov 2026.
+      pola yang kurang ramah pengguna: copy/pesan yang masih teknis atau
+      kurang jelas, alur yang bisa dipangkas/disederhanakan. Konsistensi
+      section Card sudah selesai 23 Nov 2026 — `SectionCard` dipakai di
+      kelima form (TukarJadwal, Izin, Lembur, Cuti, Dinas). Masih
+      rencana, belum ada scope/checklist konkret — perlu sesi tersendiri
+      buat nentuin cakupannya (semua modul sekaligus, atau satu-satu
+      kayak pola review Filament Resource di backend fase 25-36).
+      Dicatat 4 Nov 2026.
 
 ## Perlu investigasi sebelum dikerjakan
 
@@ -176,10 +114,10 @@ diasumsikan merata.)*
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope
       masa depan, atau referensi dari app lain yang beda modul?
-- [ ] **Struktur layar Riwayat** — referensi UI gabung Presensi/Izin/Cuti
-      dkk jadi 1 screen pakai tab, beda dari struktur sekarang (tiap modul
-      screen terpisah, diakses dari grid home). Diikutin atau tetap kayak
-      sekarang?
+- Riwayat dua tab saja: Presensi + Tukar Jadwal. Izin, Cuti, Dinas,
+  Lembur SENGAJA tidak ikut — tetap di layar terpisah lewat grid Beranda
+  (keputusan 20 Nov 2026, menjawab usulan referensi UI yang menggabungkan
+  semuanya jadi satu layar bertab).
 
 ## Belum ditest end-to-end
 
@@ -251,3 +189,10 @@ end-to-end per 26 Okt 2026)*
   Errornya muncul di bawah fieldnya, sejajar dengan TextFormField.
 - `initialTime` pada `showTimePicker` selalu pakai nilai yang sudah
   dipilih (`_jam ?? TimeOfDay.now()`), jangan selalu `TimeOfDay.now()`.
+- Identitas instansi (nama + logo) disimpan lokal lewat `InstansiStorage`
+  setelah login, SENGAJA tidak dibersihkan saat logout. Itu satu-satunya
+  cara LoginScreen dan SplashScreen tahu instansi mana sebelum ada yang
+  login. Jangan tambahkan ke `AuthService.logout()`.
+- Logo instansi selalu lewat `LogoInstansi` (`lib/widgets/logo_instansi.dart`),
+  yang jatuh ke placeholder untuk tiga keadaan wajar: belum pernah login,
+  instansi belum mengunggah logo, dan URL gagal dimuat.
