@@ -24,10 +24,10 @@ import 'package:flutter/material.dart';
       return ('Terlambat', Colors.orange.shade800);
     case 'alpha':
       return ('Tidak Hadir', Colors.red.shade700);
-    case 'sakit':
     case 'izin':
+      return ('Izin', Colors.blue.shade700);
     case 'cuti':
-      return (status == 'sakit' ? 'Sakit' : status == 'izin' ? 'Izin' : 'Cuti', Colors.blue.shade700);
+      return ('Cuti', Colors.blue.shade700);
     case 'dinas':
       return ('Dinas', Colors.blue.shade700);
     case 'libur':

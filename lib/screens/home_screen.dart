@@ -37,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadNotifCount();
   }
 
-
   Future<void> _loadNotifCount() async {
     final count = await _notifikasiService.getJumlahBelumBaca();
     if (!mounted) return;
@@ -46,7 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadRekap() async {
     final now = DateTime.now();
-    final rekap = await _absensiService.getRekap(bulan: now.month, tahun: now.year);
+    final rekap = await _absensiService.getRekap(
+      bulan: now.month,
+      tahun: now.year,
+    );
     if (!mounted) return;
     setState(() {
       _rekap = rekap;
@@ -64,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Beranda'),
         actions: [
           IconButton(
-           icon: Badge.count(
+            icon: Badge.count(
               count: _notifBelumBaca,
               isLabelVisible: _notifBelumBaca > 0,
               child: const Icon(Icons.notifications_outlined),
@@ -166,7 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   user?.nama ?? '-',
                                   style: const TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.bold),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(user?.jabatan ?? '-'),
                                 Text(
@@ -191,19 +195,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                     ),
                                   ),
-                                  const Text('Tepat Waktu', style: TextStyle(fontSize: 11)),
+                                  const Text(
+                                    'Tepat Waktu',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
                                 ],
                               ),
                             ),
                             Expanded(
                               child: Column(
                                 children: [
-                                  Text('${_rekap!.totalHadir}',
-                                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                                  const Text('Total Hadir', style: TextStyle(fontSize: 11)),
+                                  Text(
+                                    '${_rekap!.totalHadir}',
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Total Hadir',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
                                 ],
                               ),
                             ),
@@ -215,10 +232,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      color: _rekap!.terlambat > 0 ? Colors.orange[800] : null,
+                                      color: _rekap!.terlambat > 0
+                                          ? Colors.orange[800]
+                                          : null,
                                     ),
                                   ),
-                                  const Text('Terlambat', style: TextStyle(fontSize: 11)),
+                                  const Text(
+                                    'Terlambat',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
                                 ],
                               ),
                             ),
@@ -230,10 +252,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      color: _rekap!.alpha > 0 ? Colors.red[700] : null,
+                                      color: _rekap!.alpha > 0
+                                          ? Colors.red[700]
+                                          : null,
                                     ),
                                   ),
-                                  const Text('Alpha', style: TextStyle(fontSize: 11)),
+                                  const Text(
+                                    'Tidak Hadir',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
                                 ],
                               ),
                             ),
@@ -243,11 +270,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             _rekap!.bulan,
-                            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                       ],
-                    ],                 
+                    ],
                   ),
                 ),
               ),
@@ -271,7 +301,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Absen',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const AbsenMenuScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const AbsenMenuScreen(),
+                          ),
                         );
                       },
                     ),
@@ -280,7 +312,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Jadwal',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const JadwalScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const JadwalScreen(),
+                          ),
                         );
                       },
                     ),
@@ -298,7 +332,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Lembur',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LemburScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const LemburScreen(),
+                          ),
                         );
                       },
                     ),
@@ -307,7 +343,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Dinas',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const DinasScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const DinasScreen(),
+                          ),
                         );
                       },
                     ),
