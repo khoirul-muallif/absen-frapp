@@ -74,15 +74,18 @@
       karyawan memang pihak yang tepat untuk mencatat jam kembali.
       Dicatat 6 Nov 2026.
 
-- [ ] **Form Izin/Lembur/Cuti/Dinas masih layout polos** — Column putih
-      tanpa sekat, beda dari TukarJadwalFormScreen yang sudah pakai
-      section Card (`7b42ee1`). Sudah tercakup item "Telusur/audit UX
-      frontend secara menyeluruh" di atas, tapi dicatat terpisah karena
-      perbaikannya mekanis dan bisa dikerjakan lebih dulu tanpa menunggu
-      scope audit UX ditentukan. Dua hal kecil yang sekalian:
-      `initialTime: TimeOfDay.now()` di picker jam mengabaikan pilihan
-      sebelumnya, dan jam keluar divalidasi lewat snackbar sementara
-      Keperluan pakai `validator` Form. Dicatat 6 Nov 2026.
+- [ ] **Validasi silang Cuti & Dinas belum dicegah di sumbernya** —
+      KOREKSI 23 Nov 2026: item lama bilang "dua date picker terpisah",
+      itu tidak benar — keduanya sudah pakai `showDateRangePicker`.
+      Dua keluhan lain di item lama juga sudah ditutup `9806a54`/`82ba1f7`:
+      jumlah hari dan sisa kuota sekarang tampil hidup sebelum submit.
+
+      Yang BELUM: aturan backend yang bisa menolak setelah submit tidak
+      dicegah lewat `selectableDayPredicate` seperti di TukarJadwal —
+      tidak boleh melintasi tahun, tidak boleh melintasi semester untuk
+      jenis cuti semesteran, dan bentrok dengan cuti/dinas yang sudah
+      approved. Yang ketiga perlu prefetch dulu seperti
+      `_prefetchJadwalSaya()` di TukarJadwalFormScreen.
       
 - [ ] **Pemilihan rentang tanggal di Cuti & Dinas kurang ramah** —
       dua date picker terpisah (mulai, selesai) tanpa gambaran rentang
@@ -159,9 +162,13 @@
 
 ## Perlu investigasi sebelum dikerjakan
 
-*(kosong — semua tervalidasi `after_or_equal:today` di backend DAN
-dicegah di sumbernya di FE (kalender gak nawarin tanggal lewat lagi
-sejak commit `4ebe805`): Cuti/Dinas, TukarJadwal, Izin/Lembur)*
+*(kosong — tapi catat: klaim lama "semua tanggal lewat sudah dicegah di
+sumbernya sejak `4ebe805`" TIDAK benar. Cuti dan Dinas masih
+`firstDate: now.subtract(7 days)` sampai 23 Nov 2026, padahal backend
+memvalidasi `after_or_equal:today` — tanggal lewat bisa dipilih dan baru
+ditolak setelah submit. Ditutup `9806a54` dan `82ba1f7`. Pelajaran: klaim
+"sudah dicegah di semua modul" perlu diperiksa per modul, bukan
+diasumsikan merata.)*
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
@@ -235,3 +242,12 @@ end-to-end per 26 Okt 2026)*
   `absensi.status`, default `alpha`). TIDAK ADA `'sakit'` — case-nya
   sempat ada di `statusDisplay()` dan tidak pernah terpanggil, dibuang
   23 Nov 2026. `alpha` ditampilkan sebagai "Tidak Hadir" di semua tempat.
+- Form pakai `SectionCard` dari `lib/widgets/section_card.dart` (diangkat
+  dari TukarJadwalFormScreen 23 Nov 2026). Jangan bikin section Card
+  sendiri per layar lagi.
+- Field non-teks yang wajib (jam, rentang tanggal, lampiran) divalidasi
+  lewat `FormField<T>` dengan `state.didChange()` setelah picker ditutup,
+  BUKAN pengecekan manual di `_submit()` yang melempar snackbar.
+  Errornya muncul di bawah fieldnya, sejajar dengan TextFormField.
+- `initialTime` pada `showTimePicker` selalu pakai nilai yang sudah
+  dipilih (`_jam ?? TimeOfDay.now()`), jangan selalu `TimeOfDay.now()`.
