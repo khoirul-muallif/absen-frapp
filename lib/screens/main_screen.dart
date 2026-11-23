@@ -22,12 +22,13 @@ class _MainScreenState extends State<MainScreen> {
   /// yang dituju tidak pernah tahu (5 kasus tercatat 9 Nov 2026).
   int _menungguTukarJadwal = 0;
 
-  // const dibuang: _tabs lama `static const` berarti ketiga layar dibangun
-  // sekali dan tidak pernah diganti, yang bikin hot reload tidak terlihat.
-  final _tabs = const [
-    HomeScreen(),
-    RiwayatScreen(),
-    InformasiScreen(),
+  // `const` dibuang. Dengan const, ketiga layar dievaluasi saat compile dan
+  // tidak pernah dibangun ulang — perubahan tidak terlihat sampai restart
+  // penuh, bukan hot reload. Sempat bikin bingung 20 Nov 2026.
+  final _tabs = [
+    const HomeScreen(),
+    const RiwayatScreen(),
+    const InformasiScreen(),
   ];
 
   @override
