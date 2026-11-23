@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../services/cuti_service.dart';
 import '../../models/cuti_kuota_model.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/section_card.dart';
 
 class CutiFormScreen extends StatefulWidget {
   const CutiFormScreen({super.key});
@@ -58,11 +59,17 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
   String _formatTanggal(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  int get _jumlahHari =>
+      _rentang == null ? 0 : _rentang!.end.difference(_rentang!.start).inDays + 1;
+
   Future<void> _pilihRentang() async {
     final now = DateTime.now();
     final picked = await showDateRangePicker(
       context: context,
-      firstDate: now.subtract(const Duration(days: 7)),
+      // CutiController memvalidasi after_or_equal:today. Sebelumnya
+      // kalender menawarkan 7 hari ke belakang, jadi tanggal lewat baru
+      // ditolak SETELAH submit.
+      firstDate: DateTime(now.year, now.month, now.day),
       lastDate: now.add(const Duration(days: 365)),
       initialDateRange: _rentang,
     );
@@ -80,20 +87,9 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
   }
 
   Future<void> _submit() async {
+    // Jenis, rentang, dan lampiran ikut divalidasi Form sekarang — tidak
+    // ada lagi tiga pengecekan terpisah lewat snackbar di sini.
     if (!_formKey.currentState!.validate()) return;
-
-    if (_jenisTerpilih == null) {
-      showAppSnackBar(context, 'Pilih jenis cuti dulu', type: AppSnackBarType.error);
-      return;
-    }
-    if (_rentang == null) {
-      showAppSnackBar(context, 'Pilih tanggal mulai dan selesai dulu', type: AppSnackBarType.error);
-      return;
-    }
-    if (_jenisTerpilih!.perluLampiran && _lampiran == null) {
-      showAppSnackBar(context, '${_jenisTerpilih!.nama} wajib melampirkan surat keterangan', type: AppSnackBarType.error);
-      return;
-    }
 
     setState(() => _submitting = true);
 
@@ -111,12 +107,52 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan cuti', type: AppSnackBarType.error);
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan cuti',
+          type: AppSnackBarType.error);
     }
+  }
+
+  /// Sisa kuota setelah pengajuan ini, kalau keduanya sudah dipilih.
+  /// Angka mentah dari endpoint kuota; backend tetap yang memutuskan saat
+  /// approve (kuota dikunci lockForUpdate di sana, fase 22).
+  Widget? _ringkasanKuota() {
+    if (_jenisTerpilih == null || _rentang == null) return null;
+
+    final sisaSesudah = _jenisTerpilih!.sisa - _jumlahHari;
+    final kurang = sisaSesudah < 0;
+    final skema = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          Icon(
+            kurang ? Icons.warning_amber : Icons.info_outline,
+            size: 16,
+            color: kurang ? skema.error : skema.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              kurang
+                  ? '$_jumlahHari hari diajukan, sisa kuota cuma ${_jenisTerpilih!.sisa} hari'
+                  : '$_jumlahHari hari diajukan, sisa kuota jadi $sisaSesudah hari',
+              style: TextStyle(
+                fontSize: 12,
+                color: kurang ? skema.error : skema.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final ringkasan = _ringkasanKuota();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Ajukan Cuti')),
       body: _loadingJenis
@@ -127,69 +163,150 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    DropdownButtonFormField<CutiKuotaItem>(
-                      initialValue: _jenisTerpilih,
-                      decoration: const InputDecoration(
-                        labelText: 'Jenis Cuti',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: _jenisCutiList.map((j) {
-                        final label = j.semester != null
-                            ? '${j.nama} (semester ${j.semester}, sisa ${j.sisa} hari)'
-                            : '${j.nama} (sisa ${j.sisa} hari)';
-                        return DropdownMenuItem(value: j, child: Text(label));
-                      }).toList(),
-                      onChanged: (v) => setState(() {
-                        _jenisTerpilih = v;
-                        _lampiran = null;
-                      }),
-                      validator: (v) => v == null ? 'Pilih jenis cuti' : null,
+                    SectionCard(
+                      title: 'Jenis & Waktu',
+                      icon: Icons.beach_access,
+                      children: [
+                        DropdownButtonFormField<CutiKuotaItem>(
+                          initialValue: _jenisTerpilih,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Jenis Cuti',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: _jenisCutiList.map((j) {
+                            final label = j.semester != null
+                                ? '${j.nama} (semester ${j.semester}, sisa ${j.sisa} hari)'
+                                : '${j.nama} (sisa ${j.sisa} hari)';
+                            return DropdownMenuItem(
+                                value: j, child: Text(label));
+                          }).toList(),
+                          onChanged: (v) => setState(() {
+                            _jenisTerpilih = v;
+                            _lampiran = null;
+                          }),
+                          validator: (v) => v == null ? 'Pilih jenis cuti' : null,
+                        ),
+                        FormField<DateTimeRange>(
+                          initialValue: _rentang,
+                          validator: (_) => _rentang == null
+                              ? 'Rentang tanggal wajib dipilih'
+                              : null,
+                          builder: (state) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('Rentang Tanggal'),
+                                subtitle: Text(
+                                  _rentang != null
+                                      ? '${_formatTanggal(_rentang!.start)} s/d ${_formatTanggal(_rentang!.end)}'
+                                      : 'Belum dipilih',
+                                ),
+                                trailing: const Icon(Icons.date_range),
+                                onTap: () async {
+                                  await _pilihRentang();
+                                  state.didChange(_rentang);
+                                },
+                              ),
+                              if (state.hasError)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 16, top: 4),
+                                  child: Text(
+                                    state.errorText!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.error,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        ?ringkasan,
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Rentang Tanggal'),
-                      subtitle: Text(
-                        _rentang != null
-                            ? '${_formatTanggal(_rentang!.start)} s/d ${_formatTanggal(_rentang!.end)}'
-                            : 'Belum dipilih',
-                      ),
-                      trailing: const Icon(Icons.date_range),
-                      onTap: _pilihRentang,
+                    SectionCard(
+                      title: 'Alasan',
+                      icon: Icons.edit_note,
+                      children: [
+                        TextFormField(
+                          controller: _alasanController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            hintText: 'Jelaskan alasan cuti...',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Alasan wajib diisi'
+                              : null,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _alasanController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Alasan',
-                        border: OutlineInputBorder(),
+                    if (_jenisTerpilih?.perluLampiran == true)
+                      SectionCard(
+                        title: 'Lampiran',
+                        icon: Icons.attach_file,
+                        children: [
+                          FormField<File>(
+                            initialValue: _lampiran,
+                            validator: (_) => _lampiran == null
+                                ? '${_jenisTerpilih!.nama} wajib melampirkan surat keterangan'
+                                : null,
+                            builder: (state) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('Surat Keterangan'),
+                                  subtitle: Text(
+                                    _lampiran != null
+                                        // Pisahkan pakai separator OS, bukan
+                                        // '/' — di Android path-nya '/',
+                                        // tapi jangan bergantung ke situ.
+                                        ? _lampiran!.path.split(Platform.pathSeparator).last
+                                        : 'Belum dipilih',
+                                  ),
+                                  trailing: const Icon(Icons.attach_file),
+                                  onTap: () async {
+                                    await _pilihLampiran();
+                                    state.didChange(_lampiran);
+                                  },
+                                ),
+                                if (state.hasError)
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 16, top: 4),
+                                    child: Text(
+                                      state.errorText!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
-                    ),
-                    if (_jenisTerpilih?.perluLampiran == true) ...[
-                      const SizedBox(height: 12),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Lampiran (wajib)'),
-                        subtitle: Text(_lampiran != null
-                            ? _lampiran!.path.split('/').last
-                            : 'Belum dipilih'),
-                        trailing: const Icon(Icons.attach_file),
-                        onTap: _pilihLampiran,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _submitting ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: _submitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text('Ajukan'),
                       ),
-                    ],
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _submitting ? null : _submit,
-                      child: _submitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Ajukan'),
                     ),
                   ],
                 ),
