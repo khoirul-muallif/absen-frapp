@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/tukar_jadwal_service.dart';
 import 'home_screen.dart';
 import 'riwayat_screen.dart';
-import 'informasi_screen.dart';
+import 'informasi/informasi_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
