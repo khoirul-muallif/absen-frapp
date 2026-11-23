@@ -5,6 +5,7 @@ import '../../models/jadwal_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/section_card.dart';
 
 class TukarJadwalFormScreen extends StatefulWidget {
   final DateTime? tanggalAwal;
@@ -310,40 +311,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan', type: AppSnackBarType.error);
     }
   }
-  Widget _sectionCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 18, color: Colors.grey.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -359,7 +327,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                 final bisaTukar = tipeJadwal != 'umum';
 
                 if (!bisaTukar) {
-                  return _sectionCard(
+                  return SectionCard(
                     title: 'Jenis Pengajuan',
                     icon: Icons.swap_horiz,
                     children: const [
@@ -368,7 +336,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   );
                 }
 
-                return _sectionCard(
+                return SectionCard(
                   title: 'Jenis Pengajuan',
                   icon: Icons.swap_horiz,
                   children: [
@@ -395,7 +363,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                 );
               }),
 
-              _sectionCard(
+              SectionCard(
                 title: 'Jadwal Saya',
                 icon: Icons.event_note,
                 children: [
@@ -454,7 +422,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
               ),
 
               if (_mode == 'tukar')
-                _sectionCard(
+                SectionCard(
                   title: 'Jadwal Rekan Tujuan',
                   icon: Icons.people_outline,
                   children: [
@@ -498,7 +466,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   ],
                 )
               else
-                _sectionCard(
+                SectionCard(
                   title: 'Pindah ke Tanggal',
                   icon: Icons.event_repeat,
                   children: [
@@ -516,7 +484,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                   ],
                 ),
 
-              _sectionCard(
+              SectionCard(
                 title: 'Alasan',
                 icon: Icons.edit_note,
                 children: [

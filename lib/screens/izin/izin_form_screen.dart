@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/izin_service.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/section_card.dart';
 
 class IzinFormScreen extends StatefulWidget {
   const IzinFormScreen({super.key});
@@ -43,7 +44,10 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   Future<void> _pilihJamKeluar() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      // Pilihan sebelumnya jadi titik awal. Sebelumnya selalu
+      // TimeOfDay.now(), jadi mengoreksi jam berarti menggulir ulang
+      // dari jam sekarang setiap kali.
+      initialTime: _jamKeluar ?? TimeOfDay.now(),
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
         child: child!,
@@ -53,11 +57,9 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   }
 
   Future<void> _submit() async {
+    // Jam keluar ikut divalidasi Form sekarang, jadi tidak ada lagi
+    // pengecekan terpisah lewat snackbar di sini.
     if (!_formKey.currentState!.validate()) return;
-    if (_jamKeluar == null) {
-      showAppSnackBar(context, 'Pilih jam keluar dulu', type: AppSnackBarType.error);
-      return;
-    }
 
     setState(() => _submitting = true);
 
@@ -73,7 +75,8 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     if (result['success'] == true) {
       Navigator.of(context).pop(true);
     } else {
-      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan izin', type: AppSnackBarType.error);
+      showAppSnackBar(context, result['message'] ?? 'Gagal mengajukan izin',
+          type: AppSnackBarType.error);
     }
   }
 
@@ -85,39 +88,82 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Tanggal'),
-                subtitle: Text(_formatTanggal(_tanggal)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _pilihTanggal,
+              SectionCard(
+                title: 'Waktu Izin',
+                icon: Icons.event_note,
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Tanggal'),
+                    subtitle: Text(_formatTanggal(_tanggal)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _pilihTanggal,
+                  ),
+                  // FormField, bukan pengecekan manual di _submit: jam
+                  // keluar yang belum dipilih sekarang ditandai di tempat
+                  // yang salah, sama seperti Keperluan — bukan lewat
+                  // snackbar yang muncul jauh dari fieldnya lalu hilang.
+                  FormField<TimeOfDay>(
+                    initialValue: _jamKeluar,
+                    validator: (_) =>
+                        _jamKeluar == null ? 'Jam keluar wajib dipilih' : null,
+                    builder: (state) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Jam Keluar'),
+                          subtitle: Text(_jamKeluar != null
+                              ? _formatJam(_jamKeluar!)
+                              : 'Belum dipilih'),
+                          trailing: const Icon(Icons.access_time),
+                          onTap: () async {
+                            await _pilihJamKeluar();
+                            state.didChange(_jamKeluar);
+                          },
+                        ),
+                        if (state.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16, top: 4),
+                            child: Text(
+                              state.errorText!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Jam Keluar'),
-                subtitle: Text(_jamKeluar != null ? _formatJam(_jamKeluar!) : 'Belum dipilih'),
-                trailing: const Icon(Icons.access_time),
-                onTap: _pilihJamKeluar,
+              SectionCard(
+                title: 'Keperluan',
+                icon: Icons.edit_note,
+                children: [
+                  TextFormField(
+                    controller: _keperluanController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: 'Jelaskan keperluan izin...',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Keperluan wajib diisi'
+                        : null,
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _keperluanController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Keperluan',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Keperluan wajib diisi' : null,
-              ),
-              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                   child: _submitting
                       ? const SizedBox(
                           width: 20,
