@@ -134,13 +134,24 @@
       tengah bottom nav. Dikerjakan setelah audit UX per-modul selesai
       biar nggak nabrak perubahan struktural. Dicatat 5 Nov 2026.
 
-- [ ] **Fitur ganti email & password** — menu "Profil"/"Ubah Password"
-      sudah ada wadahnya di app bar (PopupMenuButton pojok kanan atas,
-      commit [isi setelah commit]), tapi isinya masih placeholder
-      snackbar "segera hadir". Perlu endpoint backend buat update
-      email/password (belum ada — cek dulu apakah `AuthController`
-      sudah punya atau perlu baru), dan screen form di FE. Dicatat
-      5 Nov 2026.
+- [ ] **Verifikasi ganti password di device** — layar sudah ada
+      (`lib/screens/profil/ubah_password_screen.dart`, commit `e2ff9b3`)
+      dan endpoint backend sudah jalan (`f3eacf8`, 15 test hijau), tapi
+      BELUM pernah dijalankan di perangkat. Yang perlu dicoba: satu kali
+      ganti sungguhan, lalu logout dan login pakai password baru — itu
+      yang membuktikan tidak ada hash ganda dari sisi klien.
+
+      "Ganti email" DIBUANG dari scope 23 Nov 2026: email tidak dipakai
+      untuk login (sudah username sejak fase 79), tidak dipakai untuk
+      reset (ditolak fase 78), dan sejak fase 81 ~110 dari 150 karyawan
+      tidak punya. Mengedit field yang tidak melakukan apa-apa bukan
+      fitur. Menu "Profil" di PopupMenuButton masih placeholder.
+
+- [ ] **Label "Tidak Hadir" bisa terpotong di kartu rekap Beranda** —
+      empat kolom dibagi rata pakai Expanded, dan "Tidak Hadir" lebih
+      panjang dari "Alpha" yang digantikannya (`5ca0cec`). Belum dilihat
+      di layar sempit. Kalau terpotong: `textAlign: TextAlign.center`
+      dan/atau turunkan ke `fontSize: 10`. Dicatat 23 Nov 2026.
 
 - [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
       screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
@@ -227,3 +238,8 @@ end-to-end per 26 Okt 2026)*
   `ScaffoldMessenger.of(context).showSnackBar()` langsung lagi. `type`
   default `info` (netral), pakai `.error` buat pesan gagal/validasi,
   `.success` buat pesan sukses eksplisit.
+- Status Absensi dari backend cuma tujuh nilai: `tepat_waktu`,
+  `terlambat`, `alpha`, `izin`, `cuti`, `dinas`, `libur` (enum kolom
+  `absensi.status`, default `alpha`). TIDAK ADA `'sakit'` — case-nya
+  sempat ada di `statusDisplay()` dan tidak pernah terpanggil, dibuang
+  23 Nov 2026. `alpha` ditampilkan sebagai "Tidak Hadir" di semua tempat.
