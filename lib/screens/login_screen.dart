@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'main_screen.dart';
+import '../services/instansi_storage.dart';
+import '../widgets/logo_instansi.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,8 +17,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _instansiStorage = InstansiStorage();
+  String? _namaInstansi;
+  String? _logoInstansi;
   bool _obscurePassword = true;
 
+  @override
+  void initState() {
+    super.initState();
+    _muatIdentitasInstansi();
+  }
+
+  /// Dari login sebelumnya. Instalasi baru belum punya apa pun di sini —
+  /// layar login pertama memang menampilkan placeholder, dan itu sekali
+  /// seumur pemakaian.
+  Future<void> _muatIdentitasInstansi() async {
+    final tersimpan = await _instansiStorage.baca();
+    if (!mounted) return;
+    setState(() {
+      _namaInstansi = tersimpan.nama;
+      _logoInstansi = tersimpan.logo;
+    });
+  }
+  
   @override
   void dispose() {
     _usernameController.dispose();
@@ -86,24 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _identitas() {
     return Column(
       children: [
-        Container(
-          width: 88,
-          height: 88,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.local_hospital_outlined,
-            size: 44,
-            color: Colors.white,
-          ),
-        ),
+        LogoInstansi(url: _logoInstansi),
         const SizedBox(height: 16),
-        const Text(
-          'RSU Banyumanik 2',
+        Text(
+          // Nama instansi dari login sebelumnya, bukan hardcoded lagi.
+          // Fallback generik, bukan nama instansi tertentu: menebak nama
+          // yang salah lebih buruk daripada tidak menyebut nama.
+          _namaInstansi ?? 'Absensi Karyawan',
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: AppColors.primary,

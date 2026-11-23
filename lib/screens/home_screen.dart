@@ -14,6 +14,7 @@ import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
 import '../services/notifikasi_service.dart';
 import 'profil/ubah_password_screen.dart';
+import '../widgets/logo_instansi.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -63,7 +64,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Beranda'),
+        title: Row(
+          children: [
+            // Logo dari me(), bukan storage: di sini sudah pasti login.
+            LogoInstansi(url: user?.instansiLogo, ukuran: 28),
+            const SizedBox(width: 10),
+            const Text('Beranda'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Badge.count(

@@ -4,10 +4,12 @@ import '../utils/constants.dart';
 import '../models/user_model.dart';
 import 'api_client.dart';
 import 'token_storage.dart';
+import 'instansi_storage.dart';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();
   final TokenStorage _tokenStorage = TokenStorage();
+  final InstansiStorage _instansiStorage = InstansiStorage();
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
@@ -24,7 +26,12 @@ class AuthService {
       final user = UserModel.fromJson(data['karyawan']);
 
       await _tokenStorage.saveToken(token);
-
+      // Identitas instansi disimpan supaya LoginScreen dan SplashScreen
+      // bisa menampilkannya sebelum login berikutnya.
+      await _instansiStorage.simpan(
+        nama: user.instansiNama,
+        logo: user.instansiLogo,
+      );
       return {'success': true, 'user': user, 'token': token};
     } on ApiException catch (e) {
       String message = e.message;

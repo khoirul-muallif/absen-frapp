@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
+import '../services/instansi_storage.dart';
+import '../widgets/logo_instansi.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,12 +14,22 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final _instansiStorage = InstansiStorage();
+  String? _logoInstansi;
   bool _gagalKoneksi = false;
 
   @override
   void initState() {
     super.initState();
+    _muatIdentitasInstansi();
     _checkLogin();
+  }
+
+  /// Logo dari login sebelumnya. Instalasi baru menampilkan placeholder.
+  Future<void> _muatIdentitasInstansi() async {
+    final tersimpan = await _instansiStorage.baca();
+    if (!mounted) return;
+    setState(() => _logoInstansi = tersimpan.logo);
   }
 
   Future<void> _checkLogin() async {
@@ -54,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const FlutterLogo(size: 64), // nanti diganti logo RS
+              LogoInstansi(url: _logoInstansi, ukuran: 64),
               const SizedBox(height: 16),
               if (_gagalKoneksi) ...[
                 const Text(

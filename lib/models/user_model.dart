@@ -1,6 +1,7 @@
 class UserModel {
   final int id;
   final String nama;
+  final String? instansiLogo;
   final String nip;
   final String email;
   final String jabatan;
@@ -15,6 +16,7 @@ class UserModel {
   UserModel({
     required this.id,
     required this.nama,
+    this.instansiLogo,
     required this.nip,
     required this.email,
     required this.jabatan,
@@ -41,6 +43,9 @@ class UserModel {
       fotoProfil: json['foto_profil'],
       instansiId: json['instansi']?['id'] ?? 0,
       instansiNama: json['instansi']?['nama'] ?? '',
+      // URL penuh dari backend (asset('storage/'...)), null kalau instansi
+      // belum mengunggah logo. Dipasang langsung ke NetworkImage.
+      instansiLogo: json['instansi']?['logo'],
     );
   }
   /// Email bisa kosong: backend fase 81 membuat kolomnya nullable karena
