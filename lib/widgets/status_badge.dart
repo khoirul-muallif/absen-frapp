@@ -23,7 +23,7 @@ import 'package:flutter/material.dart';
     case 'terlambat':
       return ('Terlambat', Colors.orange.shade800);
     case 'alpha':
-      return ('Alpha', Colors.red.shade700);
+      return ('Tidak Hadir', Colors.red.shade700);
     case 'sakit':
     case 'izin':
     case 'cuti':
