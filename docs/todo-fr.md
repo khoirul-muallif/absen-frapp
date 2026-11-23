@@ -6,11 +6,6 @@
 
 ## Belum dibuat
 
-- [ ] **TukarJadwalList di tab tidak memuat ulang saat tab dibuka** —
-      memuat sekali di initState lalu diam. Kalau karyawan menjawab
-      pengajuan lewat notifikasi lalu buka tab Riwayat, banner masih
-      menampilkan angka lama sampai ditarik untuk refresh. Dicatat
-      20 Nov 2026.
       
 - [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
       membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
@@ -117,9 +112,6 @@
       menerima `bulan`/`tahun`, jadi rolling 30 hari berarti gabung dua
       request di FE dan rekap bulanannya jadi janggal. Dicatat 6 Nov 2026.
 
-- [ ] **RiwayatScreen: batasi chevron kanan** — bisa maju tanpa batas ke
-      bulan yang pasti kosong (tidak ada data masa depan di backend).
-      Kunci di bulan berjalan. Dicatat 6 Nov 2026.
       
 - [ ] **Isi tab Informasi** — layar sudah ada (`informasi_screen.dart`)
       tapi hardcoded empty state. Backend SIAP sejak fase 75 (9 Nov 2026):
