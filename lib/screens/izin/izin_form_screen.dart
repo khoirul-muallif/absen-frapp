@@ -15,8 +15,8 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   final _izinService = IzinService();
   final _keperluanController = TextEditingController();
 
-  DateTime _tanggal = DateTime.now();
   TimeOfDay? _jamKeluar;
+  TimeOfDay? _jamKembaliRencana;
   bool _submitting = false;
 
   @override
@@ -31,29 +31,17 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
   String _formatJam(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
-  Future<void> _pilihTanggal() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _tanggal,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
-    );
-    if (picked != null) setState(() => _tanggal = picked);
-  }
+  int _menitDari(TimeOfDay t) => t.hour * 60 + t.minute;
 
-  Future<void> _pilihJamKeluar() async {
-    final picked = await showTimePicker(
+  Future<TimeOfDay?> _pilihJam(TimeOfDay? sebelumnya) {
+    return showTimePicker(
       context: context,
-      // Pilihan sebelumnya jadi titik awal. Sebelumnya selalu
-      // TimeOfDay.now(), jadi mengoreksi jam berarti menggulir ulang
-      // dari jam sekarang setiap kali.
-      initialTime: _jamKeluar ?? TimeOfDay.now(),
+      initialTime: sebelumnya ?? TimeOfDay.now(),
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
         child: child!,
       ),
     );
-    if (picked != null) setState(() => _jamKeluar = picked);
   }
 
   Future<void> _submit() async {
@@ -64,7 +52,8 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     setState(() => _submitting = true);
 
     final result = await _izinService.ajukan(
-      tanggal: _formatTanggal(_tanggal),
+      tanggal: _formatTanggal(DateTime.now()),
+      jamKembaliRencana: _formatJam(_jamKembaliRencana!),
       jamKeluar: _formatJam(_jamKeluar!),
       keperluan: _keperluanController.text.trim(),
     );
@@ -80,6 +69,47 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     }
   }
 
+  /// Baris jam yang errornya muncul di bawah fieldnya, bukan lewat
+  /// snackbar yang melayang jauh dari tempat masalahnya lalu hilang.
+  Widget _barisJam({
+    required String label,
+    required TimeOfDay? nilai,
+    required ValueChanged<TimeOfDay> onPilih,
+    required String? Function() validator,
+  }) {
+    return FormField<TimeOfDay>(
+      initialValue: nilai,
+      validator: (_) => validator(),
+      builder: (state) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(label),
+            subtitle: Text(nilai != null ? _formatJam(nilai) : 'Belum dipilih'),
+            trailing: const Icon(Icons.access_time),
+            onTap: () async {
+              final picked = await _pilihJam(nilai);
+              if (picked == null) return;
+              onPilih(picked);
+              state.didChange(picked);
+            },
+          ),
+          if (state.hasError)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 4),
+              child: Text(
+                state.errorText!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,49 +124,41 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
                 title: 'Waktu Izin',
                 icon: Icons.event_note,
                 children: [
+                  // Izin keluar sementara selalu untuk hari ini, jadi
+                  // tidak ada yang perlu dipilih. Tetap ditampilkan supaya
+                  // karyawan tahu tanggal apa yang tercatat.
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Tanggal'),
-                    subtitle: Text(_formatTanggal(_tanggal)),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: _pilihTanggal,
+                    leading: const Icon(Icons.calendar_today, size: 20),
+                    title: const Text('Hari ini'),
+                    subtitle: Text(_formatTanggal(DateTime.now())),
                   ),
                   // FormField, bukan pengecekan manual di _submit: jam
                   // keluar yang belum dipilih sekarang ditandai di tempat
                   // yang salah, sama seperti Keperluan — bukan lewat
                   // snackbar yang muncul jauh dari fieldnya lalu hilang.
-                  FormField<TimeOfDay>(
-                    initialValue: _jamKeluar,
-                    validator: (_) =>
+                  _barisJam(
+                    label: 'Jam Keluar',
+                    nilai: _jamKeluar,
+                    onPilih: (t) => setState(() => _jamKeluar = t),
+                    validator: () =>
                         _jamKeluar == null ? 'Jam keluar wajib dipilih' : null,
-                    builder: (state) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Jam Keluar'),
-                          subtitle: Text(_jamKeluar != null
-                              ? _formatJam(_jamKeluar!)
-                              : 'Belum dipilih'),
-                          trailing: const Icon(Icons.access_time),
-                          onTap: () async {
-                            await _pilihJamKeluar();
-                            state.didChange(_jamKeluar);
-                          },
-                        ),
-                        if (state.hasError)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16, top: 4),
-                            child: Text(
-                              state.errorText!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                  ),
+                  _barisJam(
+                    label: 'Rencana Kembali',
+                    nilai: _jamKembaliRencana,
+                    onPilih: (t) => setState(() => _jamKembaliRencana = t),
+                    validator: () {
+                      if (_jamKembaliRencana == null) {
+                        return 'Rencana kembali wajib dipilih';
+                      }
+                      if (_jamKeluar != null &&
+                          _menitDari(_jamKembaliRencana!) <=
+                              _menitDari(_jamKeluar!)) {
+                        return 'Harus setelah jam keluar';
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),

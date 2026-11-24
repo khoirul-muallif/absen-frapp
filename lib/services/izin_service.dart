@@ -8,12 +8,16 @@ class IzinService {
   Future<Map<String, dynamic>> ajukan({
     required String tanggal,
     required String jamKeluar,
+    required String jamKembaliRencana,
     required String keperluan,
   }) async {
     try {
       final json = await _apiClient.post(ApiConstants.izin, body: {
         'tanggal': tanggal,
         'jam_keluar': jamKeluar,
+        // Wajib sejak fase 88. Ini perkiraan yang diisi sebelum pergi,
+        // bukan catatan setelah kembali.
+        'jam_kembali_rencana': jamKembaliRencana,
         'keperluan': keperluan,
       });
       return {'success': true, 'message': json['message'] ?? ''};
@@ -40,13 +44,18 @@ class IzinService {
     }
   }
 
-  Future<Map<String, dynamic>> isiJamKembali(int id, String jamKembali) async {
+  /// Menandai karyawan sudah kembali. TANPA BODY — jamnya dari server
+  /// (fase 88). Mengirim jam dari sini tidak akan berpengaruh apa pun.
+  Future<Map<String, dynamic>> tandaiSudahKembali(int id) async {
     try {
       final json = await _apiClient.patch(
         ApiConstants.izinJamKembali(id.toString()),
-        body: {'jam_kembali': jamKembali},
       );
-      return {'success': true, 'message': json['message'] ?? ''};
+      return {
+        'success': true,
+        'message': json['message'] ?? '',
+        'jamKembaliAktual': json['data']?['jam_kembali_aktual'],
+      };
     } on ApiException catch (e) {
       return {'success': false, 'message': e.message};
     }
