@@ -18,18 +18,19 @@
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
 
-- [ ] **Validasi silang Cuti & Dinas belum dicegah di sumbernya** —
-      KOREKSI 23 Nov 2026: item lama bilang "dua date picker terpisah",
-      itu tidak benar — keduanya sudah pakai `showDateRangePicker`.
-      Dua keluhan lain di item lama juga sudah ditutup `9806a54`/`82ba1f7`:
-      jumlah hari dan sisa kuota sekarang tampil hidup sebelum submit.
+- [ ] **Sisa kuota Cuti kurang TIDAK memblokir submit, tapi warnanya
+      merah seperti bentrok yang memblokir** — dua peringatan terlihat
+      sama padahal akibatnya beda. Kalau bentroknya dihapus, tombol
+      Ajukan hidup lagi meski kuota kurang, dan backend yang menolak.
+      Usul termurah: peringatan kuota jadi oranye, bentrok tetap merah.
+      Dicatat 24 Nov 2026.
 
-      Yang BELUM: aturan backend yang bisa menolak setelah submit tidak
-      dicegah lewat `selectableDayPredicate` seperti di TukarJadwal —
-      tidak boleh melintasi tahun, tidak boleh melintasi semester untuk
-      jenis cuti semesteran, dan bentrok dengan cuti/dinas yang sudah
-      approved. Yang ketiga perlu prefetch dulu seperti
-      `_prefetchJadwalSaya()` di TukarJadwalFormScreen.
+      KOREKSI untuk arsip: item lama di sini mengusulkan mencegah lewat
+      `selectableDayPredicate` seperti di TukarJadwal. Itu TIDAK BISA —
+      `showDateRangePicker` tidak punya parameter itu, hanya
+      `showDatePicker` yang punya. Gantinya `lastDate` dijepit (lintas
+      tahun & semester) dan peringatan di form (bentrok approved).
+      Ditutup `7096007` dan `69c64ec`.
       
 
 
@@ -39,25 +40,6 @@
       berwarna per kategori, ring chart kehadiran, tombol Presensi di
       tengah bottom nav. Dikerjakan setelah audit UX per-modul selesai
       biar nggak nabrak perubahan struktural. Dicatat 5 Nov 2026.
-
-- [ ] **Verifikasi ganti password di device** — layar sudah ada
-      (`lib/screens/profil/ubah_password_screen.dart`, commit `e2ff9b3`)
-      dan endpoint backend sudah jalan (`f3eacf8`, 15 test hijau), tapi
-      BELUM pernah dijalankan di perangkat. Yang perlu dicoba: satu kali
-      ganti sungguhan, lalu logout dan login pakai password baru — itu
-      yang membuktikan tidak ada hash ganda dari sisi klien.
-
-      "Ganti email" DIBUANG dari scope 23 Nov 2026: email tidak dipakai
-      untuk login (sudah username sejak fase 79), tidak dipakai untuk
-      reset (ditolak fase 78), dan sejak fase 81 ~110 dari 150 karyawan
-      tidak punya. Mengedit field yang tidak melakukan apa-apa bukan
-      fitur. Menu "Profil" di PopupMenuButton masih placeholder.
-
-- [ ] **Label "Tidak Hadir" bisa terpotong di kartu rekap Beranda** —
-      empat kolom dibagi rata pakai Expanded, dan "Tidak Hadir" lebih
-      panjang dari "Alpha" yang digantikannya (`5ca0cec`). Belum dilihat
-      di layar sempit. Kalau terpotong: `textAlign: TextAlign.center`
-      dan/atau turunkan ke `fontSize: 10`. Dicatat 23 Nov 2026.
 
 - [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
       screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
@@ -86,10 +68,7 @@ diasumsikan merata.)*
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope
       masa depan, atau referensi dari app lain yang beda modul?
-- Riwayat dua tab saja: Presensi + Tukar Jadwal. Izin, Cuti, Dinas,
-  Lembur SENGAJA tidak ikut — tetap di layar terpisah lewat grid Beranda
-  (keputusan 20 Nov 2026, menjawab usulan referensi UI yang menggabungkan
-  semuanya jadi satu layar bertab).
+
 
 ## Belum ditest end-to-end
 
@@ -101,6 +80,11 @@ end-to-end per 26 Okt 2026)*
 *(kosong)*
 
 ## Catatan konvensi FE (biar gak keulang)
+
+- Riwayat dua tab saja: Presensi + Tukar Jadwal. Izin, Cuti, Dinas,
+  Lembur SENGAJA tidak ikut — tetap di layar terpisah lewat grid Beranda
+  (keputusan 20 Nov 2026, menjawab usulan referensi UI yang menggabungkan
+  semuanya jadi satu layar bertab).
 
 - Notifikasi: empat nilai `tipe` dari backend — `terlambat`,
   `belum_absen_masuk`, `belum_absen_pulang`, `tukar_jadwal` (dikunci

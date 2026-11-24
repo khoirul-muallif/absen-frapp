@@ -11,10 +11,10 @@ import 'cuti/cuti_screen.dart';
 import 'jadwal/jadwal_screen.dart';
 import '../services/absensi_service.dart';
 import '../models/riwayat_absen_model.dart';
-import '../utils/snackbar_helper.dart';
 import '../services/notifikasi_service.dart';
 import 'profil/ubah_password_screen.dart';
 import '../widgets/logo_instansi.dart';
+import 'profil/profil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -91,10 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: (value) async {
               switch (value) {
                 case 'profil':
-                  showAppSnackBar(
-                    context,
-                    'Fitur ini akan segera hadir',
-                    type: AppSnackBarType.info,
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProfilScreen()),
                   );
                   break;
                 case 'ubah_password':
