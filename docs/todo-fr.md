@@ -17,23 +17,6 @@
       Yang tersisa cuma tampilan: `Text(user.email)` jadi baris kosong,
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
-          
-
-- [ ] **Alur isi jam kembali di Izin terasa janggal** — belum ada
-      diagnosis, baru firasat. Yang sudah terlihat: tidak ada tombol
-      sama sekali, cuma `onTap` pada ListTile tanpa petunjuk visual
-      bahwa kartu itu bisa ditekan; badge status hampir selalu
-      "approved" (izin auto-approve sejak keputusan RS 8 Okt, lihat
-      IzinController) sehingga nyaris tidak membawa informasi, sementara
-      yang benar-benar menentukan apa yang bisa dilakukan user —
-      terisi/tidaknya jam kembali — tidak ditandai apa pun; dan sekali
-      terisi tidak bisa dikoreksi sendiri (guard backend
-      `jam_kembali === null`, disengaja supaya "siapa & kapan mengisi"
-      terbaca dari `updated_at`), jadi salah pilih jam berarti harus
-      menghubungi admin. Perlu sesi analisis tersendiri: mungkin
-      jawabannya bukan memperbaiki tampilan, tapi mempertanyakan apakah
-      karyawan memang pihak yang tepat untuk mencatat jam kembali.
-      Dicatat 6 Nov 2026.
 
 - [ ] **Validasi silang Cuti & Dinas belum dicegah di sumbernya** —
       KOREKSI 23 Nov 2026: item lama bilang "dua date picker terpisah",
@@ -49,17 +32,6 @@
       `_prefetchJadwalSaya()` di TukarJadwalFormScreen.
       
 
-
-- [ ] **RiwayatScreen: batasi tampilan awal** — daftar harian tampil utuh
-      sebulan penuh. Cukup ~10 baris dulu + tombol "Lihat semua".
-      Sempat dipertimbangkan membatasi ke 30 hari terakhir dan membuang
-      navigasi bulan, ditolak: riwayat justru paling dicari saat ada
-      selisih dengan rekap HRD, dan itu baru ketahuan setelah tutup
-      bulan — datanya sudah lewat dari 30 hari. Endpoint juga cuma
-      menerima `bulan`/`tahun`, jadi rolling 30 hari berarti gabung dua
-      request di FE dan rekap bulanannya jadi janggal. Dicatat 6 Nov 2026.
-
-      
 
 - [ ] **Redesign visual Beranda** — struktur navigasi sudah final (bottom
       nav 3 tab), tapi gaya visual masih default Material. Referensi dari

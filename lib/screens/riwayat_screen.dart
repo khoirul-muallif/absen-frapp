@@ -96,6 +96,12 @@ class _PresensiTabState extends State<_PresensiTab>
   RekapAbsen? _rekap;
   List<RiwayatAbsenItem> _riwayat = [];
 
+  /// Daftar harian sebulan penuh bisa 30 baris — layar jadi panjang dan
+  /// rekap di atasnya ikut tertimbun saat digulir. Tampilkan sebagian
+  /// dulu, sisanya dibuka kalau diminta.
+  static const _batasAwal = 10;
+  bool _tampilSemua = false;
+
   /// Tanpa ini, berpindah ke tab Tukar Jadwal lalu kembali membuang bulan
   /// yang sedang dilihat dan memuat ulang dari bulan berjalan.
   @override
@@ -188,6 +194,7 @@ class _PresensiTabState extends State<_PresensiTab>
         _bulan = 12;
         _tahun--;
       }
+      _tampilSemua = false;
     });
     _loadData();
   }
@@ -248,7 +255,10 @@ class _PresensiTabState extends State<_PresensiTab>
                           child: Text('Belum ada data absensi bulan ini')),
                     )
                   else
-                    ..._riwayat.map((item) {
+                    ...(_tampilSemua
+                            ? _riwayat
+                            : _riwayat.take(_batasAwal))
+                        .map((item) {
                       final (_, warna) = statusDisplay(item.status);
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -267,6 +277,19 @@ class _PresensiTabState extends State<_PresensiTab>
                         ),
                       );
                     }),
+                  if (!_tampilSemua && _riwayat.length > _batasAwal)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Center(
+                        child: TextButton.icon(
+                          onPressed: () => setState(() => _tampilSemua = true),
+                          icon: const Icon(Icons.expand_more, size: 18),
+                          label: Text(
+                            'Lihat semua (${_riwayat.length} hari)',
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ],
             ),
