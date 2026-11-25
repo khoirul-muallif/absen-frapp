@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
-    await Future.wait([_loadRekap(), _loadNotifCount()]);
+    await Future.wait([_loadRekap(), _loadNotifCount(), _loadInformasi()]);
   }
   
 
