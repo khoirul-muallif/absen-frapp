@@ -5,6 +5,7 @@ import 'izin_form_screen.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -30,6 +31,7 @@ class _IzinScreenState extends State<IzinScreen> {
     super.initState();
     _loadData();
   }
+
 
   Future<void> _loadData({bool tampilkanSpinner = true}) async {
     if (tampilkanSpinner) {
@@ -79,6 +81,14 @@ class _IzinScreenState extends State<IzinScreen> {
   /// Dismissible widget is still part of the tree". Sudah terbukti di
   /// device pada layar Tukar Jadwal.
   Future<bool> _batalkan(IzinItem item) async {
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Hapus pengajuan izin?',
+      pesan: 'Pengajuan tanggal ${item.tanggal} akan dihapus permanen.',
+      labelAksi: 'Hapus Pengajuan',
+    );
+    if (!lanjut || !mounted) return false;
+
     final result = await _service.batalkan(item.id);
     if (!mounted) return false;
 
@@ -94,6 +104,19 @@ class _IzinScreenState extends State<IzinScreen> {
   /// Tidak ada picker. Jamnya dari server (fase 88) — satu-satunya cara
   /// mencatat jam kembali adalah benar-benar menekan tombol saat kembali.
   Future<void> _tandaiSudahKembali(IzinItem item) async {
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Catat jam kembali?',
+      // Jamnya diambil dari server saat tombol ditekan, dan guard
+      // backend melarang pengisian kedua kali. Ini satu-satunya aksi
+      // karyawan di aplikasi yang tidak bisa dia perbaiki sendiri.
+      pesan: 'Jam kembali akan dicatat sekarang juga dan tidak bisa '
+          'diubah sendiri. Kalau keliru, hubungi admin.',
+      labelAksi: 'Ya, saya sudah kembali',
+      merusak: false,
+    );
+    if (!lanjut || !mounted) return;
+
     setState(() => _menandaiId = item.id);
 
     final result = await _service.tandaiSudahKembali(item.id);

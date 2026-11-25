@@ -9,6 +9,7 @@ import '../../utils/snackbar_helper.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/swipe_hint.dart';
 import 'menunggu_respon_screen.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 /// Isi TukarJadwalScreen tanpa Scaffold, supaya bisa dipakai DUA tempat:
 /// sebagai tab di RiwayatScreen, dan sebagai layar yang di-push dari
@@ -80,6 +81,21 @@ class TukarJadwalListState extends State<TukarJadwalList> {
   }
 
   Future<bool> _batalkan(TukarJadwalItem item) async {
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Hapus pengajuan?',
+      // Rekan yang sudah dikirimi permintaan tidak diberi tahu
+      // pembatalannya lewat layar ini — notifikasinya dari backend.
+      pesan: item.mode == 'pindah'
+          ? 'Pengajuan pindah jadwal ${item.jadwalAsal.tanggal} akan '
+              'dihapus permanen.'
+          : 'Pengajuan tukar jadwal dengan '
+              '${item.jadwalTujuan?.karyawan ?? 'rekan'} akan dihapus '
+              'permanen.',
+      labelAksi: 'Hapus Pengajuan',
+    );
+    if (!lanjut || !mounted) return false;
+
     final result = await _service.batalkan(item.id);
     if (!mounted) return false;
 

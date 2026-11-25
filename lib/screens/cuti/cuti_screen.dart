@@ -7,6 +7,7 @@ import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 class CutiScreen extends StatefulWidget {
   const CutiScreen({super.key});
@@ -70,6 +71,17 @@ class _CutiScreenState extends State<CutiScreen> {
   /// Dismissible widget is still part of the tree". Sudah terbukti di
   /// device pada layar Tukar Jadwal.
   Future<bool> _batalkan(CutiItem item) async {
+    // Geseran tidak sengaja menghapus pengajuan permanen. Mengembalikan
+    // false di sini membuat kartunya kembali ke tempatnya.
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Hapus pengajuan cuti?',
+      pesan: 'Pengajuan ${item.tanggalMulai} s/d ${item.tanggalSelesai} '
+          'akan dihapus permanen.',
+      labelAksi: 'Hapus Pengajuan',
+    );
+    if (!lanjut || !mounted) return false;
+
     final result = await _service.batalkan(item.id);
     if (!mounted) return false;
 

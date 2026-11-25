@@ -7,6 +7,7 @@ import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 
 class LemburScreen extends StatefulWidget {
@@ -79,6 +80,14 @@ class _LemburScreenState extends State<LemburScreen> {
   /// Dismissible widget is still part of the tree". Sudah terbukti di
   /// device pada layar Tukar Jadwal.
   Future<bool> _batalkan(LemburItem item) async {
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Hapus pengajuan lembur?',
+      pesan: 'Pengajuan tanggal ${item.tanggal} akan dihapus permanen.',
+      labelAksi: 'Hapus Pengajuan',
+    );
+    if (!lanjut || !mounted) return false;
+
     final result = await _service.batalkan(item.id);
     if (!mounted) return false;
 

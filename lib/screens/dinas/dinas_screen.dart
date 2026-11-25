@@ -7,6 +7,7 @@ import '../../widgets/status_badge.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 class DinasScreen extends StatefulWidget {
   const DinasScreen({super.key});
@@ -70,6 +71,15 @@ class _DinasScreenState extends State<DinasScreen> {
   /// Dismissible widget is still part of the tree". Sudah terbukti di
   /// device pada layar Tukar Jadwal.
   Future<bool> _batalkan(DinasItem item) async {
+    final lanjut = await konfirmasi(
+      context,
+      judul: 'Hapus pengajuan dinas?',
+      pesan: 'Pengajuan ke ${item.tujuan} (${item.tanggalMulai} s/d '
+          '${item.tanggalSelesai}) akan dihapus permanen.',
+      labelAksi: 'Hapus Pengajuan',
+    );
+    if (!lanjut || !mounted) return false;
+
     final result = await _service.batalkan(item.id);
     if (!mounted) return false;
 
