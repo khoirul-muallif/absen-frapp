@@ -6,6 +6,8 @@ import '../../utils/lokasi_helper.dart';
 import '../../utils/snackbar_helper.dart';
 import 'absen_flow_screen.dart';
 import 'absen_pulang_flow_screen.dart';
+import '../../services/api_client.dart';
+import '../../widgets/kartu_error.dart';
 
 class AbsenMenuScreen extends StatefulWidget {
   const AbsenMenuScreen({super.key});
@@ -17,6 +19,7 @@ class AbsenMenuScreen extends StatefulWidget {
 class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
   AbsensiStatus? _status;
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -25,13 +28,31 @@ class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
   }
 
   Future<void> _loadStatus() async {
-    setState(() => _loading = true);
-    final status = await AbsensiService().getStatus();
-    if (!mounted) return;
     setState(() {
-      _status = status;
-      _loading = false;
+      _loading = true;
+      _error = null;
     });
+
+    try {
+      final status = await AbsensiService().getStatusOrThrow();
+      if (!mounted) return;
+      setState(() {
+        _status = status;
+        _loading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Terjadi kesalahan saat memuat status absen.';
+        _loading = false;
+      });
+    }
   }
 
   Future<Position?> _ambilLokasiDenganLoading() async {
@@ -109,50 +130,69 @@ class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Absen')),
       body: SafeArea(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _status == null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+        child: RefreshIndicator(
+          onRefresh: _loadStatus,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
                       children: [
-                        const Text('Gagal memuat status absen'),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: _loadStatus,
-                          child: const Text('Coba Lagi'),
+                        KartuError(
+                          pesan: _error!,
+                          judul: 'Gagal memuat status absen',
+                          onCobaLagi: _loadStatus,
                         ),
                       ],
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _AbsenButton(
-                          icon: Icons.login,
-                          label: 'Absen Masuk',
-                          enabled: !_status!.sudahMasuk,
-                          keterangan: _status!.sudahMasuk
-                              ? 'Sudah absen masuk'
-                                  '${_status!.waktuMasuk != null ? ' pukul ${_status!.waktuMasuk}' : ''}'
-                              : null,
-                          onTap: _handleAbsenMasuk,
+                    )
+                  : _status == null
+                      // Berbeda dari gagal: request berhasil tapi tidak
+                      // ada status untuk hari ini. Tidak ada yang bisa
+                      // dicoba lagi, jadi tanpa tombol.
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            KartuKosong(
+                              ikon: Icons.event_available_outlined,
+                              judul: 'Tidak ada jadwal absen hari ini',
+                              penjelasan:
+                                  'Hubungi admin kalau menurut Anda '
+                                  'seharusnya ada jadwal.',
+                            ),
+                          ],
+                        )
+                      : ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            _AbsenButton(
+                              icon: Icons.login,
+                              label: 'Absen Masuk',
+                              enabled: !_status!.sudahMasuk,
+                              keterangan: _status!.sudahMasuk
+                                  ? 'Sudah absen masuk'
+                                      '${_status!.waktuMasuk != null ? ' pukul ${_status!.waktuMasuk}' : ''}'
+                                  : null,
+                              onTap: _handleAbsenMasuk,
+                            ),
+                            const SizedBox(height: 16),
+                            _AbsenButton(
+                              icon: Icons.logout,
+                              label: 'Absen Pulang',
+                              enabled:
+                                  _status!.sudahMasuk && !_status!.sudahPulang,
+                              keterangan: _status!.sudahPulang
+                                  ? 'Sudah absen pulang'
+                                      '${_status!.waktuPulang != null ? ' pukul ${_status!.waktuPulang}' : ''}'
+                                  : (!_status!.sudahMasuk
+                                      ? 'Belum absen masuk'
+                                      : null),
+                              onTap: _handleAbsenPulang,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        _AbsenButton(
-                          icon: Icons.logout,
-                          label: 'Absen Pulang',
-                          enabled: _status!.sudahMasuk && !_status!.sudahPulang,
-                          keterangan: _status!.sudahPulang
-                              ? 'Sudah absen pulang'
-                                  '${_status!.waktuPulang != null ? ' pukul ${_status!.waktuPulang}' : ''}'
-                              : (!_status!.sudahMasuk ? 'Belum absen masuk' : null),
-                          onTap: _handleAbsenPulang,
-                        ),
-                      ],
-                    ),
-                  ),
+        ),
       ),
     );
   }

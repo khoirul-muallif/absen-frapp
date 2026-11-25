@@ -8,10 +8,20 @@ import '../models/riwayat_absen_model.dart';
 class AbsensiService {
   final ApiClient _apiClient = ApiClient();
 
+  /// Varian yang TIDAK menelan error. AbsenMenuScreen perlu membedakan
+  /// "gagal memuat" dari "status tidak ada" — sebelumnya keduanya sama-
+  /// sama null, jadi pesan gagal muncul untuk keadaan yang mungkin sah.
+  Future<AbsensiStatus> getStatusOrThrow() async {
+    final json = await _apiClient.get('${ApiConstants.baseUrl}/absensi/status');
+    return AbsensiStatus.fromJson(json['data']);
+  }
+
+  /// Menelan error jadi null. Dipertahankan untuk pemanggil yang tidak
+  /// punya cara menampilkan kegagalan — jangan dipakai di layar yang
+  /// punya state error sendiri.
   Future<AbsensiStatus?> getStatus() async {
     try {
-      final json = await _apiClient.get('${ApiConstants.baseUrl}/absensi/status');
-      return AbsensiStatus.fromJson(json['data']);
+      return await getStatusOrThrow();
     } on ApiException {
       return null;
     }
