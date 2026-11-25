@@ -4,6 +4,7 @@ import '../../services/api_client.dart';
 import '../../services/tukar_jadwal_service.dart';
 import '../../models/tukar_jadwal_model.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../widgets/dialog_konfirmasi.dart';
 
 class MenungguResponScreen extends StatefulWidget {
   const MenungguResponScreen({super.key});
@@ -90,6 +91,21 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
       catatan = await _tanyaAlasanTolak();
       if (catatan == null) return; // dialog dibatalkan
       if (!mounted) return;
+    } else {
+      // Tolak sudah punya dialog alasan; Setuju sebelumnya langsung
+      // jalan — padahal ini yang menukar jadwal dua orang dan tidak
+      // bisa ditarik kembali dari sini.
+      final lanjut = await konfirmasi(
+        context,
+        judul: 'Setujui tukar jadwal?',
+        pesan: 'Jadwal Anda tanggal '
+            '${item.jadwalTujuan?.tanggal ?? '-'} akan ditukar dengan '
+            '${item.jadwalAsal.karyawan}. Pengajuan diteruskan ke admin '
+            'untuk disetujui.',
+        labelAksi: 'Setujui',
+        merusak: false,
+      );
+      if (!lanjut || !mounted) return;
     }
 
     setState(() => _sedangDiproses = item.id);
@@ -125,7 +141,7 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: const Text('Kembali'),
           ),
           TextButton(
             onPressed: () =>

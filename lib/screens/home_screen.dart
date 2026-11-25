@@ -19,6 +19,7 @@ import 'profil/profil_screen.dart';
 import '../services/informasi_service.dart';
 import '../models/informasi_model.dart';
 import 'informasi/informasi_detail_screen.dart';
+import '../widgets/dialog_konfirmasi.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -132,6 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                   break;
                 case 'logout':
+                  final keluar = await konfirmasi(
+                    context,
+                    judul: 'Keluar dari aplikasi?',
+                    pesan: 'Anda perlu memasukkan username dan password '
+                        'lagi untuk masuk.',
+                    labelAksi: 'Keluar',
+                  );
+                  if (!keluar || !context.mounted) break;
+
                   await authProvider.logout();
                   if (context.mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
