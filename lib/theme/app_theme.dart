@@ -1,5 +1,6 @@
 // lib/theme/app_theme.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Warna utama disamakan dengan primary color Filament admin panel
 /// (PROJECT_CONTEXT.md: teal #1D9E75) biar konsisten antara app mobile
@@ -20,12 +21,37 @@ ThemeData buildAppTheme() {
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
+    // Hijau solid di semua layar. Sebelumnya transparan dengan teks
+    // gelap, jadi tiap layar terlihat seperti kertas abu-abu polos —
+    // dan setelah Beranda didesain ulang 25 Nov, Beranda jadi satu-
+    // satunya yang berwarna.
+    //
+    // Beranda menimpa ini sendiri (transparan di atas latar hijau
+    // melengkung), jadi tidak terganggu.
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.black87,
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
+      // Ikon status bar jadi terang, karena latarnya sekarang gelap.
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
     ),
+        // TabBar berada DI DALAM AppBar (RiwayatScreen), jadi latarnya
+    // hijau — tapi foregroundColor AppBar tidak diturunkan ke sini.
+    // Tanpa ini label tabnya abu-abu gelap di atas hijau, nyaris
+    // tidak terbaca.
+    tabBarTheme: const TabBarThemeData(
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white70,
+      indicatorSize: TabBarIndicatorSize.label,
+      indicatorColor: Colors.white,
+      dividerColor: Colors.transparent,
+    ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         // M3 default ElevatedButton = latar surfaceContainerLow + teks
