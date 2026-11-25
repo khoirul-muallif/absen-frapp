@@ -12,13 +12,14 @@ import '../../widgets/kartu_error.dart';
     case 'reguler':
       return ('Kerja', const Color(0xFF1D9E75));
     case 'piket':
-      return ('Piket (Kerja)', const Color(0xFF1D9E75));
+      return ('Piket', const Color(0xFF0D6E4F));
     case 'libur':
       return ('Libur', const Color(0xFF9E9E9E));
     case 'cuti':
       return ('Cuti', const Color(0xFFF57C00));
     case 'dinas':
       return ('Dinas', const Color(0xFF7B1FA2));
+
     default:
       return (jenis, const Color(0xFF9E9E9E));
   }
@@ -261,7 +262,12 @@ class _Legenda extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const jenisList = ['reguler', 'libur', 'cuti', 'dinas'];
+    // 'piket' dulu tidak ada di legenda dan warnanya sama persis dengan
+    // reguler, jadi label "Piket (Kerja)" di kartu detail tidak bisa
+    // dicocokkan dengan apa pun di bawah kalender. Sekarang punya warna
+    // sendiri — piket juga jadi bisa dibedakan dari hari kerja biasa
+    // di kalender, informasi yang sebelumnya hilang.
+    const jenisList = ['reguler', 'piket', 'libur', 'cuti', 'dinas'];
     return Wrap(
       spacing: 12,
       runSpacing: 8,
