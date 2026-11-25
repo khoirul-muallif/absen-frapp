@@ -5,6 +5,7 @@ import '../models/riwayat_absen_model.dart';
 import '../utils/snackbar_helper.dart';
 import '../widgets/status_badge.dart';
 import 'tukar_jadwal/tukar_jadwal_list.dart';
+import '../widgets/kartu_error.dart';
 
 /// Shell bertab. Dua tab saja — Presensi dan Tukar Jadwal. Izin, Cuti,
 /// Dinas, dan Lembur SENGAJA tidak ikut: keputusan 20 Nov 2026, mereka
@@ -239,7 +240,11 @@ class _PresensiTabState extends State<_PresensiTab>
                 ),
                 const SizedBox(height: 8),
                 if (_error != null)
-                  _ErrorCard(pesan: _error!, onCobaLagi: _loadData)
+                  KartuError(
+                    pesan: _error!,
+                    judul: 'Gagal memuat riwayat bulan ini',
+                    onCobaLagi: _loadData,
+                  )
                 else ...[
                   if (_rekap != null) _RekapCard(rekap: _rekap!),
                   const SizedBox(height: 20),
@@ -249,10 +254,9 @@ class _PresensiTabState extends State<_PresensiTab>
                   ),
                   const SizedBox(height: 8),
                   if (_riwayat.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                          child: Text('Belum ada data absensi bulan ini')),
+                    const KartuKosong(
+                      ikon: Icons.event_note_outlined,
+                      judul: 'Belum ada data absensi bulan ini',
                     )
                   else
                     ...(_tampilSemua
@@ -297,46 +301,6 @@ class _PresensiTabState extends State<_PresensiTab>
   }
 }
 
-class _ErrorCard extends StatelessWidget {
-  final String pesan;
-  final VoidCallback onCobaLagi;
-  const _ErrorCard({required this.pesan, required this.onCobaLagi});
-
-  @override
-  Widget build(BuildContext context) {
-    final skema = Theme.of(context).colorScheme;
-    return Card(
-      color: skema.errorContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(Icons.cloud_off, color: skema.onErrorContainer, size: 32),
-            const SizedBox(height: 12),
-            Text(
-              'Gagal memuat riwayat bulan ini',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: skema.onErrorContainer,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              pesan,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: skema.onErrorContainer),
-            ),
-            const SizedBox(height: 12),
-            FilledButton.tonal(
-              onPressed: onCobaLagi,
-              child: const Text('Coba Lagi'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _RekapCard extends StatelessWidget {
   final RekapAbsen rekap;

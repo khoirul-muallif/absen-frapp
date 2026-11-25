@@ -8,6 +8,8 @@ import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
 import '../../widgets/dialog_konfirmasi.dart';
+import '../../widgets/kartu_error.dart';
+
 
 class DinasScreen extends StatefulWidget {
   const DinasScreen({super.key});
@@ -106,28 +108,10 @@ class _DinasScreenState extends State<DinasScreen> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       const SizedBox(height: 60),
-                      Card(
-                        color: Colors.red[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Icon(Icons.cloud_off, color: Colors.red[700]),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Gagal memuat pengajuan dinas',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(_error!, textAlign: TextAlign.center),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: _loadData,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
-                        ),
+                      KartuError(
+                        pesan: _error!,
+                        judul: 'Gagal memuat pengajuan Dinas',
+                        onCobaLagi: _loadData,
                       ),
                     ],
                   )
@@ -136,7 +120,12 @@ class _DinasScreenState extends State<DinasScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: const [
                       SizedBox(height: 100),
-                      Center(child: Text('Belum ada pengajuan dinas')),
+                          KartuKosong(
+                            ikon: Icons.work_outline,
+                            judul: 'Belum ada pengajuan dinas',
+                            penjelasan:
+                                'Tekan tombol + untuk mengajukan dinas.',
+                          ),
                     ],
                   )
                 : ListView.builder(

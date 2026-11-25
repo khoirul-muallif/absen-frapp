@@ -5,6 +5,28 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+- [ ] **Setelah absen selesai, kembali ke Beranda — mungkin salah
+      tujuan** — dicatat 25 Nov 2026, belum didiagnosis.
+
+      Dua kemungkinan yang perlu dipastikan dulu, karena perbaikannya
+      beda:
+
+      1. Yang dimaksud "Riwayat" = tab Riwayat di bottom nav. Berarti
+         setelah absen aplikasi harus PINDAH TAB, bukan sekadar
+         kembali. `AbsenMenuScreen` di-push dari grid Beranda dan tidak
+         punya akses ke `_index` milik `MainScreen` — perlu callback
+         atau cara lain untuk mengubahnya dari dalam.
+
+      2. Yang mengganggu sebenarnya bukan layarnya, tapi angka rekap di
+         kartu profil Beranda yang belum tersegarkan setelah absen —
+         jadi terasa seperti tidak terjadi apa-apa. Kalau ini
+         penyebabnya, cukup `_loadRekap()` dipanggil ulang saat kembali
+         dari AbsenMenuScreen, dan tujuan navigasinya tidak perlu
+         diubah sama sekali.
+
+      Catatan: `AbsenMenuScreen._loadStatus()` sudah dipanggil ulang
+      setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
+      Yang belum disegarkan Beranda di belakangnya.
 
 - [ ] **Peringatan kuota Cuti merah seperti bentrok yang memblokir** —
       padahal kuota kurang TIDAK memblokir submit, bentrok iya. Dua

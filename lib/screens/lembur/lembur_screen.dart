@@ -8,6 +8,8 @@ import '../../utils/snackbar_helper.dart';
 import '../../widgets/swipe_hint.dart';
 import '../../services/api_client.dart';
 import '../../widgets/dialog_konfirmasi.dart';
+import '../../widgets/kartu_error.dart';
+
 
 
 class LemburScreen extends StatefulWidget {
@@ -114,28 +116,10 @@ class _LemburScreenState extends State<LemburScreen> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       const SizedBox(height: 60),
-                      Card(
-                        color: Colors.red[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Icon(Icons.cloud_off, color: Colors.red[700]),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Gagal memuat pengajuan lembur',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(_error!, textAlign: TextAlign.center),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: _loadData,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
-                        ),
+                      KartuError(
+                        pesan: _error!,
+                        judul: 'Gagal memuat pengajuan lembur',
+                        onCobaLagi: _loadData,
                       ),
                     ],
                   )
@@ -144,7 +128,12 @@ class _LemburScreenState extends State<LemburScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: const [
                       SizedBox(height: 100),
-                      Center(child: Text('Belum ada pengajuan lembur')),
+                          KartuKosong(
+                            ikon: Icons.more_time_outlined,
+                            judul: 'Belum ada pengajuan lembur',
+                            penjelasan:
+                                'Tekan tombol + untuk mengajukan lembur.',
+                          ),
                     ],
                   )
                 : ListView.builder(

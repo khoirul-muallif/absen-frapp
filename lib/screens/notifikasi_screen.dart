@@ -4,6 +4,7 @@ import '../models/notifikasi_model.dart';
 import '../utils/snackbar_helper.dart';
 import 'tukar_jadwal/menunggu_respon_screen.dart';
 import 'tukar_jadwal/tukar_jadwal_screen.dart';
+import '../widgets/kartu_error.dart';
 
 class NotifikasiScreen extends StatefulWidget {
   const NotifikasiScreen({super.key});
@@ -201,34 +202,15 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         onRefresh: () => _loadData(tampilkanSpinner: false),
         child: _loading
             ? const Center(child: CircularProgressIndicator())
-            : _error != null
+                : _error != null
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
                     children: [
-                      const SizedBox(height: 60),
-                      Card(
-                        color: Colors.red[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Icon(Icons.cloud_off, color: Colors.red[700]),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Gagal memuat notifikasi',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(_error!, textAlign: TextAlign.center),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: _loadData,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
-                        ),
+                      KartuError(
+                        pesan: _error!,
+                        judul: 'Gagal memuat notifikasi',
+                        onCobaLagi: _loadData,
                       ),
                     ],
                   )
@@ -236,8 +218,13 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                     ? ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: const [
-                          SizedBox(height: 100),
-                          Center(child: Text('Belum ada notifikasi')),
+                          KartuKosong(
+                            ikon: Icons.notifications_none,
+                            judul: 'Belum ada notifikasi',
+                            penjelasan:
+                                'Pemberitahuan absen dan tukar jadwal akan '
+                                'muncul di sini.',
+                          ),
                         ],
                       )
                     : ListView.builder(

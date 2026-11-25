@@ -5,6 +5,7 @@ import '../../services/tukar_jadwal_service.dart';
 import '../../models/tukar_jadwal_model.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/dialog_konfirmasi.dart';
+import '../../widgets/kartu_error.dart';
 
 class MenungguResponScreen extends StatefulWidget {
   const MenungguResponScreen({super.key});
@@ -164,31 +165,12 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
             : _error != null
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
                     children: [
-                      const SizedBox(height: 60),
-                      Card(
-                        color: Colors.red[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Icon(Icons.cloud_off, color: Colors.red[700]),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Gagal memuat pengajuan',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(_error!, textAlign: TextAlign.center),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: _loadData,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
-                        ),
+                      KartuError(
+                        pesan: _error!,
+                        judul: 'Gagal memuat pengajuan',
+                        onCobaLagi: _loadData,
                       ),
                     ],
                   )

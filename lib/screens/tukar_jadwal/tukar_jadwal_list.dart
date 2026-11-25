@@ -10,6 +10,7 @@ import '../../widgets/status_badge.dart';
 import '../../widgets/swipe_hint.dart';
 import 'menunggu_respon_screen.dart';
 import '../../widgets/dialog_konfirmasi.dart';
+import '../../widgets/kartu_error.dart';
 
 /// Isi TukarJadwalScreen tanpa Scaffold, supaya bisa dipakai DUA tempat:
 /// sebagai tab di RiwayatScreen, dan sebagai layar yang di-push dari
@@ -132,11 +133,12 @@ class TukarJadwalListState extends State<TukarJadwalList> {
                 if (_error != null)
                   _kartuError()
                 else if (_items.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
-                    child: Center(
-                      child: Text('Belum ada pengajuan tukar/pindah jadwal'),
-                    ),
+                  const KartuKosong(
+                    ikon: Icons.swap_horiz,
+                    judul: 'Belum ada pengajuan tukar/pindah jadwal',
+                    penjelasan:
+                        'Ajukan dari layar Jadwal dengan memilih tanggal '
+                        'kerja Anda.',
                   )
                 else
                   ..._items.map((item) => _kartuPengajuan(item, namaSaya)),
@@ -200,28 +202,10 @@ class TukarJadwalListState extends State<TukarJadwalList> {
   Widget _kartuError() {
     return Padding(
       padding: const EdgeInsets.only(top: 60),
-      child: Card(
-        color: Colors.red[50],
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(Icons.cloud_off, color: Colors.red[700]),
-              const SizedBox(height: 12),
-              const Text(
-                'Gagal memuat pengajuan',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(_error!, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _loadData,
-                child: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
-        ),
+      child: KartuError(
+        pesan: _error!,
+        judul: 'Gagal memuat pengajuan',
+        onCobaLagi: _loadData,
       ),
     );
   }

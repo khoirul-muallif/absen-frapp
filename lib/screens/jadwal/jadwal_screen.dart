@@ -5,6 +5,7 @@ import '../../models/jadwal_model.dart';
 import '../../services/api_client.dart';
 import '../../services/jadwal_service.dart';
 import '../tukar_jadwal/tukar_jadwal_form_screen.dart';
+import '../../widgets/kartu_error.dart';
 
 (String, Color) _jenisDisplay(String jenis) {
   switch (jenis) {
@@ -136,6 +137,18 @@ class _JadwalScreenState extends State<JadwalScreen> {
           children: [
             if (_loading) const LinearProgressIndicator(),
             const SizedBox(height: 4),
+            // Kartu gagal di ATAS kalender. Sebelumnya di bawah legenda,
+            // jadi saat gagal yang terlihat adalah kalender kosong tanpa
+            // titik warna — terbaca sebagai "memang tidak ada jadwal",
+            // dan pesan gagalnya baru ketahuan setelah digulir.
+            if (_pesanGagal != null) ...[
+              KartuError(
+                pesan: _pesanGagal!,
+                judul: 'Gagal memuat jadwal bulan ini',
+                onCobaLagi: () => _loadBulan(_focusedMonth),
+              ),
+              const SizedBox(height: 12),
+            ],
             TableCalendar<JadwalItem>(
               locale: 'id_ID',
               firstDay: DateTime(2025, 1, 1),
@@ -168,25 +181,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
             const SizedBox(height: 16),
             const _Legenda(),
             const SizedBox(height: 16),
-            if (_pesanGagal != null)
-              Card(
-                color: Colors.red[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red[700]),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text(_pesanGagal!)),
-                      TextButton(
-                        onPressed: () => _loadBulan(_focusedMonth),
-                        child: const Text('Coba Lagi'),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else if (selected != null)
+            if (selected != null)
               _DetailCard(
                 tanggal: _selectedDay!,
                 item: selected,
