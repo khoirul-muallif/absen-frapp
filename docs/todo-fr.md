@@ -28,12 +28,16 @@
       setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
       Yang belum disegarkan Beranda di belakangnya.
 
-- [ ] **Peringatan kuota Cuti merah seperti bentrok yang memblokir** —
-      padahal kuota kurang TIDAK memblokir submit, bentrok iya. Dua
-      peringatan terlihat sama tapi akibatnya beda: kalau bentroknya
-      dihapus, tombol Ajukan hidup lagi meski kuota kurang, dan backend
-      yang menolak. Usul: kuota jadi oranye, bentrok tetap merah.
-      Dicatat 24 Nov 2026.
+- [ ] **Deteksi "pengajuan saya sendiri" di TukarJadwal pakai cocokin
+      nama** — `riwayat()` tidak mengirim id pengaju, cuma nama, jadi
+      `item.jadwalAsal.karyawan == namaSaya`. Dua karyawan dengan nama
+      sama persis akan saling bisa membatalkan pengajuan. Dari 150
+      karyawan RS, itu bukan kemungkinan yang jauh. Perbaikannya di
+      backend: kirim `karyawan_id` di response riwayat. Dicatat 25 Nov.
+
+- [ ] **Beranda belum ikut aturan AppBar hijau yang dipakai layar lain**
+      — lihat dimensi 5. Dicatat supaya tidak lupa bahwa yang perlu
+      disamakan adalah layar lain MENGIKUTI Beranda, bukan sebaliknya.
 
 - [ ] **Shift pengaju tampil "(-)" di MenungguResponScreen** — terlihat
       25 Nov: "Jadwal dia: 26 Nov 2026 (-)" sementara "Jadwal Anda"
@@ -81,13 +85,6 @@
       
 
 
-- [ ] **Redesign visual Beranda** — struktur navigasi sudah final (bottom
-      nav 3 tab), tapi gaya visual masih default Material. Referensi dari
-      aplikasi lama: kartu profil dengan latar melengkung, ikon menu bulat
-      berwarna per kategori, ring chart kehadiran, tombol Presensi di
-      tengah bottom nav. Dikerjakan setelah audit UX per-modul selesai
-      biar nggak nabrak perubahan struktural. Dicatat 5 Nov 2026.
-
 ## Audit UX menyeluruh — dikerjakan per DIMENSI, bukan per layar
 
 Dimulai 25 Nov 2026. Pendekatannya sengaja beda dari review per-modul
@@ -112,17 +109,24 @@ Submit pengajuan SENGAJA tidak dikonfirmasi: masih bisa dibatalkan
 selama belum diproses, dan dialog di tiap submit cuma menambah ketukan
 yang lama-lama ditekan tanpa dibaca.
 
-### 2. Keadaan kosong, gagal, dan memuat — BELUM
+### 2. Keadaan kosong, gagal, dan memuat — SELESAI 25 Nov (`e42b418`, `5e69ecb`)
 
-Tiap layar yang mengambil data punya tiga keadaan ini. Yang perlu
-dicari: layar yang spinner-nya bisa menggantung, pesan gagal yang masih
-teknis, dan keadaan kosong yang tidak membedakan "belum ada data" dari
-"pencarian tidak ketemu" (Informasi sudah membedakannya, yang lain
-belum dicek).
+Kartu gagal sebelumnya disalin ke enam layar dengan LIMA bentuk berbeda.
+Diangkat jadi `KartuError` + `KartuKosong` di
+`lib/widgets/kartu_error.dart`, memakai bentuk milik RiwayatScreen —
+satu-satunya yang warnanya dari tema, bukan `Colors.red` hardcode.
 
-Kartu error merah dengan "Coba Lagi" sudah muncul di beberapa layar
-dengan bentuk yang mirip tapi disalin-tempel, bukan widget bersama —
-kandidat untuk diangkat seperti `SectionCard`.
+Dua perbaikan yang lebih dari kerapian:
+
+- JadwalScreen menampilkan kartu gagal di ATAS kalender. Sebelumnya di
+  bawah legenda, jadi saat gagal yang terlihat kalender kosong tanpa
+  titik warna — terbaca "memang tidak ada jadwal".
+- AbsenMenuScreen menyamakan gagal dengan kosong (`getStatus()` menelan
+  error jadi null). Sekarang `getStatusOrThrow()` membedakannya.
+
+InformasiScreen sengaja TIDAK memakai `KartuKosong`: dia pakai
+`LayoutBuilder` supaya pull-to-refresh jalan di layar kosong, dan
+membedakan "belum ada" dari "pencarian tidak ketemu".
 
 ### 3. Bahasa — BELUM
 
@@ -153,13 +157,21 @@ backend (kolom baru lagi).
 
 ## Perlu investigasi sebelum dikerjakan
 
-*(kosong — tapi catat: klaim lama "semua tanggal lewat sudah dicegah di
-sumbernya sejak `4ebe805`" TIDAK benar. Cuti dan Dinas masih
-`firstDate: now.subtract(7 days)` sampai 23 Nov 2026, padahal backend
-memvalidasi `after_or_equal:today` — tanggal lewat bisa dipilih dan baru
-ditolak setelah submit. Ditutup `9806a54` dan `82ba1f7`. Pelajaran: klaim
-"sudah dicegah di semua modul" perlu diperiksa per modul, bukan
-diasumsikan merata.)*
+- [ ] **Request berulang saat Beranda dibuka** — terlihat di log server
+      25 Nov 2026, aplikasi dibuka bersih (bukan hot reload):
+      `/api/absensi/rekap` 4×, `/api/informasi` 4×, `/api/auth/me` 2×,
+      `/api/notifikasi/jumlah` 2×, `/api/tukar-jadwal/menunggu-respon-saya` 2×
+      dalam ~17 detik.
+
+      Belum didiagnosis. Yang perlu diperiksa: apakah `HomeScreen`
+      di-build ulang berkali-kali (IndexedStack + `context.watch`
+      AuthProvider), apakah `initState` benar-benar jalan berulang, dan
+      apakah `_saatTabBerganti` di RiwayatScreen ikut memicu muat ulang
+      di tab lain.
+
+      Bukan cuma soal kerapian: ini jaringan seluler di dalam gedung RS,
+      dan tiap request ~500ms. Dicatat 25 Nov 2026.
+
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
 
