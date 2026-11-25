@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/lembur_service.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/section_card.dart';
+import '../../utils/format_tanggal.dart';
 
 class LemburFormScreen extends StatefulWidget {
   const LemburFormScreen({super.key});
@@ -26,9 +27,6 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     _alasanController.dispose();
     super.dispose();
   }
-
-  String _formatTanggal(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   String _formatJam(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -63,7 +61,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
     setState(() => _submitting = true);
 
     final result = await _lemburService.ajukan(
-      tanggal: _formatTanggal(_tanggal),
+      tanggal: tanggalUntukApi(_tanggal),
       jamMulai: _formatJam(_jamMulai!),
       jamSelesai: _formatJam(_jamSelesai!),
       alasan: _alasanController.text.trim(),
@@ -139,7 +137,7 @@ class _LemburFormScreenState extends State<LemburFormScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Tanggal'),
-                    subtitle: Text(_formatTanggal(_tanggal)),
+                    subtitle: Text(tanggalUntukLayar(_tanggal)),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: _pilihTanggal,
                   ),

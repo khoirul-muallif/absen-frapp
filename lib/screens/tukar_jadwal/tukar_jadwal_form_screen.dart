@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/section_card.dart';
+import '../../utils/format_tanggal.dart';
 
 class TukarJadwalFormScreen extends StatefulWidget {
   final DateTime? tanggalAwal;
@@ -101,8 +102,8 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     final mulai = DateTime.now();
     final selesai = DateTime.now().add(const Duration(days: 90));
     final list = await _jadwalService.sayaDalamRentang(
-      _formatTanggal(mulai),
-      _formatTanggal(selesai),
+      tanggalUntukApi(mulai),
+      tanggalUntukApi(selesai),
     );
     if (!mounted) return;
     final map = <String, JadwalItem>{};
@@ -140,15 +141,12 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
     super.dispose();
   }
 
-  String _formatTanggal(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
   Future<void> _muatJadwalAsal(DateTime tanggal) async {
     setState(() {
       _tanggalAsal = tanggal;
       _loadingAsal = true;
     });
-    final jadwal = await _jadwalService.sayaPadaTanggal(_formatTanggal(tanggal));
+    final jadwal = await _jadwalService.sayaPadaTanggal(tanggalUntukApi(tanggal));
     if (!mounted) return;
     setState(() {
       _jadwalAsal = jadwal;
@@ -170,7 +168,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       _jadwalTujuanTerpilih = null;
       _loadingRekan = true;
     });
-    final list = await _jadwalService.rekanPadaTanggal(_formatTanggal(tanggal));
+    final list = await _jadwalService.rekanPadaTanggal(tanggalUntukApi(tanggal));
     if (!mounted) return;
     setState(() {
       _rekanList = list;
@@ -289,7 +287,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
       }
       jadwalTujuanId = _jadwalTujuanTerpilih!.jadwalId;
     } else {
-      tanggalBaru = _formatTanggal(_tanggalBaru);
+      tanggalBaru = tanggalUntukApi(_tanggalBaru);
     }
 
     setState(() => _submitting = true);
@@ -371,7 +369,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.event_available, size: 20),
-                      title: Text(_formatTanggal(_tanggalAsal)),
+                      title: Text(tanggalUntukLayar(_tanggalAsal)),
                       subtitle: const Text(
                         'Tanggal dipilih dari layar Jadwal',
                         style: TextStyle(fontSize: 12),
@@ -385,7 +383,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Tanggal'),
-                      subtitle: Text(_formatTanggal(_tanggalAsal)),
+                      subtitle: Text(tanggalUntukLayar(_tanggalAsal)),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: _loadingPrefetch ? null : _pilihTanggalAsal,
                     ),
@@ -429,7 +427,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.info_outline, size: 20, color: Colors.grey),
-                      title: Text('Tanggal: ${_formatTanggal(_tanggalAsal)}'),
+                      title: Text('Tanggal: ${tanggalUntukLayar(_tanggalAsal)}'),
                       subtitle: const Text(
                         'Tukar cuma bisa di tanggal yang sama dengan jadwal Anda. '
                         'Mau tukar beda tanggal? Hubungi admin.',
@@ -473,7 +471,7 @@ class _TukarJadwalFormScreenState extends State<TukarJadwalFormScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Tanggal Baru'),
-                      subtitle: Text(_formatTanggal(_tanggalBaru)),
+                      subtitle: Text(tanggalUntukLayar(_tanggalBaru)),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: _loadingPrefetch ? null : _pilihTanggalBaru,
                     ),

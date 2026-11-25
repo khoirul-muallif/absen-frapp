@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/izin_service.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/section_card.dart';
+import '../../utils/format_tanggal.dart';
 
 class IzinFormScreen extends StatefulWidget {
   const IzinFormScreen({super.key});
@@ -24,9 +25,6 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     _keperluanController.dispose();
     super.dispose();
   }
-
-  String _formatTanggal(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   String _formatJam(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -52,7 +50,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
     setState(() => _submitting = true);
 
     final result = await _izinService.ajukan(
-      tanggal: _formatTanggal(DateTime.now()),
+      tanggal: tanggalUntukApi(DateTime.now()),
       jamKembaliRencana: _formatJam(_jamKembaliRencana!),
       jamKeluar: _formatJam(_jamKeluar!),
       keperluan: _keperluanController.text.trim(),
@@ -131,7 +129,7 @@ class _IzinFormScreenState extends State<IzinFormScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.calendar_today, size: 20),
                     title: const Text('Hari ini'),
-                    subtitle: Text(_formatTanggal(DateTime.now())),
+                    subtitle: Text(tanggalUntukLayar(DateTime.now())),
                   ),
                   // FormField, bukan pengecekan manual di _submit: jam
                   // keluar yang belum dipilih sekarang ditandai di tempat

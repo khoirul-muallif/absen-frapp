@@ -7,6 +7,7 @@ import '../../services/dinas_service.dart';
 import '../../models/cuti_kuota_model.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/section_card.dart';
+import '../../utils/format_tanggal.dart';
 
 class CutiFormScreen extends StatefulWidget {
   const CutiFormScreen({super.key});
@@ -131,9 +132,6 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
         .toList();
   }
 
-  String _formatTanggal(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
   int get _jumlahHari =>
       _rentang == null ? 0 : _rentang!.end.difference(_rentang!.start).inDays + 1;
 
@@ -181,8 +179,8 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
 
     final result = await _cutiService.ajukan(
       jenisCutiId: _jenisTerpilih!.jenisCutiId,
-      tanggalMulai: _formatTanggal(_rentang!.start),
-      tanggalSelesai: _formatTanggal(_rentang!.end),
+      tanggalMulai: tanggalUntukApi(_rentang!.start),
+      tanggalSelesai: tanggalUntukApi(_rentang!.end),
       alasan: _alasanController.text.trim(),
       lampiran: _lampiran,
     );
@@ -296,7 +294,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
                                   _loadingTerpakai
                                       ? 'Memuat...'
                                       : _rentang != null
-                                          ? '${_formatTanggal(_rentang!.start)} s/d ${_formatTanggal(_rentang!.end)}'
+                                          ? '${tanggalUntukLayar(_rentang!.start)} s/d ${tanggalUntukLayar(_rentang!.end)}'
                                           : 'Belum dipilih',
                                 ),
                                 trailing: const Icon(Icons.date_range),
@@ -339,7 +337,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Bentrok dengan ${_bentrok.map((b) => '${b.label} ${_formatTanggal(b.mulai)} s/d ${_formatTanggal(b.selesai)}').join(', ')}. Pilih tanggal lain.',
+                                    'Bentrok dengan ${_bentrok.map((b) => '${b.label} ${tanggalUntukLayar(b.mulai)} s/d ${tanggalUntukLayar(b.selesai)}').join(', ')}. Pilih tanggal lain.',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Theme.of(context).colorScheme.error,
