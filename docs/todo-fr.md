@@ -6,6 +6,31 @@
 
 ## Belum dibuat
 
+- [ ] **Peringatan kuota Cuti merah seperti bentrok yang memblokir** —
+      padahal kuota kurang TIDAK memblokir submit, bentrok iya. Dua
+      peringatan terlihat sama tapi akibatnya beda: kalau bentroknya
+      dihapus, tombol Ajukan hidup lagi meski kuota kurang, dan backend
+      yang menolak. Usul: kuota jadi oranye, bentrok tetap merah.
+      Dicatat 24 Nov 2026.
+
+- [ ] **Shift pengaju tampil "(-)" di MenungguResponScreen** — terlihat
+      25 Nov: "Jadwal dia: 26 Nov 2026 (-)" sementara "Jadwal Anda"
+      terisi "(malam)". Kalau pengaju memang tidak punya shift di
+      tanggal itu, menukarnya janggal. Belum diselidiki: mungkin shift
+      null untuk hari libur, mungkin ada yang tidak terkirim backend.
+
+- [ ] **Tombol Presensi di tengah bottom nav** — ada di referensi UI,
+      SENGAJA ditunda saat redesign Beranda 25 Nov karena ini keputusan
+      navigasi, bukan visual. Konsekuensinya lebih besar dari
+      kelihatannya: Absen sekarang di grid menu, kalau naik ke bottom
+      nav grid-nya jadi 5 item dan navigasi yang baru ditata ulang
+      20 Nov (`fc26deb`) ikut tersentuh lagi. Putuskan dulu sebelum
+      digarap.
+
+- [ ] **Nama instansi hilang dari kartu profil Beranda** — ada di versi
+      lama, dibuang saat redesign 25 Nov supaya kartunya tidak padat.
+      Dikembalikan sebagai baris kecil abu-abu di bawah jabatan, atau
+      tidak perlu? Belum diputuskan.
       
 - [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
       membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
@@ -41,16 +66,68 @@
       tengah bottom nav. Dikerjakan setelah audit UX per-modul selesai
       biar nggak nabrak perubahan struktural. Dicatat 5 Nov 2026.
 
-- [ ] **Telusur/audit UX frontend secara menyeluruh** — review semua
-      screen (bukan per-modul kayak sesi-sesi sebelumnya) buat nyari
-      pola yang kurang ramah pengguna: copy/pesan yang masih teknis atau
-      kurang jelas, alur yang bisa dipangkas/disederhanakan. Konsistensi
-      section Card sudah selesai 23 Nov 2026 — `SectionCard` dipakai di
-      kelima form (TukarJadwal, Izin, Lembur, Cuti, Dinas). Masih
-      rencana, belum ada scope/checklist konkret — perlu sesi tersendiri
-      buat nentuin cakupannya (semua modul sekaligus, atau satu-satu
-      kayak pola review Filament Resource di backend fase 25-36).
-      Dicatat 4 Nov 2026.
+## Audit UX menyeluruh — dikerjakan per DIMENSI, bukan per layar
+
+Dimulai 25 Nov 2026. Pendekatannya sengaja beda dari review per-modul
+sebelumnya: periksa SATU hal di semua layar sekaligus. Alasannya pola
+yang berulang di sepuluh layar kalau diaudit per layar akan ditemukan
+sepuluh kali sebagai sepuluh temuan terpisah.
+
+Lima dimensi, dan satu dimensi per sesi — menggarap beberapa sekaligus
+berarti perubahan besar di belasan file, dan itu persis keadaan yang
+bikin kesalahan sulit dilacak.
+
+### 1. Aksi destruktif — SELESAI 25 Nov (`592d3b4`, `428a453`)
+
+Enam tempat sekarang punya konfirmasi lewat `konfirmasi()` di
+`lib/widgets/dialog_konfirmasi.dart`.
+
+Pelajaran yang jangan terulang: kata di dua tombol tidak boleh
+serumpun. Versi pertama berbunyi "Batal" / "Batalkan" — dua kata nyaris
+sama untuk aksi yang berlawanan. Sekarang "Tidak" / "Hapus Pengajuan".
+
+Submit pengajuan SENGAJA tidak dikonfirmasi: masih bisa dibatalkan
+selama belum diproses, dan dialog di tiap submit cuma menambah ketukan
+yang lama-lama ditekan tanpa dibaca.
+
+### 2. Keadaan kosong, gagal, dan memuat — BELUM
+
+Tiap layar yang mengambil data punya tiga keadaan ini. Yang perlu
+dicari: layar yang spinner-nya bisa menggantung, pesan gagal yang masih
+teknis, dan keadaan kosong yang tidak membedakan "belum ada data" dari
+"pencarian tidak ketemu" (Informasi sudah membedakannya, yang lain
+belum dicek).
+
+Kartu error merah dengan "Coba Lagi" sudah muncul di beberapa layar
+dengan bentuk yang mirip tapi disalin-tempel, bukan widget bersama —
+kandidat untuk diangkat seperti `SectionCard`.
+
+### 3. Bahasa — BELUM
+
+Nilai mentah dari DB yang bocor ke layar. Sudah terbukti ada: status
+pegawai tampil "tetap" huruf kecil di profil (ditutup 24 Nov dengan
+`_kapital()`, tapi itu tambalan di satu tempat, bukan aturan). Perlu
+disisir: status, jenis, mode, dan enum lain yang ditampilkan apa adanya.
+
+### 4. Jalan buntu — BELUM
+
+Layar yang bisa dibuka tapi tidak jelas langkah berikutnya.
+
+### 5. Konsistensi visual — BELUM, dan sebagian buatan sendiri
+
+Redesign Beranda 25 Nov (`7c6be71`) membuat Beranda berbeda dari SEMUA
+layar lain: latar hijau melengkung, ikon bulat berwarna, sementara
+Riwayat/Informasi/Izin/Cuti dkk masih AppBar polos dengan latar abu-abu.
+
+Usul: tiru caranya ke layar lain — AppBar transparan di atas blok hijau
+melengkung, tapi lebih pendek (~120px, bukan 220) karena layar lain
+tidak punya kartu mengambang. Tidak menambah aset, tidak ada yang bisa
+gagal dimuat.
+
+Ide "background gambar di AppBar" ditahan 25 Nov: menambah hal yang
+harus dimuat, dan belum jelas masalah apa yang diselesaikan. Kalau
+nanti diambil, perlu diputuskan dulu gambarnya aset lokal atau dari
+backend (kolom baru lagi).
 
 ## Perlu investigasi sebelum dikerjakan
 
@@ -80,6 +157,12 @@ end-to-end per 26 Okt 2026)*
 *(kosong)*
 
 ## Catatan konvensi FE (biar gak keulang)
+
+- Aksi yang TIDAK bisa dibatalkan sendiri pakai `konfirmasi()` dari
+  `lib/widgets/dialog_konfirmasi.dart`. Kata di tombol kiri jangan
+  serumpun dengan tombol kanan — "Batal" vs "Batalkan" terbukti
+  ambigu 25 Nov. Dialog yang ditutup lewat back atau ketukan di luar
+  mengembalikan null, dan itu BUKAN persetujuan.
 
 - Riwayat dua tab saja: Presensi + Tukar Jadwal. Izin, Cuti, Dinas,
   Lembur SENGAJA tidak ikut — tetap di layar terpisah lewat grid Beranda
