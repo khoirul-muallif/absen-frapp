@@ -35,9 +35,6 @@
       karyawan RS, itu bukan kemungkinan yang jauh. Perbaikannya di
       backend: kirim `karyawan_id` di response riwayat. Dicatat 25 Nov.
 
-- [ ] **Beranda belum ikut aturan AppBar hijau yang dipakai layar lain**
-      — lihat dimensi 5. Dicatat supaya tidak lupa bahwa yang perlu
-      disamakan adalah layar lain MENGIKUTI Beranda, bukan sebaliknya.
 
 - [ ] **Shift pengaju tampil "(-)" di MenungguResponScreen** — terlihat
       25 Nov: "Jadwal dia: 26 Nov 2026 (-)" sementara "Jadwal Anda"
@@ -166,32 +163,49 @@ InformasiScreen sengaja TIDAK memakai `KartuKosong`: dia pakai
 `LayoutBuilder` supaya pull-to-refresh jalan di layar kosong, dan
 membedakan "belum ada" dari "pencarian tidak ketemu".
 
-### 3. Bahasa — BELUM
+### 3. Bahasa — SELESAI 25 Nov (`4ecdcfe`, `6a046b3`)
 
-Nilai mentah dari DB yang bocor ke layar. Sudah terbukti ada: status
-pegawai tampil "tetap" huruf kecil di profil (ditutup 24 Nov dengan
-`_kapital()`, tapi itu tambalan di satu tempat, bukan aturan). Perlu
-disisir: status, jenis, mode, dan enum lain yang ditampilkan apa adanya.
+Dua temuan ditutup:
 
+- **Tanggal format mesin di lima form.** `_formatTanggal()` lokal
+  mengembalikan `yyyy-MM-dd` karena itu yang dikirim ke backend, lalu
+  dipakai juga untuk ditampilkan — jadi karyawan melihat "2026-11-25".
+  Dipisah jadi `tanggalUntukApi()` dan `tanggalUntukLayar()` di
+  `lib/utils/format_tanggal.dart`.
+- **Jenis `piket` tidak ada di legenda Jadwal** dan warnanya sama
+  persis dengan reguler. Sekarang punya warna sendiri, jadi bisa
+  dibedakan di kalender juga.
+
+Yang DIPERIKSA dan ternyata benar: label "Keperluan" vs "Alasan" di
+form. Sempat dikira tidak seragam, ternyata pembagiannya tepat — lihat
+catatan konvensi di bawah.
+
+Sisa yang belum disisir: nilai enum lain yang mungkin bocor apa adanya
+ke layar (status pegawai sudah ditambal `_kapital()` di profil 24 Nov,
+tapi itu satu tempat, bukan aturan).
 ### 4. Jalan buntu — BELUM
 
 Layar yang bisa dibuka tapi tidak jelas langkah berikutnya.
 
-### 5. Konsistensi visual — BELUM, dan sebagian buatan sendiri
+### 5. Konsistensi visual — SEBAGIAN 25 Nov (`18ff2d1`)
 
-Redesign Beranda 25 Nov (`7c6be71`) membuat Beranda berbeda dari SEMUA
-layar lain: latar hijau melengkung, ikon bulat berwarna, sementara
-Riwayat/Informasi/Izin/Cuti dkk masih AppBar polos dengan latar abu-abu.
+AppBar hijau solid di semua layar lewat `appBarTheme`. Satu perubahan
+untuk semua layar. Ikut berubah: `tabBarTheme` (label TabBar tidak
+mewarisi `foregroundColor` AppBar, jadi abu-abu di atas hijau), dan
+kartu rekap Riwayat yang tidak lagi `primaryContainer`.
 
-Usul: tiru caranya ke layar lain — AppBar transparan di atas blok hijau
-melengkung, tapi lebih pendek (~120px, bukan 220) karena layar lain
-tidak punya kartu mengambang. Tidak menambah aset, tidak ada yang bisa
-gagal dimuat.
+Ide "lengkungan hijau di semua layar" DITOLAK: butuh struktur
+ListView + Stack yang tidak dimiliki Jadwal dan form-form, jadi
+menirunya berarti menyentuh dan menguji ulang belasan file dengan hasil
+yang tidak jauh berbeda dari sekadar AppBar berwarna.
+
+Yang BELUM: apa yang terjadi persis di bawah AppBar masih berbeda per
+layar — Riwayat punya TabBar, Informasi langsung kotak pencarian,
+Beranda kartu mengambang, layar daftar langsung kartu pertama. Kalau
+mau diseragamkan, perlu aturan jarak yang disepakati dulu.
 
 Ide "background gambar di AppBar" ditahan 25 Nov: menambah hal yang
-harus dimuat, dan belum jelas masalah apa yang diselesaikan. Kalau
-nanti diambil, perlu diputuskan dulu gambarnya aset lokal atau dari
-backend (kolom baru lagi).
+harus dimuat, dan belum jelas masalah apa yang diselesaikan.
 
 ## Perlu investigasi sebelum dikerjakan
 
@@ -292,3 +306,13 @@ end-to-end per 26 Okt 2026)*
 - Logo instansi selalu lewat `LogoInstansi` (`lib/widgets/logo_instansi.dart`),
   yang jatuh ke placeholder untuk tiga keadaan wajar: belum pernah login,
   instansi belum mengunggah logo, dan URL gagal dimuat.
+- "Keperluan" vs "Alasan" di form SENGAJA berbeda, bukan kelalaian.
+  Izin dan Dinas pakai "Keperluan" (ada urusan konkret yang dituju),
+  Lembur/Cuti/TukarJadwal pakai "Alasan" (menjawab kenapa). Diputuskan
+  25 Nov 2026 saat audit UX — jangan diseragamkan.
+
+- Tanggal yang dibentuk di FE: `tanggalUntukApi()` untuk dikirim ke
+  backend (`yyyy-MM-dd`), `tanggalUntukLayar()` untuk ditampilkan
+  ("25 Nov 2026", nama bulan Indonesia). Keduanya di
+  `lib/utils/format_tanggal.dart`. Jangan bikin `_formatTanggal()`
+  lokal lagi — itu yang dulu bikin format mesin bocor ke layar.
