@@ -83,6 +83,44 @@
       tahun & semester) dan peringatan di form (bentrok approved).
       Ditutup `7096007` dan `69c64ec`.
       
+- [ ] **Ketiga tab memuat datanya sekaligus saat aplikasi dibuka** —
+      DIDIAGNOSIS 25 Nov 2026, bukan pemanggilan ganda yang salah.
+
+      Log dari device, dibuka bersih dari ikon:
+      `/api/absensi/rekap` 2×, `/api/informasi` 2×, `/api/absensi/riwayat`
+      1×, `/api/notifikasi/jumlah` 1×, `/api/tukar-jadwal/menunggu-respon-saya`
+      1×.
+
+      Penyebabnya `IndexedStack` di `MainScreen`: ketiga tab dibangun
+      sekaligus, jadi `initState` Beranda, Riwayat, dan Informasi
+      semuanya jalan walau karyawan cuma melihat satu. Yang terlihat
+      "dua kali" cuma kebetulan endpointnya sama:
+
+      - `rekap` → `HomeScreen._loadRekap()` DAN
+        `_PresensiTab._loadData()` (yang memanggil `getRekapOrThrow`
+        bersama `getRiwayatOrThrow` lewat `Future.wait`)
+      - `informasi` → `HomeScreen._loadInformasi()` DAN
+        `InformasiScreen._muatAwal()`
+
+      Dibuktikan dengan `debugPrint` di dalam method, bukan di
+      `initState`: masing-masing tercetak SEKALI.
+
+      Perbaikannya BUKAN menghilangkan duplikat, tapi menunda pemuatan
+      tab sampai dibuka. Dan itu bertabrakan dengan `wantKeepAlive` di
+      PresensiTab, yang sengaja ada supaya bulan yang sedang dilihat
+      tidak hilang saat pindah tab (`aa11cd9`). Perlu dipikirkan: muat
+      saat tab pertama kali dibuka, lalu pertahankan — bukan muat di
+      awal atau muat ulang tiap kali.
+
+      Lima request ~500ms sekaligus di jaringan seluler dalam gedung RS,
+      untuk tiga layar yang cuma satu dilihat.
+
+      CATATAN CARA MENGUKUR: log server saat menguji lewat Chrome TIDAK
+      menggambarkan perilaku di Android — preflight CORS dicatat
+      terpisah oleh `artisan serve` (terlihat dari pola `~0.25ms` lalu
+      `~505ms` untuk endpoint yang sama). Dan log saat `flutter run`
+      bisa bercampur antara instance lama dan baru. Ukur dari device,
+      dibuka dari ikon, dengan log server yang baru dikosongkan.
 
 
 ## Audit UX menyeluruh — dikerjakan per DIMENSI, bukan per layar
@@ -156,21 +194,6 @@ nanti diambil, perlu diputuskan dulu gambarnya aset lokal atau dari
 backend (kolom baru lagi).
 
 ## Perlu investigasi sebelum dikerjakan
-
-- [ ] **Request berulang saat Beranda dibuka** — terlihat di log server
-      25 Nov 2026, aplikasi dibuka bersih (bukan hot reload):
-      `/api/absensi/rekap` 4×, `/api/informasi` 4×, `/api/auth/me` 2×,
-      `/api/notifikasi/jumlah` 2×, `/api/tukar-jadwal/menunggu-respon-saya` 2×
-      dalam ~17 detik.
-
-      Belum didiagnosis. Yang perlu diperiksa: apakah `HomeScreen`
-      di-build ulang berkali-kali (IndexedStack + `context.watch`
-      AuthProvider), apakah `initState` benar-benar jalan berulang, dan
-      apakah `_saatTabBerganti` di RiwayatScreen ikut memicu muat ulang
-      di tab lain.
-
-      Bukan cuma soal kerapian: ini jaringan seluler di dalam gedung RS,
-      dan tiap request ~500ms. Dicatat 25 Nov 2026.
 
 
 ## Keputusan yang menggantung (butuh jawaban Khoirul)
