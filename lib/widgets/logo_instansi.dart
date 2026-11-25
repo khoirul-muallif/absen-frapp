@@ -17,19 +17,25 @@ class LogoInstansi extends StatelessWidget {
   Widget build(BuildContext context) {
     if (url == null || url!.isEmpty) return _placeholder();
 
-    return ClipOval(
-      child: Image.network(
-        url!,
+      return Container(
         width: ukuran,
         height: ukuran,
-        fit: BoxFit.cover,
-        // URL bisa menunjuk file yang sudah dihapus admin, atau server
-        // sedang tidak terjangkau. Jangan tampilkan ikon rusak.
-        errorBuilder: (_, _, _) => _placeholder(),
-        loadingBuilder: (context, child, progress) =>
-            progress == null ? child : _placeholder(),
-      ),
-    );
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(ukuran * 0.22),
+        ),
+        padding: EdgeInsets.all(ukuran * 0.08),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ukuran * 0.16),
+          child: Image.network(
+            url!,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => _placeholder(),
+            loadingBuilder: (context, child, progress) =>
+                progress == null ? child : _placeholder(),
+          ),
+        ),
+      );
   }
 
   Widget _placeholder() {
