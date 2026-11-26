@@ -41,6 +41,23 @@ terpisah.
    perubahan untuk semua layar. Menyalin lengkungan Beranda ke belasan
    file DITOLAK: ongkosnya jauh lebih besar dari hasilnya.
 
+### Dua perbaikan yang menyentuh seluruh navigasi
+
+**Data basi.** Absen mengubah rekap dan bisa memicu notifikasi, tapi
+Beranda dan tab Riwayat di belakangnya tidak tahu apa-apa — angka tetap
+0 sampai ditarik untuk refresh. Jadi konvensi: layar yang datanya bisa
+berubah dari layar lain disegarkan saat kembali, bukan menunggu
+ditarik.
+
+**Pemuatan tab ditunda.** `IndexedStack` membangun ketiganya sekaligus,
+jadi `initState` berarti request untuk layar yang mungkin tidak pernah
+dilihat. MainScreen yang memicu saat tab dipilih, dengan penanda
+`_pernahDimuat` supaya pemuatan pertama tetap pakai spinner.
+
+Keduanya tarik-menarik — yang satu menambah request, yang satu
+mengurangi — tapi arahnya berbeda: yang pertama soal data basi saat
+DIBUKA, yang kedua soal pemuatan tidak perlu di AWAL.
+
 ### Tiga kali menyimpulkan sebelum memeriksa
 
 Layak dicatat karena berulang: `ringkasan` dikira bug padahal
