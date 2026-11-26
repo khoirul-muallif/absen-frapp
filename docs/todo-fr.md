@@ -5,31 +5,7 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
-
-- [ ] **Setelah absen selesai, kembali ke Beranda — mungkin salah
-      tujuan** — dicatat 25 Nov 2026, belum didiagnosis.
-
-      Dua kemungkinan yang perlu dipastikan dulu, karena perbaikannya
-      beda:
-
-      1. Yang dimaksud "Riwayat" = tab Riwayat di bottom nav. Berarti
-         setelah absen aplikasi harus PINDAH TAB, bukan sekadar
-         kembali. `AbsenMenuScreen` di-push dari grid Beranda dan tidak
-         punya akses ke `_index` milik `MainScreen` — perlu callback
-         atau cara lain untuk mengubahnya dari dalam.
-
-      2. Yang mengganggu sebenarnya bukan layarnya, tapi angka rekap di
-         kartu profil Beranda yang belum tersegarkan setelah absen —
-         jadi terasa seperti tidak terjadi apa-apa. Kalau ini
-         penyebabnya, cukup `_loadRekap()` dipanggil ulang saat kembali
-         dari AbsenMenuScreen, dan tujuan navigasinya tidak perlu
-         diubah sama sekali.
-
-      Catatan: `AbsenMenuScreen._loadStatus()` sudah dipanggil ulang
-      setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
-      Yang belum disegarkan Beranda di belakangnya.
-     
-      
+           
 - [ ] **Ketiga tab memuat datanya sekaligus saat aplikasi dibuka** —
       DIDIAGNOSIS 25 Nov 2026, bukan pemanggilan ganda yang salah.
 
@@ -295,3 +271,12 @@ end-to-end per 26 Okt 2026)*
   peringatannya muncul lagi tiap aplikasi dibuka. Jangan dibuat
   `PopScope(canPop: false)` — kalau ada bug di alur ganti password,
   karyawan itu tidak bisa absen sama sekali.
+- Layar yang datanya bisa berubah dari layar lain harus disegarkan saat
+  kembali, bukan menunggu ditarik. Dua tempat yang sudah: Beranda
+  setelah kembali dari AbsenMenuScreen (`7c3ee29`), dan tab Riwayat
+  saat dipilih dari bottom nav (`81ab936`, lewat
+  `RiwayatScreenState.segarkanTabAktif()`).
+
+  IndexedStack + wantKeepAlive membuat tab dibangun sekali lalu ditahan
+  selamanya — itu benar untuk mempertahankan bulan yang sedang dilihat,
+  tapi berarti tidak ada yang memuat ulang kalau tidak dipicu.
