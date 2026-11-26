@@ -29,16 +29,6 @@
       setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
       Yang belum disegarkan Beranda di belakangnya.
      
-- [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
-      membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
-      punya email). KOREKSI 10 Nov 2026: kekhawatiran parsing melempar
-      TIDAK terbukti — `UserModel.fromJson()` sudah pakai
-      `json['email'] ?? ''` sejak awal, jadi null jadi string kosong dan
-      tidak ada yang crash.
-
-      Yang tersisa cuma tampilan: `Text(user.email)` jadi baris kosong,
-      dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
-      barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
       
 - [ ] **Ketiga tab memuat datanya sekaligus saat aplikasi dibuka** —
       DIDIAGNOSIS 25 Nov 2026, bukan pemanggilan ganda yang salah.
