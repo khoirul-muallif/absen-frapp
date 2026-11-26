@@ -5,6 +5,22 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+
+- [ ] **Tombol Absen Pulang bisa merujuk sesi KEMARIN tanpa petunjuk** —
+      `AbsensiController::status()` memprioritaskan sesi terbuka (masuk
+      terisi, pulang null) dalam rentang kemarin–hari ini, supaya shift
+      malam diarahkan ke absen pulang. Benar untuk rotasi malam.
+
+      Tapi karyawan umum yang lupa absen pulang kemarin melihat layar
+      Absen hari ini mengarahkan ke "Absen Pulang" — dan kalau ditekan,
+      yang tertutup sesi kemarin, bukan hari ini. Lalu dia belum absen
+      masuk hari ini, tanpa pernah diberi tahu.
+
+      Perbaikannya butuh backend dulu: `status()` tidak mengirim tanggal
+      barisnya, jadi FE tidak bisa membedakan. Tambahkan `tanggal` di
+      response, lalu FE memberi keterangan "Sesi 25 Nov belum ditutup"
+      pada tombolnya. Terlihat 26 Nov 2026.
+      
 - [ ] **Setelah absen selesai, kembali ke Beranda — mungkin salah
       tujuan** — dicatat 25 Nov 2026, belum didiagnosis.
 
@@ -183,9 +199,28 @@ catatan konvensi di bawah.
 Sisa yang belum disisir: nilai enum lain yang mungkin bocor apa adanya
 ke layar (status pegawai sudah ditambal `_kapital()` di profil 24 Nov,
 tapi itu satu tempat, bukan aturan).
-### 4. Jalan buntu — BELUM
+### 4. Jalan buntu — SELESAI 26 Nov (`08bf2ef`, `a3a3150`)
 
 Layar yang bisa dibuka tapi tidak jelas langkah berikutnya.
+
+Dua temuan ditutup:
+
+- **JadwalScreen: menekan tanggal tanpa jadwal tidak menampilkan apa
+  pun** — tidak ada kartu, tidak ada pesan. Karyawan tidak tahu apakah
+  memang kosong atau ketukannya tidak terdaftar. Diam total adalah
+  umpan balik terburuk.
+- **AbsenMenuScreen saat sudah absen masuk DAN pulang** — kedua tombol
+  mati, layarnya cuma dua kotak abu-abu tanpa tanda bahwa memang sudah
+  selesai.
+
+Sebagian sudah tertutup sendiri saat dimensi 2: TukarJadwalList dalam
+keadaan kosong sekarang menyebut CARANYA ("Ajukan dari layar Jadwal"),
+karena layar itu tidak punya tombol +.
+
+Yang DIPERIKSA dan ternyata sudah benar: MenungguResponScreen kosong
+(sudah dapat KartuKosong), InformasiDetailScreen saat 404 (sudah ada
+tombol Kembali), dan semua form setelah sukses (pop ke layar
+sebelumnya).
 
 ### 5. Konsistensi visual — SEBAGIAN 25 Nov (`18ff2d1`)
 
@@ -316,7 +351,7 @@ end-to-end per 26 Okt 2026)*
   ("25 Nov 2026", nama bulan Indonesia). Keduanya di
   `lib/utils/format_tanggal.dart`. Jangan bikin `_formatTanggal()`
   lokal lagi — itu yang dulu bikin format mesin bocor ke layar.
-  
+
 - `harus_ganti_password` dari backend (fase 89) mengarahkan, BUKAN
   memaksa. MainScreen membukanya setelah frame pertama dan layarnya
   boleh ditutup; flagnya tetap true sampai password diganti, jadi
