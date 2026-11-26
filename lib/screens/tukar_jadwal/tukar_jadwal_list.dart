@@ -119,7 +119,7 @@ class TukarJadwalListState extends State<TukarJadwalList> {
 
   @override
   Widget build(BuildContext context) {
-    final namaSaya = context.read<AuthProvider>().user?.nama;
+    final idSaya = context.read<AuthProvider>().user?.id;
 
     return RefreshIndicator(
       onRefresh: () => _loadData(tampilkanSpinner: false),
@@ -141,7 +141,7 @@ class TukarJadwalListState extends State<TukarJadwalList> {
                         'kerja Anda.',
                   )
                 else
-                  ..._items.map((item) => _kartuPengajuan(item, namaSaya)),
+                  ..._items.map((item) => _kartuPengajuan(item, idSaya)),
               ],
             ),
     );
@@ -210,11 +210,14 @@ class TukarJadwalListState extends State<TukarJadwalList> {
     );
   }
 
-  Widget _kartuPengajuan(TukarJadwalItem item, String? namaSaya) {
-    // CATATAN: response riwayat() gak kirim ID pengaju/tujuan, cuma nama.
-    // Deteksi "ini pengajuan saya sendiri" pakai cocokin nama — rawan kalau
-    // ada 2 karyawan nama sama persis.
-    final sayaPengaju = item.jadwalAsal.karyawan == namaSaya;
+  Widget _kartuPengajuan(TukarJadwalItem item, int? idSaya) {
+    // Dibandingkan lewat ID, bukan nama. Versi lama memakai nama karena
+    // dikira response riwayat() tidak mengirim id — padahal
+    // formatTukarJadwal() sudah mengirim karyawan_id sejak lama, dan
+    // komentar lamanya tidak pernah dikoreksi. Dengan nama, dua karyawan
+    // bernama sama persis bisa saling membatalkan pengajuan.
+    final sayaPengaju = idSaya != null &&
+        item.jadwalAsal.karyawanId == idSaya;
     final bisaDibatalkan = sayaPengaju &&
         (item.status == 'menunggu_rekan' || item.status == 'menunggu_admin');
 

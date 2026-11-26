@@ -4,13 +4,24 @@ class JadwalRef {
   final String? shift;
   final String? karyawan;
 
-  JadwalRef({required this.tanggal, this.shift, this.karyawan});
+  /// Dikirim backend di `formatTukarJadwal()`. Dipakai untuk menentukan
+  /// "ini pengajuan saya sendiri" — sebelumnya dicocokkan lewat NAMA,
+  /// yang bisa salah untuk dua karyawan bernama sama persis.
+  final int? karyawanId;
+
+  JadwalRef({
+    required this.tanggal,
+    this.shift,
+    this.karyawan,
+    this.karyawanId,
+  });
 
   factory JadwalRef.fromJson(Map<String, dynamic> json) {
     return JadwalRef(
       tanggal: json['tanggal'] ?? '-',
       shift: json['shift'],
       karyawan: json['karyawan'],
+      karyawanId: json['karyawan_id'],
     );
   }
 }

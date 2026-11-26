@@ -20,7 +20,7 @@
       barisnya, jadi FE tidak bisa membedakan. Tambahkan `tanggal` di
       response, lalu FE memberi keterangan "Sesi 25 Nov belum ditutup"
       pada tombolnya. Terlihat 26 Nov 2026.
-      
+
 - [ ] **Setelah absen selesai, kembali ke Beranda — mungkin salah
       tujuan** — dicatat 25 Nov 2026, belum didiagnosis.
 
@@ -43,13 +43,6 @@
       Catatan: `AbsenMenuScreen._loadStatus()` sudah dipanggil ulang
       setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
       Yang belum disegarkan Beranda di belakangnya.
-
-- [ ] **Deteksi "pengajuan saya sendiri" di TukarJadwal pakai cocokin
-      nama** — `riwayat()` tidak mengirim id pengaju, cuma nama, jadi
-      `item.jadwalAsal.karyawan == namaSaya`. Dua karyawan dengan nama
-      sama persis akan saling bisa membatalkan pengajuan. Dari 150
-      karyawan RS, itu bukan kemungkinan yang jauh. Perbaikannya di
-      backend: kirim `karyawan_id` di response riwayat. Dicatat 25 Nov.
 
 
 - [ ] **Shift pengaju tampil "(-)" di MenungguResponScreen** — terlihat
