@@ -247,11 +247,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.fingerprint,
                     label: 'Absen',
                     warna: AppColors.primary,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AbsenMenuScreen(),
-                      ),
-                    ),
+                    // Disegarkan saat kembali: absen mengubah rekap DAN
+                    // bisa memicu notifikasi terlambat, tapi Beranda di
+                    // belakangnya tidak tahu apa-apa. Sebelumnya angka
+                    // tetap 0 sampai ditarik untuk refresh, jadi terasa
+                    // seperti absennya tidak tercatat.
+                    onTap: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AbsenMenuScreen(),
+                        ),
+                      );
+                      if (!context.mounted) return;
+                      _refresh();
+                    },
                   ),
                   _MenuItem(
                     icon: Icons.calendar_month,
