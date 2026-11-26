@@ -316,3 +316,10 @@ end-to-end per 26 Okt 2026)*
   ("25 Nov 2026", nama bulan Indonesia). Keduanya di
   `lib/utils/format_tanggal.dart`. Jangan bikin `_formatTanggal()`
   lokal lagi — itu yang dulu bikin format mesin bocor ke layar.
+  
+- `harus_ganti_password` dari backend (fase 89) mengarahkan, BUKAN
+  memaksa. MainScreen membukanya setelah frame pertama dan layarnya
+  boleh ditutup; flagnya tetap true sampai password diganti, jadi
+  peringatannya muncul lagi tiap aplikasi dibuka. Jangan dibuat
+  `PopScope(canPop: false)` — kalau ada bug di alur ganti password,
+  karyawan itu tidak bisa absen sama sekali.

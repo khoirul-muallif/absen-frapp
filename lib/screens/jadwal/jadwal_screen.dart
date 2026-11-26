@@ -202,6 +202,39 @@ class _JadwalScreenState extends State<JadwalScreen> {
                   );
                   _loadBulan(_focusedMonth);
                 },
+              )
+            // Tanggal ditekan tapi tidak ada jadwalnya: sebelumnya TIDAK
+            // ada apa pun yang muncul — tidak ada kartu, tidak ada pesan.
+            // Diam total saat ditekan adalah umpan balik terburuk; karyawan
+            // tidak tahu apakah memang kosong atau ketukannya tidak
+            // terdaftar.
+            else if (_selectedDay != null && !_loading && _pesanGagal == null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Icon(Icons.event_busy_outlined,
+                          size: 32, color: Colors.grey[400]),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Tidak ada jadwal di tanggal ini',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hari libur mingguan karyawan umum memang tidak '
+                        'punya baris jadwal. Kalau menurut Anda seharusnya '
+                        'ada, hubungi admin.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
               ),
           ],
         ),
