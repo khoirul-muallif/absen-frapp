@@ -190,6 +190,43 @@ class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
                                       : null),
                               onTap: _handleAbsenPulang,
                             ),
+                                                        // Kedua tombol mati dan tidak ada yang bisa
+                            // dilakukan lagi hari ini. Tanpa ini layarnya
+                            // cuma dua kotak abu-abu, dan karyawan harus
+                            // menebak sendiri bahwa memang sudah selesai.
+                            if (_status!.sudahMasuk && _status!.sudahPulang)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 24),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.task_alt,
+                                        size: 40,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Absen hari ini sudah lengkap',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Sampai jumpa besok. Riwayat kehadiran '
+                                      'Anda bisa dilihat di tab Riwayat.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
         ),
