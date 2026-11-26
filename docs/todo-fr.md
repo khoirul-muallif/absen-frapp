@@ -6,21 +6,6 @@
 
 ## Belum dibuat
 
-- [ ] **Tombol Absen Pulang bisa merujuk sesi KEMARIN tanpa petunjuk** —
-      `AbsensiController::status()` memprioritaskan sesi terbuka (masuk
-      terisi, pulang null) dalam rentang kemarin–hari ini, supaya shift
-      malam diarahkan ke absen pulang. Benar untuk rotasi malam.
-
-      Tapi karyawan umum yang lupa absen pulang kemarin melihat layar
-      Absen hari ini mengarahkan ke "Absen Pulang" — dan kalau ditekan,
-      yang tertutup sesi kemarin, bukan hari ini. Lalu dia belum absen
-      masuk hari ini, tanpa pernah diberi tahu.
-
-      Perbaikannya butuh backend dulu: `status()` tidak mengirim tanggal
-      barisnya, jadi FE tidak bisa membedakan. Tambahkan `tanggal` di
-      response, lalu FE memberi keterangan "Sesi 25 Nov belum ditutup"
-      pada tombolnya. Terlihat 26 Nov 2026.
-
 - [ ] **Setelah absen selesai, kembali ke Beranda — mungkin salah
       tujuan** — dicatat 25 Nov 2026, belum didiagnosis.
 

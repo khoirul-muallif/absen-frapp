@@ -1,3 +1,57 @@
+## Ringkasan 20–26 Nov 2026 — modul tuntas, lalu audit UX per dimensi
+
+CHANGELOG ini berhenti di 6 Nov sementara `status-*.md` terus ditulis
+harian. Daripada menulis ulang tiga minggu, berikut yang berumur
+panjang saja; kronik lengkapnya ada di `status-20-11-26.md` sampai
+`status-25-11-26.md`.
+
+### Modul yang ditutup
+
+- **Tab Informasi** (`ffbc573`) — modul pertama yang pakai paging.
+  Model list dan detail DIPISAH karena `index()` mengirim `ringkasan`
+  dan `show()` mengirim `isi` penuh. Pencarian pakai debounce 400ms
+  plus penjaga `_requestTerakhir`, pola yang sama dengan RiwayatScreen.
+- **Ubah password** (`e2ff9b3`) dan **profil read-only** (`3079474`) —
+  dua placeholder snackbar terakhir di PopupMenuButton.
+- **Logo & nama instansi dari backend** (`c199826`) — disimpan lokal
+  lewat `InstansiStorage` supaya LoginScreen tahu instansi mana sebelum
+  ada yang login. Sengaja tidak dibersihkan saat logout.
+- **Redesign Beranda** (`7c6be71`) — latar melengkung, ring kehadiran,
+  ikon bulat. Tombol Presensi di bottom nav sengaja ditunda: itu
+  keputusan navigasi, bukan visual.
+- **Jam kembali Izin dipisah rencana/aktual** (`d7af5bc`, backend fase
+  88) — rencana diisi di depan, aktual dari tombol dengan jam server.
+  Menutup item yang menggantung sejak 6 Nov.
+
+### Audit UX per DIMENSI, bukan per layar
+
+Lima dimensi, satu per sesi. Pola yang berulang di sepuluh layar kalau
+diaudit per layar akan ditemukan sepuluh kali sebagai sepuluh temuan
+terpisah.
+
+1. **Aksi destruktif** — `konfirmasi()` di enam tempat. Pelajaran:
+   kata di dua tombol tidak boleh serumpun ("Batal" vs "Batalkan").
+2. **Keadaan kosong/gagal/memuat** — `KartuError` + `KartuKosong`
+   menggantikan lima bentuk berbeda di enam layar.
+3. **Bahasa** — `tanggalUntukApi()` vs `tanggalUntukLayar()`; format
+   mesin `2026-11-25` tidak lagi bocor ke layar.
+4. **Jalan buntu** — JadwalScreen tidak lagi diam saat tanggal tanpa
+   jadwal ditekan; AbsenMenuScreen punya penutup saat absen lengkap.
+5. **Konsistensi visual** — AppBar hijau lewat `appBarTheme`, satu
+   perubahan untuk semua layar. Menyalin lengkungan Beranda ke belasan
+   file DITOLAK: ongkosnya jauh lebih besar dari hasilnya.
+
+### Tiga kali menyimpulkan sebelum memeriksa
+
+Layak dicatat karena berulang: `ringkasan` dikira bug padahal
+accessornya ada (`git grep` huruf kecil tidak kena
+`getRingkasanAttribute`); "request berulang" dikira pemanggilan ganda
+padahal `IndexedStack` membangun ketiga tab; dan `karyawan_id` dikira
+belum dikirim backend padahal `formatTukarJadwal()` sudah
+mengirimkannya sejak lama.
+
+Ketiganya sama: menulis kesimpulan di todo sebelum memeriksa sumbernya.
+
 ## fix: audit modul form+list, notifikasi, dan auth
 
 Commit: `c493872`, `879c010`, `fbb0b1b`, `727697d` (6 Nov 2026)
