@@ -203,6 +203,11 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
     if (_jenisTerpilih == null || _rentang == null) return null;
 
     final sisaSesudah = _jenisTerpilih!.sisa - _jumlahHari;
+    // Oranye, BUKAN merah. Kuota kurang tidak memblokir submit —
+    // backend yang memutuskan saat approve, dan angka di sini bisa
+    // basi. Merah dipakai khusus untuk bentrok tanggal, yang memang
+    // mematikan tombol Ajukan. Dua peringatan yang akibatnya berbeda
+    // tidak boleh terlihat sama.
     final kurang = sisaSesudah < 0;
     final skema = Theme.of(context).colorScheme;
 
@@ -213,7 +218,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
           Icon(
             kurang ? Icons.warning_amber : Icons.info_outline,
             size: 16,
-            color: kurang ? skema.error : skema.primary,
+            color: kurang ? Colors.orange.shade800 : skema.primary,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -223,7 +228,7 @@ class _CutiFormScreenState extends State<CutiFormScreen> {
                   : '$_jumlahHari hari diajukan, sisa kuota jadi $sisaSesudah hari',
               style: TextStyle(
                 fontSize: 12,
-                color: kurang ? skema.error : skema.primary,
+                color: kurang ? Colors.orange.shade800 : skema.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -43,11 +43,6 @@
       nav grid-nya jadi 5 item dan navigasi yang baru ditata ulang
       20 Nov (`fc26deb`) ikut tersentuh lagi. Putuskan dulu sebelum
       digarap.
-
-- [ ] **Nama instansi hilang dari kartu profil Beranda** — ada di versi
-      lama, dibuang saat redesign 25 Nov supaya kartunya tidak padat.
-      Dikembalikan sebagai baris kecil abu-abu di bawah jabatan, atau
-      tidak perlu? Belum diputuskan.
       
 - [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
       membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
@@ -229,6 +224,9 @@ harus dimuat, dan belum jelas masalah apa yang diselesaikan.
 - [ ] **Menu "Gaji" & "Piket"** — muncul di referensi UI yang dikirim
       15 Okt 2026, tapi gak ada endpoint-nya di backend sekarang. Scope
       masa depan, atau referensi dari app lain yang beda modul?
+
+      DITUNDA 26 Nov 2026: belum ada keputusan dari pihak RS, dan tidak
+      ada yang menunggu ini. Jangan digarap sampai ditanyakan.
 
 
 ## Belum ditest end-to-end
