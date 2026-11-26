@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final _tukarJadwalService = TukarJadwalService();
+  final _riwayatKey = GlobalKey<RiwayatScreenState>();
   int _index = 0;
 
   /// Badge di tab Riwayat. Satu-satunya hal yang memberi tahu karyawan
@@ -28,9 +29,9 @@ class _MainScreenState extends State<MainScreen> {
   // `const` dibuang. Dengan const, ketiga layar dievaluasi saat compile dan
   // tidak pernah dibangun ulang — perubahan tidak terlihat sampai restart
   // penuh, bukan hot reload. Sempat bikin bingung 20 Nov 2026.
-  final _tabs = [
+  late final _tabs = [
     const HomeScreen(),
-    const RiwayatScreen(),
+    RiwayatScreen(key: _riwayatKey),
     const InformasiScreen(),
   ];
 
@@ -84,7 +85,14 @@ class _MainScreenState extends State<MainScreen> {
           setState(() => _index = i);
           // Menjawab pengajuan terjadi di dalam tab Riwayat, jadi angkanya
           // perlu disegarkan saat keluar dari sana — bukan saat masuk.
-          if (i != 1) _muatJumlahMenunggu();
+          if (i != 1) {
+            _muatJumlahMenunggu();
+          } else {
+            // Masuk ke Riwayat: datanya bisa basi karena IndexedStack
+            // membangunnya sekali lalu wantKeepAlive menahannya. Absen
+            // yang baru saja dilakukan tidak muncul tanpa ini.
+            _riwayatKey.currentState?.segarkanTabAktif();
+          }
         },
         destinations: [
           const NavigationDestination(

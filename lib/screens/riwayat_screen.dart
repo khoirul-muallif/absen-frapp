@@ -14,15 +14,27 @@ class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
 
   @override
-  State<RiwayatScreen> createState() => _RiwayatScreenState();
+  State<RiwayatScreen> createState() => RiwayatScreenState();
 }
 
-class _RiwayatScreenState extends State<RiwayatScreen>
+class RiwayatScreenState extends State<RiwayatScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final _tukarJadwalKey = GlobalKey<TukarJadwalListState>();
+  final _presensiKey = GlobalKey<_PresensiTabState>();
   int _tabTerakhir = 0;
 
+  /// Dipanggil MainScreen saat tab Riwayat dibuka. Tanpa ini datanya
+  /// dimuat sekali di initState lalu ditahan wantKeepAlive selamanya —
+  /// absen baru tidak muncul sampai ditarik untuk refresh.
+  void segarkanTabAktif() {
+    if (_tabController.index == 0) {
+      _presensiKey.currentState?.muatUlang();
+    } else {
+      _tukarJadwalKey.currentState?.muatUlang(tampilkanSpinner: false);
+    }
+  }
+  
   @override
   void initState() {
     super.initState();
@@ -55,7 +67,6 @@ class _RiwayatScreenState extends State<RiwayatScreen>
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat'),
@@ -70,7 +81,7 @@ class _RiwayatScreenState extends State<RiwayatScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          const _PresensiTab(),
+          _PresensiTab(key: _presensiKey),
           TukarJadwalList(key: _tukarJadwalKey),
         ],
       ),
@@ -80,7 +91,7 @@ class _RiwayatScreenState extends State<RiwayatScreen>
 
 /// Isi RiwayatScreen yang lama, tanpa Scaffold dan AppBar-nya.
 class _PresensiTab extends StatefulWidget {
-  const _PresensiTab();
+  const _PresensiTab({super.key});
 
   @override
   State<_PresensiTab> createState() => _PresensiTabState();
@@ -199,6 +210,10 @@ class _PresensiTabState extends State<_PresensiTab>
     });
     _loadData();
   }
+
+  /// Publik supaya RiwayatScreen bisa menyegarkan saat tabnya dibuka.
+  /// Tanpa spinner: bulan yang sedang dilihat tidak boleh berkedip.
+  Future<void> muatUlang() => _loadData(tampilkanSpinner: false);
 
   @override
   Widget build(BuildContext context) {
