@@ -6,46 +6,6 @@
 
 ## Belum dibuat
            
-- [ ] **Ketiga tab memuat datanya sekaligus saat aplikasi dibuka** —
-      DIDIAGNOSIS 25 Nov 2026, bukan pemanggilan ganda yang salah.
-
-      Log dari device, dibuka bersih dari ikon:
-      `/api/absensi/rekap` 2×, `/api/informasi` 2×, `/api/absensi/riwayat`
-      1×, `/api/notifikasi/jumlah` 1×, `/api/tukar-jadwal/menunggu-respon-saya`
-      1×.
-
-      Penyebabnya `IndexedStack` di `MainScreen`: ketiga tab dibangun
-      sekaligus, jadi `initState` Beranda, Riwayat, dan Informasi
-      semuanya jalan walau karyawan cuma melihat satu. Yang terlihat
-      "dua kali" cuma kebetulan endpointnya sama:
-
-      - `rekap` → `HomeScreen._loadRekap()` DAN
-        `_PresensiTab._loadData()` (yang memanggil `getRekapOrThrow`
-        bersama `getRiwayatOrThrow` lewat `Future.wait`)
-      - `informasi` → `HomeScreen._loadInformasi()` DAN
-        `InformasiScreen._muatAwal()`
-
-      Dibuktikan dengan `debugPrint` di dalam method, bukan di
-      `initState`: masing-masing tercetak SEKALI.
-
-      Perbaikannya BUKAN menghilangkan duplikat, tapi menunda pemuatan
-      tab sampai dibuka. Dan itu bertabrakan dengan `wantKeepAlive` di
-      PresensiTab, yang sengaja ada supaya bulan yang sedang dilihat
-      tidak hilang saat pindah tab (`aa11cd9`). Perlu dipikirkan: muat
-      saat tab pertama kali dibuka, lalu pertahankan — bukan muat di
-      awal atau muat ulang tiap kali.
-
-      Lima request ~500ms sekaligus di jaringan seluler dalam gedung RS,
-      untuk tiga layar yang cuma satu dilihat.
-
-      CATATAN CARA MENGUKUR: log server saat menguji lewat Chrome TIDAK
-      menggambarkan perilaku di Android — preflight CORS dicatat
-      terpisah oleh `artisan serve` (terlihat dari pola `~0.25ms` lalu
-      `~505ms` untuk endpoint yang sama). Dan log saat `flutter run`
-      bisa bercampur antara instance lama dan baru. Ukur dari device,
-      dibuka dari ikon, dengan log server yang baru dikosongkan.
-
-
 ## Audit UX menyeluruh — dikerjakan per DIMENSI, bukan per layar
 
 Dimulai 25 Nov 2026. Pendekatannya sengaja beda dari review per-modul
@@ -280,3 +240,22 @@ end-to-end per 26 Okt 2026)*
   IndexedStack + wantKeepAlive membuat tab dibangun sekali lalu ditahan
   selamanya — itu benar untuk mempertahankan bulan yang sedang dilihat,
   tapi berarti tidak ada yang memuat ulang kalau tidak dipicu.
+
+- Pemuatan data tab TIDAK di `initState`. IndexedStack membangun
+  ketiganya sekaligus, jadi `initState` berarti request untuk layar yang
+  mungkin tidak pernah dilihat. MainScreen yang memicu saat tab dipilih
+  (`6040347`): `segarkanTabAktif()` untuk Riwayat, `muatSaatDibuka()`
+  untuk Informasi.
+
+  Tiap layar punya penanda `_pernahDimuat`: pemuatan PERTAMA pakai
+  spinner karena layarnya masih kosong, berikutnya tanpa spinner supaya
+  yang sudah tampil tidak berkedip.
+
+  `TukarJadwalList` dipakai dua tempat — sebagai tab dan sebagai layar
+  yang di-push dari notifikasi. Parameter `muatSaatDibuka` (default
+  true) membedakannya.
+
+  Pola yang sama berlaku untuk layar yang datanya bisa berubah dari
+  layar lain: Beranda menyegarkan diri saat kembali dari AbsenMenuScreen
+  (`7c3ee29`). `wantKeepAlive` menahan bulan yang sedang dilihat, tapi
+  berarti tidak ada yang memuat ulang kalau tidak dipicu.
