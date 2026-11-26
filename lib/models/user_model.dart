@@ -15,6 +15,10 @@ class UserModel {
   /// Dikirim me() sebagai 'd M Y' sudah terformat, atau null kalau
   /// karyawan diimpor tanpa tanggal. login() TIDAK mengirimnya.
   final String? tanggalBergabung;
+  /// Dinyalakan backend saat admin mereset password karyawan (fase 89).
+  /// Mengarahkan, bukan memaksa — layar ubah password boleh ditutup, tapi
+  /// peringatannya muncul lagi tiap aplikasi dibuka sampai diganti.
+  final bool harusGantiPassword;
   final String username;
 
   UserModel({
@@ -32,6 +36,7 @@ class UserModel {
     required this.instansiId,
     required this.instansiNama,
     this.tanggalBergabung,
+    this.harusGantiPassword = false,
     required this.username,
   });
 
@@ -53,6 +58,7 @@ class UserModel {
       // belum mengunggah logo. Dipasang langsung ke NetworkImage.
       instansiLogo: json['instansi']?['logo'],
       tanggalBergabung: json['tanggal_bergabung'],
+      harusGantiPassword: json['harus_ganti_password'] ?? false,
       username: json['username'] ?? '',
     );
   }

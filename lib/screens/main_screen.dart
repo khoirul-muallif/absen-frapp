@@ -3,6 +3,9 @@ import '../services/tukar_jadwal_service.dart';
 import 'home_screen.dart';
 import 'riwayat_screen.dart';
 import 'informasi/informasi_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'profil/ubah_password_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -35,8 +38,28 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _muatJumlahMenunggu();
+    _periksaHarusGantiPassword();
   }
+  
+  /// Diarahkan SETELAH frame pertama, bukan di initState langsung —
+  /// Navigator belum siap saat initState berjalan.
+  ///
+  /// Boleh ditutup: keputusan 26 Nov 2026, flag ini mengarahkan bukan
+  /// memaksa. Tapi flagnya tetap true sampai password benar-benar
+  /// diganti, jadi peringatan ini muncul lagi tiap aplikasi dibuka.
+  void _periksaHarusGantiPassword() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final user = context.read<AuthProvider>().user;
+      if (user?.harusGantiPassword != true) return;
 
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const UbahPasswordScreen(karenaReset: true),
+        ),
+      );
+    });
+  }
   Future<void> _muatJumlahMenunggu() async {
     // Gagal diam-diam, jangan melempar. Dipanggil dari initState tanpa
     // await, jadi lemparan di sini jadi unhandled async error — dan

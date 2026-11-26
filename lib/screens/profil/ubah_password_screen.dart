@@ -3,7 +3,11 @@ import '../../services/auth_service.dart';
 import '../../utils/snackbar_helper.dart';
 
 class UbahPasswordScreen extends StatefulWidget {
-  const UbahPasswordScreen({super.key});
+  /// true kalau dibuka otomatis setelah login karena password baru
+  /// direset admin — bukan karena karyawan sendiri yang memilih menu.
+  final bool karenaReset;
+
+  const UbahPasswordScreen({super.key, this.karenaReset = false});
 
   @override
   State<UbahPasswordScreen> createState() => _UbahPasswordScreenState();
@@ -100,6 +104,37 @@ class _UbahPasswordScreenState extends State<UbahPasswordScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (widget.karenaReset) ...[
+                Card(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.key,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onErrorContainer),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Password Anda baru saja direset admin. Ganti '
+                            'sekarang supaya hanya Anda yang tahu.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onErrorContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
