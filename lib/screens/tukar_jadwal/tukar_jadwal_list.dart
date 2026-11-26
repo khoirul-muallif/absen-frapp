@@ -16,7 +16,13 @@ import '../../widgets/kartu_error.dart';
 /// sebagai tab di RiwayatScreen, dan sebagai layar yang di-push dari
 /// notifikasi (aksi selain 'diajukan').
 class TukarJadwalList extends StatefulWidget {
-  const TukarJadwalList({super.key});
+  /// true kalau layar ini berdiri sendiri (di-push dari notifikasi) —
+  /// tidak ada yang memanggil muatUlang(), jadi harus memuat sendiri.
+  /// Sebagai tab di RiwayatScreen nilainya false: pemuatan dipicu saat
+  /// tabnya dibuka.
+  final bool muatSaatDibuka;
+
+  const TukarJadwalList({super.key, this.muatSaatDibuka = true});
 
   @override
   State<TukarJadwalList> createState() => TukarJadwalListState();
@@ -29,16 +35,24 @@ class TukarJadwalListState extends State<TukarJadwalList> {
   String? _error;
   int _menungguCount = 0;
 
+  /// Lihat _PresensiTab: pemuatan pertama perlu spinner karena layarnya
+  /// masih kosong, berikutnya tidak supaya tidak berkedip.
+  bool _pernahDimuat = false;
+
   @override
   void initState() {
     super.initState();
-    muatUlang();
+    if (widget.muatSaatDibuka) muatUlang();
   }
 
-  /// Publik supaya pemanggil (mis. setelah kembali dari form) bisa menyegarkan.
-  Future<void> muatUlang({bool tampilkanSpinner = true}) => _loadData(
-        tampilkanSpinner: tampilkanSpinner,
-      );
+  /// Publik supaya pemanggil (mis. setelah kembali dari form) bisa
+  /// menyegarkan. Parameter tampilkanSpinner DIABAIKAN untuk pemuatan
+  /// pertama — layarnya masih kosong, jadi spinner memang yang benar.
+  Future<void> muatUlang({bool tampilkanSpinner = true}) {
+    final pertama = !_pernahDimuat;
+    _pernahDimuat = true;
+    return _loadData(tampilkanSpinner: tampilkanSpinner || pertama);
+  }
 
   Future<void> _loadData({bool tampilkanSpinner = true}) async {
     if (tampilkanSpinner) {

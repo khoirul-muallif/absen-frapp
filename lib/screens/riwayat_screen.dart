@@ -82,7 +82,7 @@ class RiwayatScreenState extends State<RiwayatScreen>
         controller: _tabController,
         children: [
           _PresensiTab(key: _presensiKey),
-          TukarJadwalList(key: _tukarJadwalKey),
+          TukarJadwalList(key: _tukarJadwalKey, muatSaatDibuka: false),
         ],
       ),
     );
@@ -113,6 +113,12 @@ class _PresensiTabState extends State<_PresensiTab>
   /// dulu, sisanya dibuka kalau diminta.
   static const _batasAwal = 10;
   bool _tampilSemua = false;
+  
+  /// Pemuatan pertama ditunda sampai tabnya benar-benar dibuka.
+  /// IndexedStack membangun ketiga tab sekaligus, jadi memuat di
+  /// initState berarti request untuk layar yang mungkin tidak pernah
+  /// dilihat.
+  bool _pernahDimuat = false;
 
   /// Tanpa ini, berpindah ke tab Tukar Jadwal lalu kembali membuang bulan
   /// yang sedang dilihat dan memuat ulang dari bulan berjalan.
@@ -136,7 +142,6 @@ class _PresensiTabState extends State<_PresensiTab>
     final now = DateTime.now();
     _bulan = now.month;
     _tahun = now.year;
-    _loadData();
   }
 
   /// [tampilkanSpinner] false dipakai pull-to-refresh: RefreshIndicator
@@ -211,9 +216,17 @@ class _PresensiTabState extends State<_PresensiTab>
     _loadData();
   }
 
-  /// Publik supaya RiwayatScreen bisa menyegarkan saat tabnya dibuka.
-  /// Tanpa spinner: bulan yang sedang dilihat tidak boleh berkedip.
-  Future<void> muatUlang() => _loadData(tampilkanSpinner: false);
+
+  /// Dipanggil RiwayatScreen saat tabnya dibuka.
+  ///
+  /// Pemuatan PERTAMA pakai spinner karena belum ada apa pun di layar;
+  /// berikutnya tanpa spinner supaya bulan yang sedang dilihat tidak
+  /// berkedip kosong.
+  Future<void> muatUlang() {
+    final pertama = !_pernahDimuat;
+    _pernahDimuat = true;
+    return _loadData(tampilkanSpinner: pertama);
+  }
 
   @override
   Widget build(BuildContext context) {

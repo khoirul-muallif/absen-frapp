@@ -17,6 +17,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final _tukarJadwalService = TukarJadwalService();
   final _riwayatKey = GlobalKey<RiwayatScreenState>();
+  final _informasiKey = GlobalKey<InformasiScreenState>();
+
   int _index = 0;
 
   /// Badge di tab Riwayat. Satu-satunya hal yang memberi tahu karyawan
@@ -32,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
   late final _tabs = [
     const HomeScreen(),
     RiwayatScreen(key: _riwayatKey),
-    const InformasiScreen(),
+    InformasiScreen(key: _informasiKey),
   ];
 
   @override
@@ -83,16 +85,18 @@ class _MainScreenState extends State<MainScreen> {
         selectedIndex: _index,
         onDestinationSelected: (i) {
           setState(() => _index = i);
+
           // Menjawab pengajuan terjadi di dalam tab Riwayat, jadi angkanya
           // perlu disegarkan saat keluar dari sana — bukan saat masuk.
-          if (i != 1) {
-            _muatJumlahMenunggu();
-          } else {
-            // Masuk ke Riwayat: datanya bisa basi karena IndexedStack
-            // membangunnya sekali lalu wantKeepAlive menahannya. Absen
-            // yang baru saja dilakukan tidak muncul tanpa ini.
-            _riwayatKey.currentState?.segarkanTabAktif();
-          }
+          if (i != 1) _muatJumlahMenunggu();
+
+          // WAJIB, bukan sekadar penyegar: sejak pemuatan awal dibuang
+          // dari initState, inilah satu-satunya yang memuat kedua tab
+          // ini. IndexedStack membangun ketiganya sekaligus, jadi memuat
+          // di initState berarti request untuk layar yang mungkin tidak
+          // pernah dilihat.
+          if (i == 1) _riwayatKey.currentState?.segarkanTabAktif();
+          if (i == 2) _informasiKey.currentState?.muatSaatDibuka();
         },
         destinations: [
           const NavigationDestination(

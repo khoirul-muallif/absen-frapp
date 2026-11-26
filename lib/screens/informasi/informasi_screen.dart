@@ -9,10 +9,10 @@ class InformasiScreen extends StatefulWidget {
   const InformasiScreen({super.key});
 
   @override
-  State<InformasiScreen> createState() => _InformasiScreenState();
+  State<InformasiScreen> createState() => InformasiScreenState();
 }
 
-class _InformasiScreenState extends State<InformasiScreen> {
+class InformasiScreenState extends State<InformasiScreen> {
   final _service = InformasiService();
   final _scrollController = ScrollController();
   final _cariController = TextEditingController();
@@ -26,6 +26,9 @@ class _InformasiScreenState extends State<InformasiScreen> {
   bool _loadingHalamanBerikut = false;
   String? _error;
 
+  /// Pemuatan pertama ditunda sampai tabnya dibuka. Lihat _PresensiTab.
+  bool _pernahDimuat = false;
+
   Timer? _debounce;
 
   /// Penanda pencarian terakhir yang diminta. Mengetik "cuti" melepas
@@ -38,7 +41,8 @@ class _InformasiScreenState extends State<InformasiScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_saatScroll);
-    _muatAwal();
+    // Sengaja tidak memuat di sini — MainScreen memanggil muatSaatDibuka()
+    // saat tabnya dipilih.
   }
 
   @override
@@ -103,6 +107,15 @@ class _InformasiScreenState extends State<InformasiScreen> {
         _loadingAwal = false;
       });
     }
+  }
+  
+  /// Dipanggil MainScreen saat tab Informasi dipilih. Pemuatan pertama
+  /// pakai spinner; berikutnya tanpa, supaya daftar yang sudah tampil
+  /// tidak berkedip kosong.
+  Future<void> muatSaatDibuka() {
+    final pertama = !_pernahDimuat;
+    _pernahDimuat = true;
+    return _muatAwal(tampilkanSpinner: pertama);
   }
 
   Future<void> _muatHalamanBerikut() async {
