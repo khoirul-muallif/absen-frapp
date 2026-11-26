@@ -166,6 +166,48 @@ class _AbsenMenuScreenState extends State<AbsenMenuScreen> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.all(20),
                           children: [
+                                                        // Tombol Absen Pulang di bawah bisa menutup
+                            // sesi KEMARIN, bukan hari ini (fase 90).
+                            // Tanpa keterangan ini, karyawan menekan dan
+                            // mengira sudah absen pulang hari ini —
+                            // padahal dia belum absen masuk hari ini.
+                            if (_status!.sesiKemarin) ...[
+                              Card(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .errorContainer,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.warning_amber,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onErrorContainer),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'Absen pulang Anda tanggal '
+                                          '${_status!.tanggal ?? 'kemarin'} '
+                                          'belum tercatat. Tombol di bawah '
+                                          'akan menutup sesi itu, bukan '
+                                          'hari ini.',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onErrorContainer,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                             _AbsenButton(
                               icon: Icons.login,
                               label: 'Absen Masuk',
