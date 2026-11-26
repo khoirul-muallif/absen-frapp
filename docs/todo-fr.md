@@ -28,22 +28,7 @@
       Catatan: `AbsenMenuScreen._loadStatus()` sudah dipanggil ulang
       setelah flow absen selesai, jadi layar Absen sendiri sudah benar.
       Yang belum disegarkan Beranda di belakangnya.
-
-
-- [ ] **Shift pengaju tampil "(-)" di MenungguResponScreen** — terlihat
-      25 Nov: "Jadwal dia: 26 Nov 2026 (-)" sementara "Jadwal Anda"
-      terisi "(malam)". Kalau pengaju memang tidak punya shift di
-      tanggal itu, menukarnya janggal. Belum diselidiki: mungkin shift
-      null untuk hari libur, mungkin ada yang tidak terkirim backend.
-
-- [ ] **Tombol Presensi di tengah bottom nav** — ada di referensi UI,
-      SENGAJA ditunda saat redesign Beranda 25 Nov karena ini keputusan
-      navigasi, bukan visual. Konsekuensinya lebih besar dari
-      kelihatannya: Absen sekarang di grid menu, kalau naik ke bottom
-      nav grid-nya jadi 5 item dan navigasi yang baru ditata ulang
-      20 Nov (`fc26deb`) ikut tersentuh lagi. Putuskan dulu sebelum
-      digarap.
-      
+     
 - [ ] **Sembunyikan baris email kosong di layar profil** — backend fase 81
       membuat `karyawan.email` nullable (~110 dari 150 karyawan RS tidak
       punya email). KOREKSI 10 Nov 2026: kekhawatiran parsing melempar
@@ -54,20 +39,6 @@
       Yang tersisa cuma tampilan: `Text(user.email)` jadi baris kosong,
       dan ListTile dengan ikon amplop jadi ikon tanpa nilai. Sembunyikan
       barisnya kalau kosong. Tidak mendesak, tidak memblokir deploy.
-
-- [ ] **Sisa kuota Cuti kurang TIDAK memblokir submit, tapi warnanya
-      merah seperti bentrok yang memblokir** — dua peringatan terlihat
-      sama padahal akibatnya beda. Kalau bentroknya dihapus, tombol
-      Ajukan hidup lagi meski kuota kurang, dan backend yang menolak.
-      Usul termurah: peringatan kuota jadi oranye, bentrok tetap merah.
-      Dicatat 24 Nov 2026.
-
-      KOREKSI untuk arsip: item lama di sini mengusulkan mencegah lewat
-      `selectableDayPredicate` seperti di TukarJadwal. Itu TIDAK BISA —
-      `showDateRangePicker` tidak punya parameter itu, hanya
-      `showDatePicker` yang punya. Gantinya `lastDate` dijepit (lintas
-      tahun & semester) dan peringatan di form (bentrok approved).
-      Ditutup `7096007` dan `69c64ec`.
       
 - [ ] **Ketiga tab memuat datanya sekaligus saat aplikasi dibuka** —
       DIDIAGNOSIS 25 Nov 2026, bukan pemanggilan ganda yang salah.

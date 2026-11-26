@@ -204,8 +204,15 @@ class _MenungguResponScreenState extends State<MenungguResponScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Jadwal dia: ${item.jadwalAsal.tanggal} (${item.jadwalAsal.shift ?? '-'})\n'
-                                    'Jadwal Anda: ${item.jadwalTujuan?.tanggal ?? '-'} (${item.jadwalTujuan?.shift ?? '-'})',
+                                    // "(Libur)" bukan "-": shift null di
+                                    // sini berarti barisnya hari libur,
+                                    // dan backend memang mengizinkan
+                                    // tukar dengan sisi libur (fase
+                                    // 71-73). Strip tidak memberi tahu
+                                    // apa pun; istilahnya disamakan
+                                    // dengan TukarJadwalFormScreen.
+                                    'Jadwal dia: ${item.jadwalAsal.tanggal} (${item.jadwalAsal.shift ?? 'Libur'})\n'
+                                    'Jadwal Anda: ${item.jadwalTujuan?.tanggal ?? '-'} (${item.jadwalTujuan?.shift ?? 'Libur'})',
                                   ),
                                   const SizedBox(height: 4),
                                   Text('Alasan: ${item.alasan}'),
