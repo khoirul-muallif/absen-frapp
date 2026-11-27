@@ -5,6 +5,23 @@
 > tetap di CHANGELOG-fr.md.
 
 ## Belum dibuat
+
+- [ ] **Libur nasional tidak dibedakan di kalender Jadwal** — backend
+      fase 95 (27 Nov) menambahkan `jadwals.libur_nasional`, tapi
+      JadwalScreen cuma membaca `jenis`, jadi 17 Agustus dan hari Minggu
+      terlihat sama persis. Pola yang sama dengan `piket` yang dulu
+      sewarna dengan reguler (ditutup 25 Nov).
+
+      PERIKSA DULU: apakah `JadwalController` sudah mengirim kolomnya?
+      Kemungkinan belum — kolomnya baru dibuat untuk keperluan
+      generator, bukan untuk API. Kalau belum, ini dua langkah:
+      backend mengirim, FE memakai.
+
+      Belum tentu perlu: karyawan mungkin tidak peduli ALASAN liburnya,
+      cuma peduli dia libur. Yang jelas butuh pembedaan ini TukarJadwal
+      (lihat item berikutnya), bukan kalender.
+
+      Dicatat 27 Nov 2026.
            
 ## Audit UX menyeluruh — dikerjakan per DIMENSI, bukan per layar
 
